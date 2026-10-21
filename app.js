@@ -186,10 +186,11 @@
       deliverableCard("WhatsApp bot","07 · BOT","Árbol conversacional exportable en JSON.",JSON.stringify(plan.bot,null,2),`${slugify(p.name)}-bot-flow.json`),
       deliverableCard("QA y estado","08 · QA","Distingue propuesta, implementación y pruebas pendientes.",JSON.stringify(plan.qa,null,2),`${slugify(p.name)}-qa.json`)
     ].join("");
-    host.innerHTML = selector + `<div class="panel export-site-row"><div><strong>Landing HTML de demostración</strong><p class="body-copy">Exporta una página estática con copy, estilos y CTA. El formulario no envía datos a un servidor hasta conectar un backend.</p></div><button class="button button-primary" id="export-landing">Exportar landing HTML ↧</button></div><div class="deliverable-grid">${cards}</div>`;
+    host.innerHTML = selector + `<div class="panel export-site-row"><div><strong>Agente 8 · Comparativa personalizada</strong><p class="body-copy">Genera una demo Antes/Después con el briefing, copy y paleta de este proyecto. Añade capturas y métricas con evidencia.</p></div><button class="button button-primary" id="open-agent8">Preparar comparativa ↗</button><button class="button button-secondary" id="export-landing">Exportar landing HTML ↧</button></div><div class="deliverable-grid">${cards}</div>`;
     $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;renderDeliverables();});
     $("#export-package").addEventListener("click",()=>exportProject(p.id));
     $("#export-landing").addEventListener("click",()=>exportSite(p));
+    $("#open-agent8").addEventListener("click",()=>{window.location.href=`./agente-8.html?project=${encodeURIComponent(p.id)}`;});
     $$("[data-download]",host).forEach(btn=>btn.addEventListener("click",()=>{
       download(decodeURIComponent(btn.dataset.download),decodeURIComponent(btn.dataset.content),decodeURIComponent(btn.dataset.mime));
       notify("Descarga preparada.");
