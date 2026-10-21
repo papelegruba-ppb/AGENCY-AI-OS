@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111116">
+  <meta name="description" content="Demo comercial de transformación web Antes y Después para Agency AI OS.">
+  <meta property="og:title" content="Agency AI OS — Demo Impacto">
+  <meta property="og:description" content="Compara la experiencia anterior con una nueva propuesta digital.">
+  <title>Demo Impacto · Agency AI OS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{ink:"#111116",lilac:"#B7A1FF",tangerine:"#FF8A4C",lemon:"#FFE66D"}}}};</script>
+  <style>
+    :root{color-scheme:dark;--ink:#111116;--lilac:#b7a1ff;--orange:#ff8a4c;--green:#63f0a7}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 8%,#b7a1ff25,transparent 34%),radial-gradient(ellipse at 88% 90%,#ff8a4c1b,transparent 32%),var(--ink);color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .glass{background:rgba(19,17,27,.76);border:1px solid #ffffff24;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 55px #0005}
+    .stage{position:relative;isolation:isolate;overflow:hidden;min-height:min(72vh,760px);height:clamp(490px,72vh,760px);background:#28232f;touch-action:pan-y}
+    .layer{position:absolute;inset:0;overflow:hidden}.layer-inner{position:absolute;inset:0;display:grid;place-items:center;padding:clamp(1rem,4vw,3rem)}
+    .mock{width:min(720px,92%);min-height:360px;border-radius:24px;padding:clamp(1.3rem,4vw,3rem);display:flex;flex-direction:column;justify-content:center}
+    .mock-before{background:linear-gradient(145deg,#281a20,#512b2d);border:1px solid #ff8a4c45}
+    .mock-after{background:radial-gradient(ellipse at 90% 10%,#b7a1ff35,transparent 42%),linear-gradient(145deg,#171522,#2b2050 65%,#35203d);border:1px solid #b7a1ff80;box-shadow:0 0 90px #b7a1ff16}
+    .eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+    .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+    .metrics{position:absolute;z-index:25;top:16px;width:min(260px,calc(50% - 26px));pointer-events:none}
+    .metrics.before{left:16px}.metrics.after{right:16px}
+    .metric{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:11px;font-size:11px;color:#d6d2df}
+    .metric strong{font-size:13px}.before strong{color:#ff9a87}.after strong{color:#8fffc0}
+    .bar{grid-column:1/-1;height:4px;border-radius:9px;background:#ffffff1b;overflow:hidden;margin-top:-6px}.bar span{display:block;height:100%;border-radius:9px}
+    .split{position:absolute;z-index:35;top:0;bottom:0;width:3px;background:#fff;left:50%;transform:translateX(-50%);pointer-events:none;box-shadow:0 0 20px #fff9}
+    .knob{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#17131f;font-weight:900;font-size:20px;box-shadow:0 8px 30px #0008}
+    .range{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:40;cursor:ew-resize;margin:0}
+    .pill-label{position:absolute;z-index:30;bottom:16px;border-radius:999px;background:#08070bc9;padding:9px 13px;font-size:10px;letter-spacing:.15em;font-weight:800;backdrop-filter:blur(8px)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:11px 15px;font-size:12px;font-weight:750;transition:transform .18s,filter .18s}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.06)}.primary{background:var(--lilac);color:#17131f}.secondary{border:1px solid #ffffff2b;background:#ffffff09;color:white}
+    .upload{cursor:pointer}.upload input{display:none}
+    @media(max-width:640px){.stage{height:680px;min-height:680px}.metrics{top:10px;width:calc(50% - 16px)}.metrics.before{left:8px}.metrics.after{right:8px}.metrics .glass{padding:10px!important}.metric{font-size:9px;gap:5px}.metric strong{font-size:11px}.mock{width:98%;min-height:310px;padding:1rem}.layer-inner{padding:.5rem}.knob{width:42px;height:42px}.pill-label{bottom:10px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <header class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 md:px-8">
+    <a href="./index.html" class="flex items-center gap-3 text-white no-underline"><span class="grid h-9 w-9 place-items-center rounded-xl bg-lilac font-black text-ink">A</span><span class="text-xs font-extrabold tracking-widest">AGENCY <span class="text-lilac">AI OS</span></span></a>
+    <span class="eyebrow hidden text-white/45 md:block">Módulo 08 · presentación comercial</span>
+    <a href="./index.html" class="btn secondary">← Volver al constructor</a>
+  </header>
+  <main class="mx-auto max-w-7xl px-3 pb-12 md:px-8">
+    <section class="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+      <div class="max-w-3xl"><p class="eyebrow mb-3 text-lilac">La transformación se ve</p><h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-6xl">De invisible a <span class="text-lilac">inolvidable.</span></h1><p class="mt-4 max-w-2xl text-sm leading-6 text-white/60 md:text-base">Compara dos experiencias, carga capturas reales y cuenta la historia visual del cambio. Arrastra el separador o utiliza las flechas del teclado.</p></div>
+      <div class="flex flex-wrap gap-2"><label class="btn secondary upload">↑ Cargar «Antes»<input id="uploadBefore" type="file" accept="image/*"></label><label class="btn primary upload">↑ Cargar «Después»<input id="uploadAfter" type="file" accept="image/*"></label></div>
+    </section>
+    <section class="overflow-hidden rounded-3xl border border-white/10 bg-black/20 shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-3 md:px-6"><span class="text-[10px] font-bold tracking-widest text-white/60">COMPARATIVA INTERACTIVA <span class="mx-2 text-orange-300">● ANTES</span><span class="text-emerald-300">● DESPUÉS</span></span><span class="text-xs text-white/40">Ratón · táctil · teclado</span></div>
+      <div class="stage" id="stage">
+        <div class="layer" id="beforeLayer">
+          <img id="beforePhoto" class="photo" alt="Captura de la versión anterior del sitio">
+          <div class="layer-inner" id="beforeMock"><article class="mock mock-before"><div class="flex items-center justify-between text-xs text-white/45"><b class="tracking-widest">EMPRESA</b><span>Inicio　 Servicios　 Contacto</span></div><div class="mt-14"><p class="eyebrow text-orange-200">Bienvenido a nuestra web</p><h2 class="mt-3 max-w-xl text-4xl font-semibold leading-tight md:text-6xl">Soluciones para todos tus proyectos.</h2><p class="mt-4 max-w-md text-sm leading-6 text-white/55">Conoce nuestros servicios y descubre cómo podemos ayudarte a conseguir tus objetivos.</p><span class="mt-6 inline-flex rounded-md border border-orange-200/50 px-5 py-3 text-xs text-orange-100">Más información</span></div><div class="mt-12 h-1.5 w-16 rounded-full bg-orange-400/60"></div></article></div>
+        </div>
+        <div class="layer" id="afterLayer" style="clip-path:inset(0 50% 0 0)">
+          <img id="afterPhoto" class="photo" alt="Captura de la nueva propuesta del sitio">
+          <div class="layer-inner" id="afterMock"><article class="mock mock-after"><div class="flex items-center justify-between text-xs text-white/60"><b class="tracking-widest">NOVA / STUDIO</b><span>Servicios　 Proyectos　 Contacto</span></div><div class="mt-14"><p class="eyebrow text-lilac">Diseñado para crecer</p><h2 class="mt-3 max-w-xl text-4xl font-semibold leading-tight md:text-6xl">Tu próxima etapa empieza aquí.</h2><p class="mt-4 max-w-md text-sm leading-6 text-white/65">Una presencia digital clara, rápida y memorable. Convierte cada visita en el principio de una relación.</p><span class="mt-6 inline-flex rounded-full bg-lilac px-5 py-3 text-xs font-bold text-ink">Hablemos de tu proyecto ↗</span></div><div class="mt-12 flex gap-2"><span class="h-1.5 w-16 rounded-full bg-lilac"></span><span class="h-1.5 w-6 rounded-full bg-white/20"></span><span class="h-1.5 w-6 rounded-full bg-white/20"></span></div></article></div>
+        </div>
+        <div class="metrics before glass rounded-2xl p-4 md:p-5"><div class="flex items-center justify-between gap-1"><span class="eyebrow text-orange-200">Antes</span><span class="rounded-full bg-rose-400/15 px-2 py-1 text-[9px] text-rose-200">Por mejorar</span></div><div class="metric"><span>Rendimiento</span><strong>35</strong><div class="bar"><span style="width:35%;background:#ff775e"></span></div></div><div class="metric"><span>SEO</span><strong>50</strong><div class="bar"><span style="width:50%;background:#ff995e"></span></div></div><div class="metric"><span>Accesibilidad</span><strong>42</strong><div class="bar"><span style="width:42%;background:#ff775e"></span></div></div></div>
+        <div class="metrics after glass rounded-2xl p-4 md:p-5"><div class="flex items-center justify-between gap-1"><span class="eyebrow text-emerald-200">Después</span><span class="rounded-full bg-emerald-300/15 px-2 py-1 text-[9px] text-emerald-100">Objetivo</span></div><div class="metric"><span>Rendimiento</span><strong>98</strong><div class="bar"><span style="width:98%;background:#7af5b1"></span></div></div><div class="metric"><span>SEO</span><strong>100</strong><div class="bar"><span style="width:100%;background:#a5ffc9"></span></div></div><div class="metric"><span>Accesibilidad</span><strong>95</strong><div class="bar"><span style="width:95%;background:#7af5b1"></span></div></div></div>
+        <div class="split" id="split" aria-hidden="true"><div class="knob">↔</div></div><input id="range" class="range" type="range" min="0" max="100" value="50" aria-label="Comparar la versión anterior con la nueva">
+        <span class="pill-label left-4">ANTES</span><span class="pill-label right-4">DESPUÉS</span>
+      </div>
+      <div class="flex flex-col gap-3 border-t border-white/10 p-4 md:flex-row md:items-center md:justify-between md:px-6"><p id="status" class="max-w-3xl text-xs leading-5 text-white/45" aria-live="polite">Vista ilustrativa. Las puntuaciones son ejemplos visuales, no resultados auditados.</p><button id="reset" class="btn secondary">Restablecer comparativa</button></div>
+    </section>
+    <section class="mt-6 grid gap-3 md:grid-cols-3"><article class="glass rounded-2xl p-5"><span class="text-2xl text-lilac">✳</span><h3 class="mt-3 font-semibold">Impacto a primera vista</h3><p class="mt-2 text-sm leading-6 text-white/55">Una narrativa visual para explicar el valor de la propuesta sin depender de tecnicismos.</p></article><article class="glass rounded-2xl p-5"><span class="text-2xl text-orange-300">⌁</span><h3 class="mt-3 font-semibold">Capturas del cliente</h3><p class="mt-2 text-sm leading-6 text-white/55">Las imágenes se cargan localmente en el navegador y no se suben a ningún servidor.</p></article><article class="glass rounded-2xl p-5"><span class="text-2xl text-emerald-300">◎</span><h3 class="mt-3 font-semibold">Lista para personalizar</h3><p class="mt-2 text-sm leading-6 text-white/55">Un único HTML, adaptable a móvil y con estilos y lógica propios del módulo.</p></article></section>
+    <p class="mx-auto mt-7 max-w-3xl text-center text-xs leading-5 text-white/35">Transparencia comercial: 35/50/42 y 98/100/95 son puntuaciones ficticias para mostrar el componente. Antes de presentarlas como resultados reales, sustitúyelas por mediciones comparables verificadas.</p>
+  </main>
+  <script>
+    (()=>{"use strict";
+      const range=document.getElementById("range"),after=document.getElementById("afterLayer"),split=document.getElementById("split"),stage=document.getElementById("stage"),status=document.getElementById("status");
+      const beforePhoto=document.getElementById("beforePhoto"),afterPhoto=document.getElementById("afterPhoto");
+      const beforeMock=document.getElementById("beforeMock"),afterMock=document.getElementById("afterMock");
+      let beforeUrl=null,afterUrl=null;
+      function setPosition(value){const n=Math.max(0,Math.min(100,Number(value)));after.style.clipPath="inset(0 "+(100-n)+"% 0 0)";split.style.left=n+"%";range.value=n;}
+      range.addEventListener("input",e=>setPosition(e.target.value));
+      stage.addEventListener("pointerdown",e=>{if(e.target===range||e.target.closest("button,label,input"))return;const rect=stage.getBoundingClientRect();setPosition((e.clientX-rect.left)/rect.width*100);});
+      function bindUpload(inputId,img,mock,which){document.getElementById(inputId).addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith("image/")){status.textContent="Selecciona un archivo de imagen válido.";return;}const url=URL.createObjectURL(file);if(which==="before"&&beforeUrl)URL.revokeObjectURL(beforeUrl);if(which==="after"&&afterUrl)URL.revokeObjectURL(afterUrl);if(which==="before")beforeUrl=url;else afterUrl=url;img.src=url;img.style.display="block";mock.style.display="none";status.textContent="Captura «"+(which==="before"?"Antes":"Después")+"» cargada localmente. No se ha enviado a ningún servidor.";});}
+      bindUpload("uploadBefore",beforePhoto,beforeMock,"before");bindUpload("uploadAfter",afterPhoto,afterMock,"after");
+      document.getElementById("reset").addEventListener("click",()=>{if(beforeUrl)URL.revokeObjectURL(beforeUrl);if(afterUrl)URL.revokeObjectURL(afterUrl);beforeUrl=afterUrl=null;beforePhoto.removeAttribute("src");afterPhoto.removeAttribute("src");beforePhoto.style.display=afterPhoto.style.display="none";beforeMock.style.display=afterMock.style.display="grid";document.getElementById("uploadBefore").value="";document.getElementById("uploadAfter").value="";setPosition(50);status.textContent="Vista ilustrativa. Las puntuaciones son ejemplos visuales, no resultados auditados.";});
+      setPosition(50);
+    })();
+  </script>
+</body>
+</html>
