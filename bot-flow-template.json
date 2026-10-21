@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "name": "Plantilla de bot comercial",
+  "status": "template_only",
+  "description": "Ejemplo exportable; requiere integración con una plataforma compatible para ejecutarse.",
+  "trigger": "inbound_whatsapp_message",
+  "nodes": [
+    {
+      "id": "welcome",
+      "type": "message",
+      "text": "¡Hola! Gracias por contactar con {{business_name}}. ¿En qué podemos ayudarte?",
+      "next": "intent"
+    },
+    {
+      "id": "intent",
+      "type": "choice",
+      "options": [
+        {
+          "label": "Servicios",
+          "next": "services"
+        },
+        {
+          "label": "Presupuesto",
+          "next": "quote"
+        },
+        {
+          "label": "Otra consulta",
+          "next": "other"
+        }
+      ]
+    },
+    {
+      "id": "services",
+      "type": "message",
+      "text": "¿Qué servicio te interesa y qué objetivo quieres conseguir?",
+      "next": "qualify"
+    },
+    {
+      "id": "quote",
+      "type": "message",
+      "text": "Cuéntanos qué necesitas y cuál es tu plazo aproximado.",
+      "next": "qualify"
+    },
+    {
+      "id": "other",
+      "type": "message",
+      "text": "Escribe tu consulta y te orientaremos.",
+      "next": "human_handoff"
+    },
+    {
+      "id": "qualify",
+      "type": "capture",
+      "fields": [
+        "name",
+        "service_or_need",
+        "timeframe"
+      ],
+      "next": "human_handoff"
+    },
+    {
+      "id": "human_handoff",
+      "type": "handoff",
+      "text": "Gracias. El equipo revisará tu consulta y continuará la conversación."
+    }
+  ],
+  "compliance": {
+    "use_official_business_platform": true,
+    "respect_opt_in_and_platform_policies": true,
+    "collect_only_necessary_data": true,
+    "human_handoff_available": true
+  }
+}

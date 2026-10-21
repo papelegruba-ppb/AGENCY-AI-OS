@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111318">
+  <meta name="description" content="Agency AI OS: espacio de trabajo para planificar proyectos digitales, coordinar agentes y generar entregables web.">
+  <title>Agency AI OS — Constructor multiagente</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="Agency AI OS inicio">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span class="brand-copy"><strong>AGENCY AI</strong><small>OPERATING SYSTEM</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE <span class="status-dot"></span></div>
+      <nav class="nav" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="dashboard"><span class="nav-icon">◫</span> Centro de mando</button>
+        <button class="nav-item" data-view="builder"><span class="nav-icon">✳</span> Nuevo proyecto</button>
+        <button class="nav-item" data-view="projects"><span class="nav-icon">▤</span> Proyectos <span id="project-count" class="nav-count">0</span></button>
+        <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-note"><span class="lock-icon">⌑</span><div><strong>Modo local</strong><small>Los datos se guardan en este navegador.</small></div></div>
+        <button class="nav-item" data-view="settings"><span class="nav-icon">⚙</span> Configuración</button>
+        <div class="user-chip"><div class="avatar">AI</div><div><strong>Private workspace</strong><small>Prototipo sin costes</small></div><span class="online-dot"></span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumbs"><span>Workspace</span><b>/</b><strong id="breadcrumb-current">Centro de mando</strong></div>
+        <div class="top-actions"><span class="local-badge"><i></i> LOCAL · SIN API</span><button id="top-new" class="button button-primary button-small">＋ Nuevo proyecto</button></div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="page-heading">
+          <div><p class="eyebrow">TU AGENCIA, EN UN SOLO LUGAR</p><h1>Centro de mando<span class="heading-period">.</span></h1><p class="subheading">De la idea al entregable. Organiza estrategia, diseño y desarrollo en un flujo de trabajo.</p></div>
+          <div class="heading-orbit" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">AI<span>✳</span></div><i class="orbit-dot dot-one"></i><i class="orbit-dot dot-two"></i></div>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span>Proyectos creados</span><span class="stat-symbol">▤</span></div><strong id="stat-projects">0</strong><small>Guardados en este navegador</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Agentes definidos</span><span class="stat-symbol violet">✳</span></div><strong>7</strong><small>Roles especializados + QA</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Entregables generables</span><span class="stat-symbol green">⌘</span></div><strong>8<span class="plus">+</span></strong><small>Copy, diseño, web, SEO, bot y más</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Coste de uso</span><span class="stat-symbol yellow">○</span></div><strong>0 €</strong><small>Sin servicios externos conectados</small></article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="panel workflow-panel">
+            <div class="panel-heading"><div><p class="eyebrow">PIPELINE DE PRODUCCIÓN</p><h2>Flujo multiagente</h2></div><span class="pill pill-muted">7 especialistas</span></div>
+            <div class="workflow-list">
+              <div class="workflow-step"><span class="step-number">01</span><div class="step-copy"><strong>Marketing & Copywriting</strong><small>Propuesta de valor, titulares y CTA</small></div><span class="step-state">ESTRATEGIA</span></div>
+              <div class="workflow-step"><span class="step-number">02</span><div class="step-copy"><strong>UX/UI Design</strong><small>Arquitectura, wireframe y sistema visual</small></div><span class="step-state">DISEÑO</span></div>
+              <div class="workflow-step featured"><span class="step-number">03</span><div class="step-copy"><strong>Creative Coding & Motion UX</strong><small>Movimiento, microinteracciones y efecto WOW</small></div><span class="step-state purple-state">MOTION</span></div>
+              <div class="workflow-step"><span class="step-number">04</span><div class="step-copy"><strong>Frontend Development</strong><small>Interfaz responsive y componentes</small></div><span class="step-state">BUILD</span></div>
+              <div class="workflow-step"><span class="step-number">05</span><div class="step-copy"><strong>Backend Architecture</strong><small>API, datos e integraciones</small></div><span class="step-state">LÓGICA</span></div>
+              <div class="workflow-step"><span class="step-number">06</span><div class="step-copy"><strong>SEO Técnico</strong><small>Semántica, metadatos y rastreabilidad</small></div><span class="step-state">VISIBILIDAD</span></div>
+              <div class="workflow-step"><span class="step-number">07</span><div class="step-copy"><strong>WhatsApp Conversion Bot</strong><small>Conversación y cualificación de leads</small></div><span class="step-state">CONVERSIÓN</span></div>
+            </div>
+            <div class="panel-footer"><span class="tiny-check">✓</span> QA revisa la coherencia y los resultados al final del flujo.</div>
+          </article>
+          <article class="panel quickstart-panel">
+            <div class="panel-heading"><div><p class="eyebrow">EMPIEZA AQUÍ</p><h2>Del briefing a la web</h2></div><span class="sparkle">✳</span></div>
+            <p class="body-copy">Crea un proyecto, define el negocio y genera una primera propuesta coordinada. Después podrás exportar los entregables para implementarlos en tu stack.</p>
+            <div class="quickstart-steps"><div><span>1</span><p><strong>Describe el negocio</strong><small>Sector, audiencia y objetivo</small></p></div><div><span>2</span><p><strong>Genera la estrategia</strong><small>Copy, UX y dirección creativa</small></p></div><div><span>3</span><p><strong>Exporta los entregables</strong><small>HTML, JSON y documentación</small></p></div></div>
+            <button class="button button-primary button-wide" data-go="builder">Crear primer proyecto <span>↗</span></button>
+            <div class="safe-note"><span>⌑</span> No requiere cuenta ni claves API. Los proyectos permanecen en tu dispositivo.</div>
+          </article>
+        </div>
+        <section class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow">TU ACTIVIDAD</p><h2>Proyectos recientes</h2></div><button class="text-button" data-go="projects">Ver todos ↗</button></div><div id="recent-projects" class="empty-state"><div class="empty-icon">▤</div><strong>Aún no hay proyectos</strong><p>Tu próximo proyecto empieza con un buen briefing.</p><button class="button button-secondary" data-go="builder">Crear proyecto</button></div></section>
+      </section>
+
+      <section class="view" id="view-builder">
+        <div class="page-heading compact-heading"><div><p class="eyebrow">NUEVO ESPACIO DE TRABAJO</p><h1>Construye algo <span class="heading-period">extraordinario.</span></h1><p class="subheading">Define el encargo una vez. Organiza todos los entregables desde un único briefing.</p></div></div>
+        <div class="builder-layout">
+          <form id="project-form" class="panel project-form">
+            <div class="form-section-title"><span class="form-step">01</span><div><h2>Briefing del negocio</h2><p>Los datos esenciales para alinear a todos los agentes.</p></div></div>
+            <div class="field-grid">
+              <label class="field full"><span>Nombre del proyecto <b>*</b></span><input name="projectName" id="projectName" required maxlength="90" placeholder="Ej. Nébula Studio"><small>Nombre interno para identificar el proyecto.</small></label>
+              <label class="field"><span>Sector <b>*</b></span><input name="sector" id="sector" required placeholder="Ej. diseño web y automatización"></label>
+              <label class="field"><span>Tipo de proyecto</span><select name="projectType" id="projectType"><option value="landing">Landing page</option><option value="corporate">Web corporativa</option><option value="ecommerce">Tienda online</option><option value="webapp">Aplicación web</option><option value="automation">Agente o automatización</option></select></label>
+              <label class="field full"><span>¿Qué ofrece el negocio? <b>*</b></span><textarea name="offer" id="offer" required rows="3" placeholder="Productos, servicios, diferenciadores y propuesta de valor actual…"></textarea></label>
+              <label class="field full"><span>Cliente ideal <b>*</b></span><textarea name="audience" id="audience" required rows="2" placeholder="¿Quién compra? ¿Qué necesita? ¿Qué objeciones tiene?"></textarea></label>
+              <label class="field full"><span>Objetivo principal <b>*</b></span><textarea name="goal" id="goal" required rows="2" placeholder="Ej. conseguir solicitudes de presupuesto por WhatsApp y formulario."></textarea></label>
+              <label class="field"><span>Zona geográfica</span><input name="location" id="location" placeholder="Ej. España, Barcelona o internacional"></label>
+              <label class="field"><span>Estilo visual</span><select name="style" id="style"><option value="editorial premium">Editorial premium</option><option value="minimalista cálido">Minimalista cálido</option><option value="tecnológico experimental">Tecnológico experimental</option><option value="elegante corporativo">Elegante corporativo</option><option value="atrevido y expresivo">Atrevido y expresivo</option><option value="natural y artesanal">Natural y artesanal</option></select></label>
+              <label class="field"><span>Color principal (HEX)</span><div class="color-input"><input name="color" id="color" value="#8B5CF6" pattern="^#[0-9A-Fa-f]{6}$" aria-label="Color principal hexadecimal"><input type="color" id="color-picker" value="#8B5CF6" aria-label="Selector de color"></div></label>
+              <label class="field"><span>WhatsApp</span><input name="phone" id="phone" inputmode="tel" placeholder="Ej. 34600111222"><small>Opcional. Código de país, sin + ni espacios.</small></label>
+              <label class="field full"><span>Servicios o secciones necesarias</span><textarea name="requirements" id="requirements" rows="2" placeholder="Servicios, portfolio, precios, reservas, FAQs, blog…"></textarea></label>
+              <label class="field full"><span>Dominio (si existe)</span><input name="domain" id="domain" placeholder="https://tudominio.com"></label>
+            </div>
+            <div class="form-section-title second-form-title"><span class="form-step">02</span><div><h2>Alcance y entrega</h2><p>Selecciona lo que quieres incluir en la primera versión.</p></div></div>
+            <div class="deliverable-options">
+              <label class="option-card"><input type="checkbox" name="deliverables" value="landing" checked><span class="option-check">✓</span><span><strong>Web / landing</strong><small>HTML, CSS y JS</small></span><span class="option-icon">⌘</span></label>
+              <label class="option-card"><input type="checkbox" name="deliverables" value="copy" checked><span class="option-check">✓</span><span><strong>Marketing y copy</strong><small>Mensajes y CTA</small></span><span class="option-icon">✎</span></label>
+              <label class="option-card"><input type="checkbox" name="deliverables" value="seo" checked><span class="option-check">✓</span><span><strong>SEO técnico</strong><small>Metadatos y estructura</small></span><span class="option-icon">⌕</span></label>
+              <label class="option-card"><input type="checkbox" name="deliverables" value="bot" checked><span class="option-check">✓</span><span><strong>Bot WhatsApp</strong><small>Flujo JSON</small></span><span class="option-icon">◉</span></label>
+              <label class="option-card"><input type="checkbox" name="deliverables" value="backend"><span class="option-check">✓</span><span><strong>Backend</strong><small>API y persistencia</small></span><span class="option-icon">▣</span></label>
+              <label class="option-card"><input type="checkbox" name="deliverables" value="motion" checked><span class="option-check">✓</span><span><strong>Motion UX</strong><small>Animaciones y feedback</small></span><span class="option-icon">✳</span></label>
+            </div>
+            <div class="form-actions"><span class="required-note"><b>*</b> Campos obligatorios</span><button type="submit" class="button button-primary">Generar plan del proyecto <span>↗</span></button></div>
+          </form>
+          <aside class="builder-aside">
+            <div class="panel aside-card">
+              <p class="eyebrow">CÓMO FUNCIONA</p><h3>Un briefing.<br>Un sistema coherente.</h3><p class="body-copy">El constructor genera una propuesta estructurada a partir de tus datos. Cada entregable comparte el mismo contexto de marca.</p>
+              <div class="mini-flow"><div><span class="mini-node">01</span><span>Briefing</span></div><i>↓</i><div><span class="mini-node">02</span><span>7 agentes</span></div><i>↓</i><div><span class="mini-node">03</span><span>Entregables</span></div></div>
+            </div>
+            <div class="panel aside-card accent-aside"><span class="big-sparkle">✳</span><p class="eyebrow">IMPORTANTE</p><h3>Sin costes ocultos</h3><p>Esta primera versión funciona localmente. No utiliza modelos de IA externos ni envía datos a terceros. Las salidas son plantillas inteligentes, no respuestas de un LLM conectado.</p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-projects">
+        <div class="page-heading compact-heading"><div><p class="eyebrow">BIBLIOTECA DE TRABAJO</p><h1>Proyectos<span class="heading-period">.</span></h1><p class="subheading">Briefings y planes guardados en este navegador.</p></div><button class="button button-primary" data-go="builder">＋ Nuevo proyecto</button></div>
+        <div id="projects-list" class="projects-list"></div>
+      </section>
+
+      <section class="view" id="view-deliverables">
+        <div class="page-heading compact-heading"><div><p class="eyebrow">EXPORTACIÓN</p><h1>Entregables<span class="heading-period">.</span></h1><p class="subheading">Selecciona un proyecto para revisar y descargar sus materiales.</p></div></div>
+        <div id="deliverables-content" class="deliverables-content"><div class="panel empty-state"><div class="empty-icon">⌘</div><strong>Selecciona o crea un proyecto</strong><p>Aquí podrás revisar el copy, la guía visual, el plan técnico y el flujo del bot.</p><button class="button button-primary" data-go="builder">Crear proyecto</button></div></div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="page-heading compact-heading"><div><p class="eyebrow">PREFERENCIAS DEL WORKSPACE</p><h1>Configuración<span class="heading-period">.</span></h1><p class="subheading">Control local, exportación y preparación para futuras integraciones.</p></div></div>
+        <div class="settings-grid">
+          <article class="panel settings-card"><div class="settings-icon">⌑</div><h2>Privacidad local</h2><p>Los proyectos se almacenan en el almacenamiento local de tu navegador. No existe cuenta, servidor ni sincronización entre dispositivos en esta versión.</p><span class="pill pill-green">Activo</span></article>
+          <article class="panel settings-card"><div class="settings-icon">⇩</div><h2>Exportar datos</h2><p>Descarga una copia de todos los briefings guardados en formato JSON para hacer una copia de seguridad.</p><button id="export-all" class="button button-secondary">Exportar workspace JSON</button></article>
+          <article class="panel settings-card"><div class="settings-icon">⚙</div><h2>Integraciones futuras</h2><p>Los modelos de IA, almacenamiento en nube, formularios reales y WhatsApp Business Platform requieren configurar proveedores y credenciales.</p><span class="pill pill-muted">No conectadas</span></article>
+          <article class="panel settings-card danger-card"><div class="settings-icon">⌫</div><h2>Borrar datos locales</h2><p>Elimina todos los proyectos de este navegador. Esta acción no se puede deshacer.</p><button id="clear-data" class="button button-danger">Borrar todos los proyectos</button></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="project-dialog" class="project-dialog"><div class="dialog-head"><div><p class="eyebrow">PROYECTO GUARDADO</p><h2 id="dialog-title">Proyecto</h2></div><button class="icon-button" id="dialog-close" aria-label="Cerrar">×</button></div><p id="dialog-description"></p><div class="dialog-actions"><button class="button button-secondary" id="dialog-open">Ver entregables</button><button class="button button-primary" id="dialog-export">Exportar paquete JSON</button></div></dialog>
+  <script src="app.js"></script>
+</body>
+</html>
