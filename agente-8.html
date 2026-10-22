@@ -59,7 +59,7 @@ function exportProposalToHTML(data){
    return '<div class="metric"><div><span>'+escapeHTML(m.label||key)+'</span><strong>'+display+'</strong></div><small>'+state+'</small><div class="bar"><span style="width:'+width+'%"></span></div></div>';
  }).join("")||'<p class="empty">Sin métricas configuradas · Sin medir</p>';
  const css=String(document.querySelector("style")?.textContent||"");
- const imageLayer=(src,alt)=>src?'<img class="shot" src="'+src.replace(/"/g,"%22")+'" alt="'+escapeHTML(alt)+'">':"";
+ const imageLayer=(src,alt)=>src?'<img class="shot" style="display:block" src="'+src.replace(/"/g,"%22")+'" alt="'+escapeHTML(alt)+'">':"";
  const mockLayer=(isAfter)=>'<article class="mock '+(isAfter?"after":"before")+'"><div class="mocknav"><b>'+escapeHTML(client.toUpperCase())+'</b><span>Servicios · Contacto</span></div><div class="eyebrow">'+(isAfter?"Propuesta personalizada":"Situación actual")+'</div><h3>'+escapeHTML(isAfter?(d.afterTitle||d.headline||"Propuesta de mejora"):(d.beforeTitle||"Situación actual"))+'</h3><p>'+escapeHTML(isAfter?(d.afterCopy||d.description||d.offer||""):(d.beforeCopy||""))+'</p>'+(isAfter?'<span class="mockcta">'+escapeHTML(d.cta||"Contactar")+' ↗</span>':'')+'</article>';
  const action=whatsapp?'<a class="cta" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(d.cta||"Contactar por WhatsApp")+' ↗</a>':'<span class="cta disabled">'+escapeHTML(d.cta||"CTA pendiente de enlace")+'</span>';
  const showMetrics=d.showMetrics!==false;
