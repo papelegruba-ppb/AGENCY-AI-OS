@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111116">
+  <meta name="description" content="Propuesta comercial interactiva para Agency AI OS.">
+  <title>Propuesta Comercial · Agency AI OS</title>
+  <style>
+    :root{color-scheme:dark;--bg:#111318;--panel:#191c23;--line:#2a2e38;--lilac:#a78bfa;--orange:#ff8a4c;--yellow:#ffe66d;--green:#71d7ac;--red:#ff777f;--accent:#a78bfa;--font:Inter,ui-sans-serif,system-ui,sans-serif;--mono:SFMono-Regular,Consolas,monospace}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0,#a78bfa1b,transparent 35%),var(--bg);color:#f2f3f7;font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+    button,input,textarea,select{font:inherit}button{cursor:pointer}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px clamp(12px,3vw,30px);border-bottom:1px solid var(--line);background:#15171d}
+    .brand{color:#f2f3f7;text-decoration:none;font-weight:900;font-size:12px;letter-spacing:.12em}
+    .tag{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--lilac);font-weight:850}
+    .btn{border:1px solid #424654;border-radius:10px;background:#252832;color:#f2f3f7;padding:10px 14px;font-size:12px;font-weight:750;transition:background .18s,border-color .18s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    .btn:hover{background:#2f333f}
+    .primary{background:#a78bfa;color:#17131f;border-color:#a78bfa}
+    .primary:hover{background:#b9a1ff}
+    .warm{background:#ffe66d;color:#17131f;border-color:#ffe66d}
+    .warm:hover{background:#ffd633}
+    .wrap{max-width:1440px;margin:auto;padding:clamp(12px,3vw,28px)}
+    h1{font-size:clamp(29px,4vw,46px);line-height:1.05;letter-spacing:-.05em;margin:8px 0}
+    p{color:#a6aabd}
+    .hero{margin-bottom:20px}
+    .hero p{max-width:800px;font-size:13px}
+    .layout{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:20px;align-items:start}
+    .panel{min-width:0;border:1px solid var(--line);background:#191c23;border-radius:17px;padding:16px}
+    .panel h2{font-size:15px;margin:0 0 5px;color:#f2f3f7}
+    .muted,.fine{font-size:10px;color:#a6aabd;line-height:1.6}
+    .fields{display:grid;gap:10px}
+    .field{display:grid;gap:5px}
+    .field label{font-size:11px;font-weight:750;color:#f2f3f7}
+    .field input,.field textarea,.field select{width:100%;min-width:0;border:1px solid #393e4b;border-radius:9px;background:#111318;color:#f2f3f7;padding:10px;font-size:12px}
+    .field textarea{min-height:60px;resize:vertical}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .metric-edit{border:1px solid #393e4b;border-radius:10px;padding:9px;display:grid;gap:6px;background:#111318}
+    .metric-edit strong{font-size:11px;color:#f2f3f7}
+    .actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+    .notice{font-size:10px;color:#e9dcaa;border:1px solid #ffe66d45;border-radius:9px;padding:9px;background:#292313}
+    .preview{position:sticky;top:10px;padding:16px;min-height:70vh;box-shadow:0 16px 45px #0004}
+    .preview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 3px 12px}
+    .preview-head strong{font-size:12px;color:#f2f3f7}
+    .devices{display:flex;gap:4px}
+    .devices button{border:1px solid #424654;border-radius:8px;background:transparent;color:#a6aabd;padding:7px;font-size:10px}
+    .devices button[aria-pressed=true]{background:#a78bfa;color:#17131f;border-color:#a78bfa;font-weight:700}
+    .stage{height:clamp(560px,66vw,820px);position:relative;overflow:hidden;border-radius:12px;background:#171922;touch-action:pan-y}
+    .layer{position:absolute;inset:0;overflow:hidden}
+    .mock-wrap{position:absolute;inset:0;display:grid;place-items:center;padding:clamp(8px,3vw,32px)}
+    .mock{width:min(680px,96%);min-height:300px;border-radius:20px;padding:clamp(15px,4vw,40px);display:flex;flex-direction:column;justify-content:center;overflow-wrap:anywhere}
+    .before{background:linear-gradient(145deg,#281a20,#512b2d);border:1px solid #ff8a4c55}
+    .after{background:radial-gradient(ellipse at 90% 10%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 44%),linear-gradient(145deg,#171522,#2b2050 65%,#35203d);border:1px solid #b7a1ff75}
+    .mocknav{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#ffffff9a}
+    .eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:#ffd1bc;margin-top:32px}
+    .after .eyebrow{color:var(--accent)}
+    .mock h3{font-size:clamp(24px,3.6vw,48px);line-height:1.03;letter-spacing:-.05em;margin:17px 0 10px;color:#fff}
+    .mock p{font-size:11px;line-height:1.7;color:#e0dce9;max-width:500px;margin:0}
+    .mockcta{align-self:flex-start;margin-top:19px;border-radius:999px;background:var(--accent);color:#17131f;padding:10px 14px;font-size:10px;font-weight:850;text-decoration:none}
+    .before .mockcta{background:var(--orange)}
+    .shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+    .iframe-site{position:absolute;inset:0;width:100%;height:100%;border:0;background:white;display:none}
+    .metrics{position:absolute;z-index:20;top:10px;width:min(230px,calc(50% - 18px));pointer-events:none}
+    .metrics.before{left:10px}.metrics.after{right:10px}
+    .glass{background:#13111bdf;border:1px solid #ffffff29;backdrop-filter:blur(13px);border-radius:13px;padding:11px}
+    .mhead{display:flex;justify-content:space-between;gap:4px;font-size:9px;font-weight:850}
+    .badge{font-size:8px;color:#ddd3ee}
+    .metric{display:grid;grid-template-columns:1fr auto;gap:5px;margin-top:8px;font-size:9px;color:#ded9e7}
+    .metric strong{font-size:11px;color:#fff}
+    .bar{grid-column:1/-1;height:3px;background:#ffffff1b;border-radius:8px;overflow:hidden}
+    .bar span{display:block;height:100%;background:var(--green)}
+    .before .bar span{background:var(--orange)}
+    .split{position:absolute;z-index:35;top:0;bottom:0;left:50%;width:3px;transform:translateX(-50%);background:white;box-shadow:0 0 18px #fff9;pointer-events:none}
+    .knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:white;color:#17131f;font-weight:900;border:2px solid #a78bfa}
+    .range{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:40;cursor:ew-resize;margin:0}
+    .pill{position:absolute;z-index:30;bottom:10px;background:#08070bc9;padding:7px 10px;border-radius:99px;font-size:9px;letter-spacing:.12em;color:#fff}
+    .pill.left{left:10px}.pill.right{right:10px}
+    .status{font-size:10px;line-height:1.6;color:#a6aabd;padding:10px 3px}
+    .hidden{display:none!important}
+    .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#eee5ff;color:#1c1628;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:750;z-index:90;box-shadow:0 10px 30px #0005}
+    @media(max-width:850px){.layout{grid-template-columns:1fr}.preview{position:static}.stage{height:580px}}
+    @media(max-width:560px){.top{padding:11px}.wrap{padding:12px}.layout{gap:12px}.panel{padding:12px}.two,.three{grid-template-columns:1fr}.stage{height:670px}.metrics{width:calc(50% - 12px);top:6px}.metrics.before{left:6px}.metrics.after{right:6px}.glass{padding:7px}.metric{font-size:8px}.metric strong{font-size:10px}.mock{padding:14px;min-height:280px}.mock h3{font-size:26px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./index.html">✳ AGENCY AI OS</a>
+  <span class="tag">Propuesta Comercial</span>
+  <a class="btn" href="./index.html">← Constructor</a>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <span class="tag">De briefing a propuesta visual</span>
+    <h1>Una comparativa que <span style="color:var(--lilac)">habla de tu cliente.</span></h1>
+    <p>Selecciona un proyecto guardado o importa su JSON. Personaliza la narrativa, carga capturas y documenta si las métricas son reales, estimaciones, objetivos o están pendientes.</p>
+  </section>
+
+  <div class="layout">
+    <!-- COLUMNA IZQUIERDA (FORMULARIO) -->
+    <section class="panel">
+      <h2>1 · Proyecto y copy</h2>
+      <p class="muted">Se leen los proyectos del mismo navegador/origen. Para otro dispositivo, importa el JSON exportado desde Agency AI OS.</p>
+      
+      <div class="fields">
+        <div class="field"><label for="project-select">Proyecto guardado</label><select id="project-select"><option value="">Selecciona un proyecto</option></select></div>
+        <div class="field"><label for="import-json">Importar proyecto JSON</label><input id="import-json" type="file" accept=".json,application/json"></div>
+        <div class="field"><label for="client">Cliente / negocio</label><input id="client" maxlength="100" value="Cliente de demostración"></div>
+        <div class="two">
+          <div class="field"><label for="sector">Sector</label><input id="sector" maxlength="100" value="Servicios profesionales"></div>
+          <div class="field"><label for="accent">Color de marca</label><input id="accent" type="color" value="#A78BFA"></div>
+        </div>
+        <div class="field"><label for="offer">Propuesta de valor</label><textarea id="offer" maxlength="500">Una experiencia digital más clara para convertir visitas en conversaciones.</textarea></div>
+        
+        <div class="field"><label for="site-url">URL de la web actual (opcional)</label><input id="site-url" type="url" placeholder="https://www.ejemplo.com"><small class="muted">Si pones una URL, se cargará la web real en el lado "Antes".</small></div>
+        
+        <div class="seo-audit-box" id="seo-audit-panel" style="border:1px solid #393e4b;border-radius:12px;padding:12px;margin-top:12px;background:#1f222c;">
+          <strong style="font-size:12px; display:block; margin-bottom:8px; color:#f2f3f7;">Auditoría SEO de la web actual</strong>
+          <button class="btn" id="btn-run-seo" style="width:100%; margin-bottom:10px;" type="button">Ejecutar análisis SEO ↗</button>
+          <div id="seo-audit-results" style="display:none;">
+            <div class="seo-score" id="seo-score" style="font-size:24px; font-weight:900; color:var(--accent); margin-bottom:8px;">0</div>
+            <div class="seo-details" id="seo-text" style="font-size:11px; color:#a6aabd; line-height:1.5; white-space:pre-wrap;"></div>
+          </div>
+        </div>
+
+        <hr style="width:100%;border:0;border-top:1px solid #393542;margin:10px 0">
+        
+        <h2>2 · Antes y después</h2>
+        <div class="field"><label for="before-title">Titular anterior / problema</label><textarea id="before-title" maxlength="180">Una presencia digital que no explica con claridad el valor del negocio.</textarea></div>
+        <div class="field"><label for="before-copy">Descripción anterior</label><textarea id="before-copy" maxlength="400">Mensaje genérico, propuesta poco diferenciada y siguiente paso difícil de identificar.</textarea></div>
+        <div class="field"><label for="after-title">Titular propuesto</label><textarea id="after-title" maxlength="180">Una propuesta clara para dar el siguiente paso.</textarea></div>
+        <div class="field"><label for="after-copy">Descripción propuesta</label><textarea id="after-copy" maxlength="400">Una experiencia diseñada alrededor del servicio, el público y el objetivo comercial del proyecto.</textarea></div>
+        
+        <div class="two">
+          <div class="field"><label for="cta">Llamada a la acción</label><input id="cta" maxlength="80" value="Hablemos de tu proyecto"></div>
+          <div class="field"><label for="phone">WhatsApp opcional</label><input id="phone" inputmode="tel" maxlength="20" placeholder="34600111222"></div>
+        </div>
+
+        <hr style="width:100%;border:0;border-top:1px solid #393542;margin:10px 0">
+        
+        <h2>3 · Métricas y evidencia</h2>
+        <p class="muted">Los valores son opcionales. Si no hay medición, déjalos vacíos.</p>
+        <div class="three" id="metric-fields"></div>
+        <div class="field"><label for="evidence-note">Fuente, fecha y condiciones de medición</label><textarea id="evidence-note" maxlength="350" placeholder="Ej. PageSpeed Insights, URL, móvil/escritorio, fecha y condiciones…"></textarea></div>
+        <div class="notice">No confundas objetivos con resultados. Para comparar PageSpeed, registra URL, fecha, dispositivo y condiciones equivalentes.</div>
+        
+        <div class="field"><label for="upload-before">Captura anterior (opcional)</label><input id="upload-before" type="file" accept="image/*"></div>
+        <div class="field"><label for="upload-after">Captura de la propuesta (opcional)</label><input id="upload-after" type="file" accept="image/*"></div>
+        <label style="display:flex;gap:8px;align-items:center;font-size:11px;color:#a6aabd"><input id="show-metrics" type="checkbox" checked> Mostrar tarjetas de métricas</label>
+        
+        <div class="actions">
+          <button class="btn primary" id="refresh" type="button">Actualizar ↻</button>
+          <button class="btn" id="save-local" type="button">Guardar ajustes</button>
+        </div>
+        <p class="fine">El borrador se guarda en este navegador. Las capturas se incrustan en el HTML exportado y no se suben a un servidor.</p>
+      </div>
+    </section>
+
+    <!-- COLUMNA DERECHA (PREVIEW) -->
+    <section class="panel preview">
+      <div class="preview-head">
+        <div><span class="tag">Live preview</span><br><strong id="preview-title">Cliente de demostración · Antes / Después</strong></div>
+        <div class="devices">
+          <button data-device="desktop" aria-pressed="true">Escritorio</button>
+          <button data-device="tablet" aria-pressed="false">Tablet</button>
+          <button data-device="mobile" aria-pressed="false">Móvil</button>
+        </div>
+      </div>
+      
+      <div class="stage" id="stage">
+        <div class="layer" id="before-layer">
+          <iframe class="iframe-site" id="before-site" src="about:blank" style="display:none;"></iframe>
+          <img class="shot" id="before-shot" alt="Captura anterior">
+          <div class="mock-wrap" id="before-mock">
+            <article class="mock before">
+              <div class="mocknav"><b id="before-brand">NEGOCIO</b><span>Servicios · Contacto</span></div>
+              <div class="eyebrow">Situación actual</div>
+              <h3 id="before-preview-title">Una presencia digital que no explica con claridad el valor del negocio.</h3>
+              <p id="before-preview-copy"></p>
+              <span class="mockcta">Más información</span>
+            </article>
+          </div>
+        </div>
+        
+        <div class="layer" id="after-layer" style="clip-path:inset(0 50% 0 0)">
+          <img class="shot" id="after-shot" alt="Captura de la propuesta">
+          <div class="mock-wrap" id="after-mock">
+            <article class="mock after">
+              <div class="mocknav"><b id="after-brand">CLIENTE</b><span>Servicios · Contacto</span></div>
+              <div class="eyebrow">Propuesta personalizada</div>
+              <h3 id="after-preview-title">Una propuesta clara para dar el siguiente paso.</h3>
+              <p id="after-preview-copy"></p>
+              <a class="mockcta" id="after-cta" href="#">Hablemos de tu proyecto ↗</a>
+            </article>
+          </div>
+        </div>
+        
+        <div class="metrics before" id="before-metrics">
+          <div class="glass">
+            <div class="mhead"><span>ANTES</span><span class="badge" id="before-badge">Pendiente</span></div>
+            <div id="before-metric-list"></div>
+          </div>
+        </div>
+        <div class="metrics after" id="after-metrics">
+          <div class="glass">
+            <div class="mhead"><span>DESPUÉS</span><span class="badge" id="after-badge">Pendiente</span></div>
+            <div id="after-metric-list"></div>
+          </div>
+        </div>
+        
+        <div class="split" id="split"><div class="knob">↔</div></div>
+        <input class="range" id="range" type="range" min="0" max="100" value="50" aria-label="Deslizador para comparar antes y después">
+        <span class="pill left">ANTES</span>
+        <span class="pill right">DESPUÉS</span>
+      </div>
+      
+      <p class="status" id="status" aria-live="polite">Importa un proyecto o edita los campos para crear una propuesta específica.</p>
+      
+      <div class="actions">
+        <button class="btn primary" id="export-html" type="button">Exportar HTML del cliente ↧</button>
+        <button class="btn warm" id="present" type="button">Modo presentación ⛶</button>
+        <button class="btn" id="export-json" type="button">Exportar datos JSON</button>
+      </div>
+      <p class="fine">Exporta un único HTML con CSS, interacción y capturas embebidas; no requiere CDN. No es una auditoría automática de rendimiento.</p>
+    </section>
+  </div>
+</main>
+
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(()=>{"use strict";
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const PKEY = "agency-ai-os.projects.v1", LKEY = "agency-ai-os.propuesta-comercial.v1";
+const defs = [["performance","Rendimiento"],["seo","SEO"],["accessibility","Accesibilidad"]];
+let imported = [], beforeImg = "", afterImg = "", active = null;
+
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function slug(s){return String(s||"cliente").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"cliente"}
+function toast(s){const t=$("#toast");t.textContent=s;t.classList.remove("hidden");clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.add("hidden"),2300)}
+function saved(){try{const p=JSON.parse(localStorage.getItem(PKEY)||"[]");return Array.isArray(p)?p:[]}catch(e){return []}}
+function all(){return saved().concat(imported)}
+function options(){const sel=$("#project-select"),current=sel.value;sel.innerHTML='<option value="">— Seleccionar proyecto —</option>'+all().map((p,i)=>'<option value="'+esc(p.id||"import-"+i)+'">'+esc(p.name||p.projectName||p.client||"Proyecto sin nombre")+'</option>').join("");if(current&&[...sel.options].some(o=>o.value===current))sel.value=current}
+function project(id){return all().find((p,i)=>String(p.id||"import-"+i)===String(id))||null}
+
+function metricUI(){
+  const h=$("#metric-fields");
+  h.innerHTML=defs.map(([id,label])=>'<div class="metric-edit"><strong>'+label+'</strong><div class="field"><label>Antes (0–100)</label><input id="b-'+id+'" type="number" min="0" max="100" placeholder="Sin dato"></div><div class="field"><label>Estado antes</label><select id="bs-'+id+'"><option value="pending">Pendiente</option><option value="measured">Medición real</option><option value="estimate">Estimación</option></select></div><div class="field"><label>Después (0–100)</label><input id="a-'+id+'" type="number" min="0" max="100" placeholder="Sin dato"></div><div class="field"><label>Estado después</label><select id="as-'+id+'"><option value="pending">Pendiente</option><option value="measured">Medición real</option><option value="estimate">Estimación</option><option value="target">Objetivo</option></select></div></div>').join("");
+}
+function metricState(s){return ({pending:"Pendiente de medir",measured:"Medición real",estimate:"Estimación",target:"Objetivo"})[s]||"Pendiente de medir"}
+
+function data(){
+  const v=id=>$("#"+id).value.trim();
+  const d={
+    client:v("client")||"Cliente",
+    sector:v("sector"),
+    accent:/^#[0-9a-f]{6}$/i.test(v("accent"))?v("accent"):"#A78BFA",
+    offer:v("offer"),
+    siteUrl:v("site-url"),
+    beforeTitle:v("before-title"),
+    beforeCopy:v("before-copy"),
+    afterTitle:v("after-title"),
+    afterCopy:v("after-copy"),
+    cta:v("cta")||"Contactar",
+    phone:v("phone").replace(/\D/g,""),
+    note:v("evidence-note"),
+    showMetrics:$("#show-metrics").checked,
+    metrics:{},
+    images:{before:beforeImg,after:afterImg},
+    projectId:active?.id||""
+  };
+  for(const side of ["before","after"]){
+    d.metrics[side]={};
+    for(const [id,label] of defs){
+      const raw=$("#"+(side==="before"?"b-":"a-")+id).value.trim();
+      const st=$("#"+(side==="before"?"bs-":"as-")+id).value;
+      d.metrics[side][id]={label,value:raw===""?null:Math.max(0,Math.min(100,Number(raw))),status:st};
+    }
+  }
+  return d;
+}
+
+function metricHtml(ms,side){
+  return defs.map(([id,label])=>{
+    const m=ms[id],v=m.value===null?"—":String(m.value),w=m.value===null?0:m.value;
+    return '<div class="metric"><span>'+label+'</span><strong>'+v+'</strong><div class="bar"><span style="width:'+w+'%;background:'+(side==="before"?"var(--orange)":"var(--green)")+'"></span></div></div>';
+  }).join("");
+}
+
+function render(){
+  const d=data();
+  document.documentElement.style.setProperty("--accent",d.accent);
+  
+  // Lógica del Iframe para el "Antes"
+  const iframe = $("#before-site");
+  const mockBefore = $("#before-mock");
+  const shotBefore = $("#before-shot");
+  const status = $("#status");
+
+  if(d.siteUrl && !beforeImg){
+    iframe.src = d.siteUrl;
+    iframe.style.display = "block";
+    mockBefore.style.display = "none";
+    shotBefore.style.display = "none";
+    status.textContent = "Cargando web desde " + d.siteUrl + ". Si no se ve, el sitio bloquea iframes; sube una captura.";
+    iframe.onload = () => { status.textContent = "Web cargada desde " + d.siteUrl + "."; };
+  } else if (beforeImg) {
+    iframe.style.display = "none";
+    shotBefore.src = beforeImg;
+    shotBefore.style.display = "block";
+    mockBefore.style.display = "none";
+    status.textContent = "Captura anterior cargada localmente.";
+  } else {
+    iframe.style.display = "none";
+    shotBefore.style.display = "none";
+    mockBefore.style.display = "grid";
+    status.textContent = "Sin web ni captura anterior. Mostrando mockup por defecto.";
+  }
+
+  // Textos
+  $("#preview-title").textContent=d.client+" · Antes / Después";
+  $("#before-brand").textContent=d.client.toUpperCase();
+  $("#after-brand").textContent=d.client.toUpperCase();
+  $("#before-preview-title").textContent=d.beforeTitle;
+  $("#before-preview-copy").textContent=d.beforeCopy;
+  $("#after-preview-title").textContent=d.afterTitle;
+  $("#after-preview-copy").textContent=d.afterCopy||d.offer;
+  
+  const cta = $("#after-cta");
+  cta.textContent = d.cta + " ↗";
+  if(d.phone){ cta.href = "https://wa.me/"+d.phone; cta.target="_blank"; } else { cta.removeAttribute("href"); cta.removeAttribute("target"); }
+
+  // Imágenes "Después"
+  const shotAfter = $("#after-shot");
+  const mockAfter = $("#after-mock");
+  if(afterImg){
+    shotAfter.src = afterImg;
+    shotAfter.style.display = "block";
+    mockAfter.style.display = "none";
+  } else {
+    shotAfter.style.display = "none";
+    mockAfter.style.display = "grid";
+  }
+
+  // Métricas
+  for(const side of ["before","after"]){
+    const m=d.metrics[side];
+    $("#"+side+"-metric-list").innerHTML=metricHtml(m,side);
+    $("#"+side+"-badge").textContent=Object.values(m).some(x=>x.status==="measured")?"Incluye mediciones":metricState(Object.values(m)[0]?.status);
+    $("#"+side+"-metrics").classList.toggle("hidden",!d.showMetrics);
+  }
+}
+
+// COMPARADOR
+const stage=$("#stage"),paneAfter=$("#after-layer"),divider=$("#split"),handle=$("#split"),range=$("#range");
+let dragging=false;
+function setSlider(pct){
+  pct=Math.max(0,Math.min(100,pct));
+  paneAfter.style.clipPath="inset(0 0 0 "+pct+"%)";
+  divider.style.left=pct+"%";
+  handle.style.left=pct+"%";
+  range.value=pct;
+}
+function pctFromEvent(e){
+  const rect=stage.getBoundingClientRect();
+  const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+  return (x/rect.width)*100;
+}
+function onPointerDown(e){dragging=true;setSlider(pctFromEvent(e));e.preventDefault();}
+function onPointerMove(e){if(!dragging)return;setSlider(pctFromEvent(e));}
+function onPointerUp(){dragging=false;}
+
+if(window.PointerEvent){
+  range.addEventListener("pointerdown",onPointerDown);
+  window.addEventListener("pointermove",onPointerMove);
+  window.addEventListener("pointerup",onPointerUp);
+} else {
+  range.addEventListener("mousedown",onPointerDown);
+  window.addEventListener("mousemove",onPointerMove);
+  window.addEventListener("mouseup",onPointerUp);
+  range.addEventListener("touchstart",onPointerDown,{passive:false});
+  window.addEventListener("touchmove",onPointerMove,{passive:false});
+  window.addEventListener("touchend",onPointerUp);
+}
+range.addEventListener("input",e=>setSlider(e.target.value));
+
+// DISPOSITIVOS
+$$("[data-device]").forEach(b=>b.addEventListener("click",()=>{
+  const stage=$("#stage");
+  stage.style.height=b.dataset.device==="mobile"?"670px":b.dataset.device==="tablet"?"580px":"";
+  $$("[data-device]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+}));
+
+// FORMULARIO
+["client","sector","offer","site-url","before-title","before-copy","after-title","after-copy","cta","phone","evidence-note","accent"].forEach(id=>{
+  const el=$("#"+id);
+  if(el) el.addEventListener("input",render);
+});
+
+// MÉTRICAS
+$("#metric-fields").addEventListener("input",render);
+$("#metric-fields").addEventListener("change",render);
+
+// IMÁGENES
+function readImage(file, key){
+  if(!file || !file.type.startsWith("image/")) return;
+  if(file.size > 8*1024*1024) { toast("La imagen es demasiado grande (máx 8MB)"); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    if(key==="before") beforeImg = reader.result;
+    else afterImg = reader.result;
+    render();
+    toast("Captura actualizada");
+  };
+  reader.readAsDataURL(file);
+}
+$("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"before"));
+$("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
+
+// SEO
+$("#btn-run-seo").addEventListener("click", async () => {
+  const btn = $("#btn-run-seo");
+  const resDiv = $("#seo-audit-results");
+  const url = $("#site-url").value.trim();
+  
+  if(!url || !url.startsWith("http")) {
+     toast("Introduce una URL válida para analizar.");
+     return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Analizando...";
+  
+  try {
+    const res = await fetch('/api/seo-audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    
+    $("#seo-score").textContent = data.score + " / 100";
+    $("#seo-score").style.color = data.score >= 80 ? 'var(--green)' : data.score >= 50 ? 'var(--yellow)' : 'var(--orange)';
+    $("#seo-text").textContent = data.analysis;
+    resDiv.style.display = "block";
+    toast("Auditoría SEO completada.");
+  } catch(e) {
+    toast("Error en auditoría SEO: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Ejecutar análisis SEO ↗";
+  }
+});
+
+// EXPORTAR
+$("#export-html").addEventListener("click", () => {
+  const d = data();
+  const html = buildExportHtml(d);
+  const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "propuesta_" + slug(d.client) + ".html";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast("HTML exportado correctamente.");
+});
+
+function buildExportHtml(data){
+  const c = data;
+  const accent = c.accent || "#A78BFA";
+  const beforeSrc = c.images.before || "";
+  const afterSrc = c.images.after || "";
+  
+  // Lógica para el iframe en el HTML exportado (no puede usar iframes cruzados por CORS, así que solo mostramos captura o mockup)
+  let beforePane, afterPane;
+  if(beforeSrc) beforePane = '<img src="'+beforeSrc+'" alt="Sitio actual" style="width:100%;height:100%;object-fit:cover">';
+  else beforePane = '<div style="display:grid;place-items:center;height:100%;background:linear-gradient(135deg,#d9d5e2,#c9c4d6);color:#3a3546;padding:2rem;text-align:center">Vista «Antes» — captura del sitio actual.</div>';
+  
+  if(afterSrc) afterPane = '<img src="'+afterSrc+'" alt="Propuesta" style="width:100%;height:100%;object-fit:cover">';
+  else afterPane = '<div style="display:grid;place-items:center;height:100%;background:linear-gradient(135deg,#ece8ff,#ffd8bf);color:#3a3546;padding:2rem;text-align:center">Vista «Propuesta» — captura del diseño propuesto.</div>';
+
+  const metricCards = defs.map(([key,label])=>{
+    const m = c.metrics["before"][key] || {value:null,status:"pending"};
+    const m2 = c.metrics["after"][key] || {value:null,status:"pending"};
+    return '<div class="metric"><span>'+label+'</span><strong>'+(m.value===null?"—":m.value)+' → '+(m2.value===null?"—":m2.value)+'</strong></div>';
+  }).join("");
+
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Propuesta para ${esc(c.client)}</title>
+  <style>
+    :root{--accent:${accent};--bg:#f5f5f9;--text:#17151d}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+    .wrap{max-width:900px;margin:0 auto;padding:20px}
+    header{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid #ddd}
+    .hero{padding:40px 0;text-align:center}
+    .hero h1{font-size:clamp(30px,5vw,50px);margin:0 0 15px;color:var(--text)}
+    .hero p{color:#666;max-width:600px;margin:0 auto 20px}
+    .cta{display:inline-block;padding:12px 24px;background:var(--accent);color:#fff;text-decoration:none;border-radius:99px;font-weight:bold}
+    .stage{position:relative;width:100%;aspect-ratio:16/10;border-radius:20px;overflow:hidden;margin:40px 0;border:1px solid #ddd;background:#ddd;touch-action:none;user-select:none}
+    .pane{position:absolute;inset:0;overflow:hidden}
+    .pane-after{clip-path:inset(0 0 0 50%);z-index:2}
+    .pane-before{z-index:1}
+    .divider{position:absolute;top:0;bottom:0;width:3px;left:50%;transform:translateX(-50%);background:linear-gradient(var(--accent),#FF914D);z-index:6}
+    .handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid var(--accent);z-index:7;cursor:ew-resize;display:grid;place-items:center;box-shadow:0 10px 20px #0003}
+    .handle::before{content:"↔";font-weight:bold;color:var(--accent)}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:40px 0;padding:20px;background:#fff;border-radius:20px;border:1px solid #ddd}
+    .metric{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid #eee}
+    footer{text-align:center;padding:30px 0;color:#888;font-size:12px;border-top:1px solid #ddd;margin-top:40px}
+    @media(max-width:600px){.metrics{grid-template-columns:1fr}}
+  </style></head><body>
+  <div class="wrap">
+    <header><strong>${esc(c.client)}</strong><span style="font-size:12px;color:#666">Propuesta Comercial</span></header>
+    <div class="hero">
+      <h1>${esc(c.afterTitle)}</h1>
+      <p>${esc(c.afterCopy || c.offer)}</p>
+      <a class="cta" href="https://wa.me/${c.phone}" target="_blank">${esc(c.cta)} ↗</a>
+    </div>
+    <div class="stage" id="stage">
+      <div class="pane pane-before">${beforePane}</div>
+      <div class="pane pane-after" id="paneAfter">${afterPane}</div>
+      <div class="divider" id="divider"></div>
+      <div class="handle" id="handle"></div>
+    </div>
+    <div class="metrics">
+      <div><strong>Métricas ANTES</strong>${metricCards}</div>
+      <div><strong>Métricas DESPUÉS</strong>${metricCards}</div>
+    </div>
+    <footer>AGENCY / STUDIO · Propuesta conceptual personalizable · Diseño claro. Datos honestos.</footer>
+  </div>
+  <script>
+    var stage=document.getElementById("stage"),paneAfter=document.getElementById("paneAfter"),divider=document.getElementById("divider"),handle=document.getElementById("handle"),dragging=false;
+    function set(p){p=Math.max(0,Math.min(100,p));paneAfter.style.clipPath="inset(0 0 0 "+p+"%)";divider.style.left=p+"%";handle.style.left=p+"%";}
+    function pct(e){var r=stage.getBoundingClientRect();var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;return (x/r.width)*100;}
+    function down(e){dragging=true;set(pct(e));e.preventDefault();}
+    function move(e){if(!dragging)return;set(pct(e));}
+    function up(){dragging=false;}
+    if(window.PointerEvent){handle.addEventListener("pointerdown",down);stage.addEventListener("pointerdown",function(e){if(e.target===stage)down(e);});window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);}
+    else{handle.addEventListener("mousedown",down);stage.addEventListener("mousedown",function(e){if(e.target===stage)down(e);});window.addEventListener("mousemove",move);window.addEventListener("mouseup",up);handle.addEventListener("touchstart",down,{passive:false});stage.addEventListener("touchstart",function(e){if(e.target===stage)down(e);},{passive:false});window.addEventListener("touchmove",move,{passive:false});window.addEventListener("touchend",up);}
+    set(50);
+  <\/script>
+  </body></html>`;
+}
+
+// INIT
+metricUI();
+render();
+})();
+</script>
+</body>
+</html>
