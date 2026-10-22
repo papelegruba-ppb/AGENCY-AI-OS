@@ -32,3 +32,19 @@ Body JSON:
 ```
 
 La función valida el esquema HTTP/HTTPS, bloquea hosts locales/IP literales y puertos no estándar, limita redirecciones, el tiempo de espera y el número de páginas. Esta validación reduce riesgos, pero debe revisarse antes de usar el rastreador a gran escala.
+
+
+## SEO y rendimiento
+Tras la extracción inicial, el panel permite lanzar una auditoría móvil y otra de escritorio mediante la función existente `GET /api/pagespeed?url=...&strategy=mobile|desktop`. Se guardan las puntuaciones Lighthouse de rendimiento, SEO, accesibilidad y buenas prácticas, métricas de laboratorio e incidencias priorizadas. Los resultados pueden variar entre ejecuciones; los datos de laboratorio no son una garantía de la experiencia de todos los usuarios.
+
+## Copiloto IA
+El panel de chat usa `POST /api/project-assistant`, que llama a OpenAI Responses API desde el servidor. Para habilitarlo, configura en Cloudflare Pages → Settings → Environment variables:
+- `OPENAI_API_KEY`: clave secreta de la API de OpenAI.
+- `OPENAI_MODEL` (opcional): modelo habilitado para el proyecto; si se omite, usa `gpt-6-luna`.
+
+No pongas la clave en HTML, JavaScript del navegador ni en Git. Las solicitudes a la API pueden generar costes según el modelo y el uso; la API no debe asumirse incluida en una suscripción de ChatGPT. El panel muestra un error de configuración si falta la clave.
+
+El copiloto recibe el briefing y un resumen limitado de la auditoría, recomienda prioridades y puede proponer cambios en campos editables. Los cambios requieren que el usuario pulse **Aplicar al briefing**; después debe revisar y guardar el proyecto. En esta fase no modifica directamente el sitio original del cliente, no despliega cambios públicos ni ejecuta código arbitrario.
+
+## Alcance de esta versión
+La auditoría y el copiloto son herramientas de apoyo, no sustituyen la revisión profesional. Para editar el sitio original, desplegarlo o aplicar cambios estructurales al código generado se requiere una fase posterior con versiones, previsualización, comparación y aprobación explícita.
