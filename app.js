@@ -51,7 +51,8 @@
       color: /^#[0-9a-f]{6}$/i.test(fd.get("color") || "") ? fd.get("color") : "#8B5CF6",
       phone: String(fd.get("phone") || "").replace(/\D/g,""), requirements: String(fd.get("requirements") || "").trim(),
       domain: String(fd.get("domain") || "").trim(), deliverables: fd.getAll("deliverables"),
-      websiteAudit: currentWebsiteAudit,\n      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
+      websiteAudit: currentWebsiteAudit,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
     };
   }
   function makePlan(p) {
@@ -301,7 +302,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       button.disabled = false; button.textContent = "Analizar web ↗";
     }
   }
-\n  $(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
+
+  $(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
   $("#top-new").addEventListener("click",()=>currentView("builder"));
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
