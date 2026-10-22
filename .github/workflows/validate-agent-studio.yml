@@ -1,0 +1,45 @@
+name: Validate Agent Studio
+
+on:
+  push:
+    branches:
+      - main
+      - feature/orquestador-multiagente
+  pull_request:
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check Pages Functions syntax
+        run: node --check functions/api/agent-orchestrator.js
+      - name: Check Agent Studio inline JavaScript
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.in_script = False; self.parts = []
+              def handle_starttag(self, tag, attrs):
+                  if tag == 'script': self.in_script = True
+              def handle_endtag(self, tag):
+                  if tag == 'script': self.in_script = False
+              def handle_data(self, data):
+                  if self.in_script: self.parts.append(data)
+          parser = Scripts()
+          parser.feed(Path('agent-studio.html').read_text(encoding='utf-8'))
+          Path('/tmp/agent-studio-inline.js').write_text('\n'.join(parser.parts), encoding='utf-8')
+          if not parser.parts: raise SystemExit('No inline script found')
+          PY
+          node --check /tmp/agent-studio-inline.js
+      - name: Check expected safety controls
+        run: |
+          grep -q 'OPENAI_API_KEY' functions/api/agent-orchestrator.js
+          grep -q 'approvalRequests' functions/api/agent-orchestrator.js
+          grep -q 'agent-studio.html' index.html
+          grep -q 'localStorage' agent-studio.html
