@@ -31,3 +31,10 @@
 - https://developers.google.com/speed/docs/insights/v5/get-started
 - https://search.google.com/search-console/about
 - https://www.semrush.com/lp/seo-ideas/en/
+
+## Analizador SEO con DeepSeek (Nuevo)
+- `seo.html` incluye un segundo motor de análisis SEO basado en DeepSeek (API compatible con OpenAI).
+- Extrae el título, meta descripción, H1, imágenes sin ALT y calcula una puntuación de 0 a 100.
+- Requiere configurar `DEEPSEEK_API_KEY` en Cloudflare Pages (Settings > Variables and Secrets).
+- Si no hay saldo en DeepSeek, el sistema muestra un error controlado ("Insufficient Balance") en lugar de datos falsos.
+- El análisis de texto generado por IA se muestra en un bloque separado y etiquetado como "Análisis del Experto".
