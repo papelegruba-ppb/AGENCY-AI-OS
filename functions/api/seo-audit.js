@@ -1,13 +1,26 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
 
+  // Cabeceras para permitir pruebas desde local (CORS)
+  const corsHeaders = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+
+  // Manejo de la petición preflight (CORS)
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const body = await request.json();
     const targetUrl = body.url;
 
     if (!targetUrl || !targetUrl.startsWith('http')) {
       return new Response(JSON.stringify({ error: 'URL inválida.' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' }
+        status: 400, headers: corsHeaders
       });
     }
 
@@ -17,7 +30,7 @@ export async function onRequestPost(context) {
     });
     const html = await response.text();
 
-    // 2. Extraer datos SEO reales (Análisis Completo)
+    // 2. Extraer datos SEO reales
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const title = titleMatch ? titleMatch[1].trim() : '';
     
@@ -34,7 +47,7 @@ export async function onRequestPost(context) {
     const hasOgDesc = /<meta[^>]*property=["']og:description["'][^>]*>/i.test(html);
     const hasCanonical = /<link[^>]*rel=["']canonical["'][^>]*>/i.test(html);
 
-    // 3. Calcular Puntuación SEO Real (Sin IA)
+    // 3. Calcular Puntuación SEO (Matemáticas)
     let score = 100;
     if (!title) score -= 20;
     else if (title.length < 30 || title.length > 60) score -= 5;
@@ -46,13 +59,8 @@ export async function onRequestPost(context) {
     if (!hasCanonical) score -= 5;
     if (score < 0) score = 0;
 
-    // 4. Simulamos la respuesta de la IA (Modo Pruebas)
-    const isSimulation = true;
-    let analysisText = "";
-
-    if (isSimulation) {
-      analysisText = `[MODO PRUEBA - SIN COSTE DE API]\n\nAnálisis para ${targetUrl}:\n- Título: "${title}" (${title.length} caracteres).\n- Meta descripción: "${description}" (${description.length} caracteres).\n- H1: ${h1Matches.length} etiquetas.\n- H2: ${h2Matches.length} etiquetas.\n- Imágenes sin ALT: ${imagesWithoutAlt} de ${imgTags.length}.\n- Open Graph (Redes): ${hasOgTitle && hasOgDesc ? 'Sí' : 'No'}.\n- Canonical: ${hasCanonical ? 'Sí' : 'No'}.\n\nPara ver el análisis real generado por IA, recarga saldo en tu proveedor (DeepSeek u OpenAI) y quita el modo simulación.`;
-    }
+    // 4. Simulación de IA (Modo Pruebas)
+    const analysisText = `[MODO PRUEBA - SIN COSTE DE API]\n\nAnálisis para ${targetUrl}:\n- Título: "${title}" (${title.length} caracteres).\n- Meta descripción: "${description}" (${description.length} caracteres).\n- H1: ${h1Matches.length} etiquetas.\n- H2: ${h2Matches.length} etiquetas.\n- Imágenes sin ALT: ${imagesWithoutAlt} de ${imgTags.length}.\n- Open Graph (Redes): ${hasOgTitle && hasOgDesc ? 'Sí' : 'No'}.\n- Canonical: ${hasCanonical ? 'Sí' : 'No'}.\n\nPara ver el análisis real generado por IA, recarga saldo en tu proveedor (DeepSeek u OpenAI) y quita el modo simulación.`;
 
     // 5. Devolver los datos
     return new Response(JSON.stringify({
@@ -69,13 +77,12 @@ export async function onRequestPost(context) {
       },
       analysis: analysisText
     }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      status: 200, headers: corsHeaders
     });
 
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { 'Content-Type': 'application/json' }
+      status: 500, headers: corsHeaders
     });
   }
 }
