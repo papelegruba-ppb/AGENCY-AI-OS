@@ -82,6 +82,8 @@
       bindUpload("uploadBefore",beforePhoto,beforeMock,"before");bindUpload("uploadAfter",afterPhoto,afterMock,"after");
       document.getElementById("reset").addEventListener("click",()=>{if(beforeUrl)URL.revokeObjectURL(beforeUrl);if(afterUrl)URL.revokeObjectURL(afterUrl);beforeUrl=afterUrl=null;beforePhoto.removeAttribute("src");afterPhoto.removeAttribute("src");beforePhoto.style.display=afterPhoto.style.display="none";beforeMock.style.display=afterMock.style.display="grid";document.getElementById("uploadBefore").value="";document.getElementById("uploadAfter").value="";setPosition(50);status.textContent="Vista ilustrativa. Las puntuaciones son ejemplos visuales, no resultados auditados.";});
       setPosition(50);
+      window.addEventListener("message",function(e){if(e.origin!==location.origin||!e.data||e.data.type!=="AGENCY_ACTIVE_PROJECT")return;const p=e.data.project;if(!p)return;document.title="Demo Impacto · "+(p.name||"Proyecto");const h=document.querySelector("h1");if(h)h.textContent="Comparativa de "+(p.name||"tu proyecto");status.textContent="Proyecto activo: "+(p.name||"Sin nombre")+". Carga las capturas reales para comparar; las métricas ilustrativas no son resultados auditados.";});
+      try{const pid=localStorage.getItem("agency-ai-os.active-project.v1"),ps=JSON.parse(localStorage.getItem("agency-ai-os.projects.v1")||"[]"),p=ps.find(x=>x.id===pid);if(p){document.title="Demo Impacto · "+p.name;const h=document.querySelector("h1");if(h)h.textContent="Comparativa de "+p.name;status.textContent="Proyecto activo: "+p.name+". Carga las capturas reales para comparar; las métricas ilustrativas no son resultados auditados.";}}catch(e){}
     })();
   </script>
 </body>
