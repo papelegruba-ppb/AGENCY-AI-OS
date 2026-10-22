@@ -277,6 +277,33 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
   $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
+  $("#import-website").addEventListener("click", async () => {
+    const url = $("#domain").value.trim();
+    const status = $("#website-import-status");
+    if (!url) { status.textContent = "Introduce primero la URL pública de la web."; $("#domain").focus(); return; }
+    let parsed;
+    try { parsed = new URL(url); if (!["http:","https:"].includes(parsed.protocol)) throw new Error(); }
+    catch (_) { status.textContent = "La URL debe empezar por https:// o http://."; return; }
+    const button = $("#import-website"); button.disabled = true; status.textContent = "Leyendo la web pública y extrayendo sus datos…";
+    try {
+      const response = await fetch("/api/site-audit", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({url:parsed.href}),signal:AbortSignal.timeout(45000)});
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "No se pudo leer esta web.");
+      const first = data.pages && data.pages[0] || data;
+      const fill = (id, value) => { const el=$("#"+id); if(el && value && !el.value.trim()) el.value=value; };
+      fill("projectName", first.businessName || first.title || parsed.hostname.replace(/^www\./,""));
+      fill("sector", (first.headings || []).slice(0,3).join(" · ") || first.title || "");
+      fill("offer", first.description || (first.content || "").slice(0,900));
+      fill("requirements", (first.headings || []).slice(0,15).join(", "));
+      fill("audience", "Pendiente de confirmar: la web pública no identifica necesariamente al cliente ideal.");
+      fill("goal", "Pendiente de confirmar contigo; la web no demuestra por sí sola el objetivo comercial actual.");
+      if(first.phones && first.phones.length) fill("phone", first.phones[0].replace(/\D/g,""));
+      if(first.colors && first.colors.length) fill("color", first.colors[0]);
+      status.textContent = "Importación completada. Se han rellenado los campos disponibles sin sobrescribir los que ya habías escrito. Revisa audiencia y objetivo antes de guardar.";
+      notify("Briefing preliminar importado desde la web.");
+    } catch (err) { status.textContent = err.message || "No se pudo importar la web."; }
+    finally { button.disabled = false; }
+  });
   $("#project-form").addEventListener("submit",e=>{
     e.preventDefault();
     const form=e.currentTarget;
