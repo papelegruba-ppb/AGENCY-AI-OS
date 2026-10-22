@@ -1,5 +1,0 @@
-# Configuración inicial opcional para Cloudflare Pages.
-# Para el despliegue estático no necesitas ejecutar un build.
-name = "agency-ai-os"
-pages_build_output_dir = "."
-compatibility_date = "2026-10-21"
