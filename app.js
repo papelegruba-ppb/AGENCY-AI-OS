@@ -5,7 +5,7 @@
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
-  let activeProjectId = null;
+  let activeProjectId = (() => { try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || null; } catch (_) { return null; } })();
   let toastTimer;
 
   function loadProjects() {
@@ -34,12 +34,21 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","agent-studio":"Agent Studio"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","agent-studio":"Agent Studio","modo-rapido":"Modo rápido","agente-8":"Agente 8","demo-impacto":"Demo Impacto",seo:"SEO & Performance"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
     if (view === "deliverables") renderDeliverables();
     if (view === "agent-studio") { try { localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId || ""); } catch (_) {} const frame = $("#agent-studio-frame"); if (frame && frame.contentWindow) frame.contentWindow.postMessage({type:"AGENCY_ACTIVE_PROJECT", projectId:activeProjectId || ""}, location.origin); }
+
+    try {
+      localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId || "");
+      const active = projects.find(p => p.id === activeProjectId) || null;
+      ["agent-studio","modo-rapido","agente-8","demo-impacto","seo"].forEach(name => {
+        const frame = document.querySelector("#frame-" + name) || (name === "agent-studio" ? document.querySelector("#agent-studio-frame") : null);
+        if (frame && frame.contentWindow) frame.contentWindow.postMessage({type:"AGENCY_ACTIVE_PROJECT",projectId:activeProjectId||"",project:active},location.origin);
+      });
+    } catch (_) {}
     window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
   }
   function getFormData(form) {
@@ -240,6 +249,31 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
   $("#top-new").addEventListener("click",()=>currentView("builder"));
+  const activeSelector = $("#active-project-select");
+  if (activeSelector) {
+    activeSelector.innerHTML = '<option value="">Selecciona proyecto…</option>' + projects.map(p => '<option value="' + esc(p.id) + '">' + esc(p.name || "Proyecto sin nombre") + '</option>').join("");
+    if (activeProjectId && !projects.some(p => p.id === activeProjectId)) activeProjectId = null;
+    activeSelector.value = activeProjectId || "";
+    activeSelector.addEventListener("change", e => {
+      activeProjectId = e.target.value || null;
+      try { localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId || ""); } catch (_) {}
+      renderProjects(); renderDeliverables(); currentView("dashboard");
+    });
+  }
+  ["agent-studio","modo-rapido","agente-8","demo-impacto","seo"].forEach(name => {
+    const frame = $("#frame-" + name) || (name === "agent-studio" ? $("#agent-studio-frame") : null);
+    if (frame) frame.addEventListener("load", () => {
+      try {
+        const doc = frame.contentDocument;
+        if (doc && !doc.getElementById("agency-shell-theme")) {
+          const style = doc.createElement("style"); style.id = "agency-shell-theme";
+          style.textContent = "body{background:#f6f4f9!important;color:#19151f!important;font-family:Inter,system-ui,sans-serif!important}.top,.back{display:none!important}.shell{max-width:none!important;padding:12px!important;margin:0!important}";
+          doc.head.appendChild(style);
+        }
+        frame.contentWindow.postMessage({type:"AGENCY_ACTIVE_PROJECT",projectId:activeProjectId||"",project:projects.find(p=>p.id===activeProjectId)||null},location.origin);
+      } catch (_) {}
+    });
+  });
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
   $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
