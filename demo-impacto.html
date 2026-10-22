@@ -8,8 +8,6 @@
   <meta property="og:title" content="Agency AI OS — Demo Impacto">
   <meta property="og:description" content="Compara la experiencia anterior con una nueva propuesta digital.">
   <title>Demo Impacto · Agency AI OS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{ink:"#111116",lilac:"#B7A1FF",tangerine:"#FF8A4C",lemon:"#FFE66D"}}}};</script>
   <style>
     :root{color-scheme:dark;--ink:#111116;--lilac:#b7a1ff;--orange:#ff8a4c;--green:#63f0a7}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 8%,#b7a1ff25,transparent 34%),radial-gradient(ellipse at 88% 90%,#ff8a4c1b,transparent 32%),var(--ink);color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -35,7 +33,35 @@
     .upload{cursor:pointer}.upload input{display:none}
     @media(max-width:640px){.stage{height:680px;min-height:680px}.metrics{top:10px;width:calc(50% - 16px)}.metrics.before{left:8px}.metrics.after{right:8px}.metrics .glass{padding:10px!important}.metric{font-size:9px;gap:5px}.metric strong{font-size:11px}.mock{width:98%;min-height:310px;padding:1rem}.layer-inner{padding:.5rem}.knob{width:42px;height:42px}.pill-label{bottom:10px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
-  </style>
+  
+    /* Agency AI OS shared light workspace theme and contrast fixes */
+    :root{color-scheme:light;--ink:#f5f5f9;--lilac:#a678ff;--orange:#ff8a35;--green:#21885c}
+    body{background:radial-gradient(ellipse at 82% 0,#f0e8ff 0,transparent 30%),#f5f5f9!important;color:#17151d!important}
+    .glass{background:#fff;border:1px solid #e7e6ef;box-shadow:0 8px 24px #28173e0d;backdrop-filter:none}
+    .btn{appearance:none;min-height:40px;border:1px solid #ded6ed;border-radius:10px;background:#fff;color:#292433!important;padding:10px 15px;font:700 12px/1.3 Inter,ui-sans-serif,system-ui,sans-serif;text-shadow:none;opacity:1}
+    .btn.primary{background:#a678ff!important;border-color:#a678ff!important;color:#17151d!important}
+    .btn.secondary{background:#fff!important;border-color:#d9c9f7!important;color:#292433!important}
+    .btn:focus-visible{outline:3px solid #8a5af1;outline-offset:3px}
+    .tag,.eyebrow{color:#7542e8}
+    .metrics{width:min(230px,calc(50% - 24px))}
+    .metric{color:#514b5d}
+    .metric strong{color:#17151d}
+    .badge{color:#696777}
+    .stage{height:clamp(300px,55vw,620px);min-height:0;max-height:620px;overflow:hidden}
+    .layer-inner{padding:clamp(8px,2vw,24px)}
+    .mock{width:min(680px,94%);min-height:0;max-height:90%;overflow:auto;padding:clamp(14px,3vw,32px)}
+    .mock-before{background:linear-gradient(145deg,#fff0e6,#ffe0c9);border-color:#ffb67c}
+    .mock-after{background:radial-gradient(ellipse at 90% 10%,#a678ff24,transparent 42%),linear-gradient(145deg,#fff,#f0e7ff 65%,#fff0dc);border-color:#d8c5ff}
+    .mock p{color:#555064}
+    .mock .eyebrow{color:#7542e8}
+    .pill-label{color:#fff;background:#17151ddd}
+    .split{background:#fff;box-shadow:0 0 18px #a678ff55}
+    .knob{border:2px solid #a678ff}
+    main{max-width:1440px;margin:0 auto;padding-left:clamp(12px,2.5vw,32px)!important;padding-right:clamp(12px,2.5vw,32px)!important}
+    .stage-wrap{min-width:0;max-width:100%}
+    img,iframe{max-width:100%}
+    @media(max-width:640px){.stage{height:clamp(270px,78vw,430px);max-height:430px}.metrics{top:8px;width:calc(50% - 14px)}.metrics.before{left:7px}.metrics.after{right:7px}.metrics .glass{padding:8px!important}.metric{font-size:9px;gap:5px}.metric strong{font-size:11px}.mock{width:96%;padding:12px}.layer-inner{padding:4px}.knob{width:40px;height:40px}.pill-label{bottom:8px;font-size:9px;padding:7px 9px}}
+</style>
 </head>
 <body>
   <header class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-5 md:px-8">
@@ -64,7 +90,7 @@
         <div class="split" id="split" aria-hidden="true"><div class="knob">↔</div></div><input id="range" class="range" type="range" min="0" max="100" value="50" aria-label="Comparar la versión anterior con la nueva">
         <span class="pill-label left-4">ANTES</span><span class="pill-label right-4">DESPUÉS</span>
       </div>
-      <div class="flex flex-col gap-3 border-t border-white/10 p-4 md:flex-row md:items-center md:justify-between md:px-6"><p id="status" class="max-w-3xl text-xs leading-5 text-white/45" aria-live="polite">Sin mediciones verificadas. Las puntuaciones aparecerán únicamente al recibir resultados reales de Lighthouse.</p><button id="reset" class="btn secondary">Restablecer comparativa</button></div>
+      <div class="flex flex-col gap-3 border-t border-white/10 p-4 md:flex-row md:items-center md:justify-between md:px-6"><p id="status" class="max-w-3xl text-xs leading-5 text-white/45" aria-live="polite">Sin mediciones verificadas. Las puntuaciones aparecerán únicamente al recibir resultados reales de Lighthouse.</p><button id="reset" class="btn secondary" type="button">Restablecer comparativa</button></div>
     </section>
     <section class="mt-6 grid gap-3 md:grid-cols-3"><article class="glass rounded-2xl p-5"><span class="text-2xl text-lilac">✳</span><h3 class="mt-3 font-semibold">Impacto a primera vista</h3><p class="mt-2 text-sm leading-6 text-white/55">Una narrativa visual para explicar el valor de la propuesta sin depender de tecnicismos.</p></article><article class="glass rounded-2xl p-5"><span class="text-2xl text-orange-300">⌁</span><h3 class="mt-3 font-semibold">Capturas del cliente</h3><p class="mt-2 text-sm leading-6 text-white/55">Las imágenes se cargan localmente en el navegador y no se suben a ningún servidor.</p></article><article class="glass rounded-2xl p-5"><span class="text-2xl text-emerald-300">◎</span><h3 class="mt-3 font-semibold">Lista para personalizar</h3><p class="mt-2 text-sm leading-6 text-white/55">Un único HTML, adaptable a móvil y con estilos y lógica propios del módulo.</p></article></section>
     <p class="mx-auto mt-7 max-w-3xl text-center text-xs leading-5 text-white/35">Las vistas previas muestran la web existente y una propuesta de diseño. Las métricas se mantienen como «Sin medir» hasta disponer de mediciones Lighthouse reales para ambas versiones.</p>
