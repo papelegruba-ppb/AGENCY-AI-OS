@@ -178,6 +178,7 @@
     const plan = p.plan || makePlan(p);
     const selector = `<div class="panel deliverable-project-select"><label for="deliverable-select">Proyecto</label><select id="deliverable-select">${projects.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select><button class="button button-primary" id="export-package">Exportar paquete completo ↧</button></div>`;
     const cards = [
+      ...(p.websiteAudit ? [deliverableCard("Auditoría de la web original","00 · IMPORT","Datos extraídos, páginas, textos, imágenes, contactos y redes detectados.",JSON.stringify(p.websiteAudit,null,2),"website-audit.json")] : []),
       deliverableCard("Marketing & copy","01 · COPY","Propuesta de valor, titulares, CTA y secciones.",JSON.stringify(plan.copy,null,2),`${slugify(p.name)}-copy.json`),
       deliverableCard("Guía UX/UI","02 · DESIGN","Dirección visual, paleta, tipografía y responsive.",JSON.stringify(plan.ux,null,2),`${slugify(p.name)}-design.json`),
       deliverableCard("Motion UX","03 · MOTION","Animaciones, disparadores y reglas de accesibilidad.",JSON.stringify(plan.motion,null,2),`${slugify(p.name)}-motion.json`),
