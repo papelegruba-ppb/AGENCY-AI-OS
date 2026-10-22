@@ -512,4 +512,517 @@
   }
 
   function isValidPhone(raw){
-    const
+    const cleaned = String(raw||"").replace(/[\s().-]/g,"");
+    return /^\+[1-9]\d{6,14}$/.test(cleaned);
+  }
+
+  function waLink(phone){
+    if(!isValidPhone(phone)) return "";
+    return "https://wa.me/" + String(phone).replace(/[^\d]/g,"");
+  }
+
+  /* =========================================================
+     ESTADO
+     ========================================================= */
+  const state = {
+    device: "desktop",
+    slider: 50,
+    metrics: {
+      performance: {score:"", status:"pendiente"},
+      seo:         {score:"", status:"pendiente"},
+      a11y:        {score:"", status:"pendiente"}
+    },
+    client: {
+      name:"", sector:"", title:"", desc:"", cta:"",
+      phone:"", color:"#7554DB",
+      beforeData:"", afterData:"",
+      source:""
+    },
+    audit: {url:"", date:"", tool:"", device:""}
+  };
+
+  const METRIC_DEFS = [
+    {key:"performance", label:"Rendimiento", sub:"PageSpeed / Lighthouse",
+     icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>'},
+    {key:"seo", label:"SEO técnico", sub:"Lighthouse SEO",
+     icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'},
+    {key:"a11y", label:"Accesibilidad", sub:"Lighthouse Accessibility",
+     icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M5 9h14M12 9v6m0 0-3 6m3-6 3 6"/></svg>'}
+  ];
+
+  const STATUS_LABELS = {
+    pendiente:"Pendiente de medir",
+    real:"Medición real",
+    estimacion:"Estimación",
+    objetivo:"Objetivo"
+  };
+  const STATUS_CLASS = {
+    pendiente:"status-pendiente",
+    real:"status-real",
+    estimacion:"status-estimacion",
+    objetivo:"status-objetivo"
+  };
+
+  /* =========================================================
+     RENDER MÉTRICAS
+     ========================================================= */
+  function renderMetrics(){
+    const grid = $("#metricsGrid");
+    grid.innerHTML = METRIC_DEFS.map(def => {
+      const m = state.metrics[def.key];
+      const display = m.score === "" ? '<span class="score-display empty">Sin medir</span>'
+                                     : '<span class="score-display">' + escapeHtml(m.score) + '</span>';
+      return (
+        '<article class="metric-card glass" data-metric="' + def.key + '">' +
+          '<div class="metric-top">' +
+            '<span class="metric-icon" aria-hidden="true">' + def.icon + '</span>' +
+            '<div><h3>' + def.label + '</h3><p class="small" style="margin:0;color:var(--gris);font-size:.75rem;">' + def.sub + '</p></div>' +
+          '</div>' +
+          '<div>' + display + '</div>' +
+          '<div>' +
+            '<label class="small" for="score-' + def.key + '">Puntuación (0–100)</label>' +
+            '<input class="score-input" type="number" min="0" max="100" step="1" id="score-' + def.key + '" data-score="' + def.key + '" value="' + escapeAttr(m.score) + '" placeholder="—">' +
+          '</div>' +
+          '<div>' +
+            '<label class="small" for="status-' + def.key + '">Estado</label>' +
+            '<select id="status-' + def.key + '" data-status="' + def.key + '">' +
+              Object.keys(STATUS_LABELS).map(k =>
+                '<option value="' + k + '"' + (m.status===k?" selected":"") + '>' + STATUS_LABELS[k] + '</option>'
+              ).join("") +
+            '</select>' +
+          '</div>' +
+          '<span class="status-pill ' + STATUS_CLASS[m.status] + '">' + STATUS_LABELS[m.status] + '</span>' +
+        '</article>'
+      );
+    }).join("");
+
+    $$("[data-score]").forEach(inp => {
+      inp.addEventListener("input", () => {
+        const key = inp.dataset.score;
+        const raw = inp.value.trim();
+        if(raw === ""){ state.metrics[key].score = ""; }
+        else {
+          const n = Number(raw);
+          if(Number.isFinite(n) && n >= 0 && n <= 100){ state.metrics[key].score = String(Math.round(n)); }
+          else { state.metrics[key].score = ""; }
+        }
+        renderMetrics();
+      });
+    });
+
+    $$("[data-status]").forEach(sel => {
+      sel.addEventListener("change", () => {
+        state.metrics[sel.dataset.status].status = sel.value;
+        renderMetrics();
+      });
+    });
+  }
+
+  /* =========================================================
+     COMPARADOR
+     ========================================================= */
+  const stage = $("#stage");
+  const paneAfter = $("#paneAfter");
+  const divider = $("#divider");
+  const handle = $("#handle");
+  let dragging = false;
+
+  function setSlider(pct){
+    pct = Math.max(0, Math.min(100, pct));
+    state.slider = pct;
+    paneAfter.style.clipPath = "inset(0 0 0 " + pct + "%)";
+    divider.style.left = pct + "%";
+    handle.style.left = pct + "%";
+    handle.setAttribute("aria-valuenow", String(Math.round(pct)));
+    handle.setAttribute("aria-valuetext", Math.round(pct) + "% de la propuesta visible");
+  }
+
+  function pctFromEvent(e){
+    const rect = stage.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    return (x / rect.width) * 100;
+  }
+
+  function onPointerDown(e){
+    dragging = true;
+    stage.setPointerCapture && e.pointerId != null && stage.setPointerCapture(e.pointerId);
+    setSlider(pctFromEvent(e));
+    e.preventDefault();
+  }
+  function onPointerMove(e){
+    if(!dragging) return;
+    setSlider(pctFromEvent(e));
+  }
+  function onPointerUp(){ dragging = false; }
+
+  if(window.PointerEvent){
+    handle.addEventListener("pointerdown", onPointerDown);
+    stage.addEventListener("pointerdown", (e) => { if(e.target === stage || e.target.classList.contains("pane") || e.target.classList.contains("fallback")) onPointerDown(e); });
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  } else {
+    handle.addEventListener("mousedown", onPointerDown);
+    stage.addEventListener("mousedown", (e) => { if(e.target === stage) onPointerDown(e); });
+    window.addEventListener("mousemove", onPointerMove);
+    window.addEventListener("mouseup", onPointerUp);
+    handle.addEventListener("touchstart", onPointerDown, {passive:false});
+    stage.addEventListener("touchstart", (e) => { if(e.target === stage) onPointerDown(e); }, {passive:false});
+    window.addEventListener("touchmove", onPointerMove, {passive:false});
+    window.addEventListener("touchend", onPointerUp);
+  }
+
+  handle.addEventListener("keydown", (e) => {
+    const step = e.shiftKey ? 10 : 2;
+    if(e.key === "ArrowLeft"){ setSlider(state.slider - step); e.preventDefault(); }
+    if(e.key === "ArrowRight"){ setSlider(state.slider + step); e.preventDefault(); }
+    if(e.key === "Home"){ setSlider(0); e.preventDefault(); }
+    if(e.key === "End"){ setSlider(100); e.preventDefault(); }
+  });
+
+  $$(".device-tabs button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $$(".device-tabs button").forEach(b => b.setAttribute("aria-pressed", "false"));
+      btn.setAttribute("aria-pressed", "true");
+      state.device = btn.dataset.device;
+      stage.dataset.device = state.device;
+    });
+  });
+
+  function applyImages(){
+    const before = $("#fbBefore");
+    const after = $("#fbAfter");
+    const oldBefore = $("#paneBefore img");
+    const oldAfter = $("#paneAfter img");
+    if(oldBefore) oldBefore.remove();
+    if(oldAfter) oldAfter.remove();
+
+    if(state.client.beforeData){
+      const img = document.createElement("img");
+      img.src = state.client.beforeData;
+      img.alt = "Captura del sitio actual";
+      $("#paneBefore").insertBefore(img, before);
+      before.style.display = "none";
+    } else {
+      before.style.display = "";
+    }
+    if(state.client.afterData){
+      const img = document.createElement("img");
+      img.src = state.client.afterData;
+      img.alt = "Captura de la propuesta";
+      $("#paneAfter").insertBefore(img, after);
+      after.style.display = "none";
+    } else {
+      after.style.display = "";
+    }
+  }
+
+  /* =========================================================
+     FORM + VISTA PREVIA
+     ========================================================= */
+  function updatePreview(){
+    $("#lpBrand").textContent = state.client.name || "Nombre del cliente";
+    $("#lpSector").textContent = state.client.sector || "Sector o especialidad";
+    $("#lpTitle").textContent = state.client.title || "Titular comercial propuesto";
+    $("#lpDesc").textContent = state.client.desc || "Texto descriptivo del servicio o propuesta de valor.";
+    const cta = $("#lpCta");
+    cta.textContent = state.client.cta || "Texto CTA";
+    cta.style.background = state.client.color;
+    $("#livePreview").style.setProperty("--accent", state.client.color);
+
+    const thumb = $("#lpThumb");
+    if(state.client.afterData){
+      thumb.innerHTML = '<img src="' + escapeAttr(state.client.afterData) + '" alt="Vista previa de la propuesta">';
+    } else {
+      thumb.textContent = "Sin captura de la propuesta";
+    }
+
+    const wa = $("#hero-wa");
+    const link = waLink(state.client.phone);
+    if(link){ wa.href = link; wa.removeAttribute("aria-disabled"); }
+    else { wa.href = "#"; wa.setAttribute("aria-disabled","true"); }
+
+    const phoneError = $("#phoneError");
+    if(state.client.phone && !isValidPhone(state.client.phone)){
+      phoneError.textContent = "Introduce un número con prefijo internacional, p. ej. +34600123456.";
+    } else { phoneError.textContent = ""; }
+  }
+
+  function bindText(id, key){
+    const el = $(id);
+    el.addEventListener("input", () => {
+      state.client[key] = el.value;
+      updatePreview();
+    });
+  }
+  bindText("#fClient","name");
+  bindText("#fSector","sector");
+  bindText("#fTitle","title");
+  bindText("#fDesc","desc");
+  bindText("#fCta","cta");
+  bindText("#fPhone","phone");
+  bindText("#fSource","source");
+
+  $("#fColor").addEventListener("input", (e) => {
+    state.client.color = e.target.value;
+    updatePreview();
+  });
+
+  function readImage(file, errEl, key){
+    errEl.textContent = "";
+    if(!file) { state.client[key] = ""; applyImages(); updatePreview(); return; }
+    if(!/^image\//.test(file.type)){
+      errEl.textContent = "El archivo debe ser una imagen.";
+      return;
+    }
+    if(file.size > MAX_IMAGE_BYTES){
+      errEl.textContent = "La imagen supera los 8 MB. Usa una versión más ligera.";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.client[key] = String(reader.result);
+      applyImages();
+      updatePreview();
+    };
+    reader.onerror = () => { errEl.textContent = "No se pudo leer el archivo."; };
+    reader.readAsDataURL(file);
+  }
+
+  $("#fBefore").addEventListener("change", (e) => readImage(e.target.files[0], $("#beforeError"), "beforeData"));
+  $("#fAfter").addEventListener("change", (e) => readImage(e.target.files[0], $("#afterError"), "afterData"));
+
+  /* =========================================================
+     AUDITORÍA
+     ========================================================= */
+  function bindAudit(id, key){
+    const el = $(id);
+    el.addEventListener("input", () => { state.audit[key] = el.value; });
+  }
+  bindAudit("#auditUrl","url");
+  bindAudit("#auditDate","date");
+  bindAudit("#auditTool","tool");
+  bindAudit("#auditDevice","device");
+
+  /* =========================================================
+     RESET
+     ========================================================= */
+  $("#btnReset").addEventListener("click", () => {
+    state.client = {name:"",sector:"",title:"",desc:"",cta:"",phone:"",color:"#7554DB",beforeData:"",afterData:"",source:""};
+    state.audit = {url:"",date:"",tool:"",device:""};
+    state.metrics = {
+      performance:{score:"",status:"pendiente"},
+      seo:{score:"",status:"pendiente"},
+      a11y:{score:"",status:"pendiente"}
+    };
+    ["#fClient","#fSector","#fTitle","#fDesc","#fCta","#fPhone","#fSource",
+     "#auditUrl","#auditDate","#auditTool","#auditDevice",
+     "#fBefore","#fAfter"].forEach(id => { const el = $(id); if(el) el.value = ""; });
+    $("#fColor").value = "#7554DB";
+    $("#beforeError").textContent = "";
+    $("#afterError").textContent = "";
+    $("#phoneError").textContent = "";
+    $("#exportStatus").textContent = "";
+    setSlider(50);
+    renderMetrics();
+    applyImages();
+    updatePreview();
+  });
+
+  /* =========================================================
+     EXPORTADOR
+     ========================================================= */
+  function buildExportHtml(data){
+    const c = data.client;
+    const m = data.metrics;
+    const a = data.audit;
+    const accent = c.color || "#7554DB";
+
+    const safeName = escapeHtml(c.name || "Propuesta");
+    const safeSector = escapeHtml(c.sector || "");
+    const safeTitle = escapeHtml(c.title || "Tu web, lista para el siguiente salto");
+    const safeDesc = escapeHtml(c.desc || "");
+    const safeCta = escapeHtml(c.cta || "Contactar");
+    const wa = waLink(c.phone);
+
+    const metricCards = METRIC_DEFS.map(def => {
+      const mm = m[def.key];
+      const scoreTxt = mm.score === "" ? "Sin medir" : mm.score;
+      const statusLabel = STATUS_LABELS[mm.status];
+      const statusCls = STATUS_CLASS[mm.status];
+      return (
+        '<article class="metric-card">' +
+          '<div class="metric-top">' +
+            '<span class="metric-icon" aria-hidden="true">' + def.icon + '</span>' +
+            '<div><h3>' + def.label + '</h3><p class="metric-sub">' + def.sub + '</p></div>' +
+          '</div>' +
+          '<div class="score-display' + (mm.score===""?' empty':'') + '">' + escapeHtml(scoreTxt) + '</div>' +
+          '<span class="status-pill ' + statusCls + '">' + statusLabel + '</span>' +
+        '</article>'
+      );
+    }).join("");
+
+    const auditLines = [
+      a.url ? "URL: " + escapeHtml(a.url) : "",
+      a.date ? "Fecha: " + escapeHtml(a.date) : "",
+      a.tool ? "Herramienta: " + escapeHtml(a.tool) : "",
+      a.device ? "Condiciones: " + escapeHtml(a.device) : ""
+    ].filter(Boolean);
+
+    const auditBlock = auditLines.length
+      ? '<ul class="audit-list">' + auditLines.map(l => '<li>' + l + '</li>').join("") + '</ul>'
+      : '<p class="muted">Sin datos de auditoría registrados.</p>';
+
+    const beforeSrc = c.beforeData ? escapeAttr(c.beforeData) : "";
+    const afterSrc = c.afterData ? escapeAttr(c.afterData) : "";
+
+    const beforePane = beforeSrc
+      ? '<img src="' + beforeSrc + '" alt="Sitio actual">'
+      : '<div class="fallback dark">Vista «Antes» — captura del sitio actual.</div>';
+    const afterPane = afterSrc
+      ? '<img src="' + afterSrc + '" alt="Propuesta de diseño">'
+      : '<div class="fallback light">Vista «Propuesta» — captura del diseño propuesto.</div>';
+
+    const waBtn = wa
+      ? '<a class="btn btn-wa" href="' + escapeAttr(wa) + '" target="_blank" rel="noopener">' + safeCta + '</a>'
+      : '<span class="btn btn-wa disabled" aria-disabled="true">' + safeCta + '</span>';
+
+    const sourceNote = c.source ? '<p class="source">Fuente de métricas: ' + escapeHtml(c.source) + '</p>' : '';
+
+    return '<!DOCTYPE html>\n' +
+'<html lang="es">\n<head>\n' +
+'<meta charset="UTF-8">\n' +
+'<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'<title>' + safeName + ' — Propuesta interactiva</title>\n' +
+'<meta name="description" content="Propuesta conceptual personalizable para ' + safeName + '. Comparativa antes/después y métricas técnicas.">\n' +
+'<style>\n' +
+':root{--carbon:#17151F;--bg:#F7F5FB;--accent:' + accent + ';--gris:#6E6A7B;--borde:rgba(23,21,31,.08);--radio:20px;--fuente:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;}\n' +
+'*{box-sizing:border-box;}\n' +
+'body{margin:0;font-family:var(--fuente);color:var(--carbon);background:radial-gradient(900px 500px at 85% -10%,rgba(185,161,255,.2),transparent 60%),var(--bg);line-height:1.55;}\n' +
+'h1,h2,h3{line-height:1.15;margin:0 0 .4em;letter-spacing:-.02em;}\n' +
+'p{margin:0 0 1em;}\n' +
+'.wrap{width:min(1100px,100% - 2.5rem);margin-inline:auto;}\n' +
+'.card{background:rgba(255,255,255,.7);border:1px solid var(--borde);border-radius:var(--radio);box-shadow:0 18px 40px -18px rgba(23,21,31,.28);backdrop-filter:blur(12px);}\n' +
+'.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 1.4rem;border-radius:999px;font-weight:700;text-decoration:none;font-size:.95rem;}\n' +
+'.btn-wa{background:#0e8a4f;color:#fff;}\n' +
+'.btn-wa.disabled{background:#9aa39d;color:#fff;cursor:not-allowed;}\n' +
+'header{padding:1.2rem 0;border-bottom:1px solid var(--borde);}\n' +
+'.logo{display:flex;align-items:center;gap:.7rem;font-weight:800;letter-spacing:.06em;font-size:.95rem;}\n' +
+'.logo-mark{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#FF914D);color:#fff;font-weight:900;}\n' +
+'.hero{padding:3rem 0 2rem;display:grid;grid-template-columns:1.2fr .8fr;gap:2rem;align-items:center;}\n' +
+'.hero h1{font-size:clamp(2rem,4vw,3rem);font-weight:800;}\n' +
+'.hero .sub{color:var(--gris);font-size:1.05rem;}\n' +
+'.eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:800;margin-bottom:.5rem;}\n' +
+'section{padding:2.4rem 0;}\n' +
+'.stage{position:relative;aspect-ratio:16/10;border-radius:var(--radio);overflow:hidden;border:1px solid var(--borde);box-shadow:0 18px 40px -18px rgba(23,21,31,.28);background:#ddd;touch-action:none;user-select:none;}\n' +
+'.pane{position:absolute;inset:0;overflow:hidden;}\n' +
+'.pane img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}\n' +
+'.pane-after{clip-path:inset(0 0 0 50%);z-index:2;}\n' +
+'.pane-before{z-index:1;}\n' +
+'.pane-label{position:absolute;top:12px;padding:.3rem .7rem;border-radius:999px;font-size:.68rem;letter-spacing:.12em;font-weight:800;text-transform:uppercase;z-index:5;}\n' +
+'.pane-before .pane-label{left:12px;background:rgba(23,21,31,.85);color:#fff;}\n' +
+'.pane-after .pane-label{right:12px;background:var(--accent);color:#fff;}\n' +
+'.divider{position:absolute;top:0;bottom:0;width:3px;left:50%;transform:translateX(-50%);background:linear-gradient(var(--accent),#FF914D);z-index:6;pointer-events:none;}\n' +
+'.handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;z-index:7;cursor:ew-resize;background:#fff;border:2px solid var(--accent);display:grid;place-items:center;box-shadow:0 10px 22px -10px rgba(23,21,31,.6);touch-action:none;}\n' +
+'.handle:focus-visible{outline:3px solid #FF914D;outline-offset:3px;}\n' +
+'.fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:2rem;font-size:.9rem;color:#3a3546;z-index:0;}\n' +
+'.fallback.dark{background:linear-gradient(135deg,#d9d5e2,#c9c4d6);}\n' +
+'.fallback.light{background:linear-gradient(135deg,#ece8ff,#ffd8bf);}\n' +
+'.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}\n' +
+'.metric-card{padding:1.2rem;background:rgba(255,255,255,.75);border:1px solid var(--borde);border-radius:var(--radio);}\n' +
+'.metric-top{display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem;}\n' +
+'.metric-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(185,161,255,.22);color:var(--accent);flex:none;}\n' +
+'.metric-icon svg{width:18px;height:18px;}\n' +
+'.metric-card h3{font-size:.95rem;margin:0;}\n' +
+'.metric-sub{margin:0;font-size:.72rem;color:var(--gris);}\n' +
+'.score-display{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;margin:.2rem 0 .5rem;}\n' +
+'.score-display.empty{color:var(--gris);font-size:1rem;font-weight:600;}\n' +
+'.status-pill{display:inline-block;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:.28rem .6rem;border-radius:999px;}\n' +
+'.status-pendiente{background:rgba(110,106,123,.12);color:var(--gris);}\n' +
+'.status-real{background:rgba(14,138,79,.12);color:#0b6f40;}\n' +
+'.status-estimacion{background:rgba(255,145,77,.15);color:#b4541f;}\n' +
+'.status-objetivo{background:rgba(185,161,255,.2);color:var(--accent);}\n' +
+'.audit{padding:1.2rem;margin-top:1rem;}\n' +
+'.audit-list{margin:.4rem 0 0;padding-left:1.1rem;font-size:.85rem;color:var(--gris);}\n' +
+'.muted,.source{font-size:.8rem;color:var(--gris);}\n' +
+'.note{font-size:.8rem;color:var(--gris);background:rgba(255,216,94,.18);border:1px solid rgba(255,216,94,.5);border-radius:12px;padding:.8rem 1rem;margin-top:1rem;}\n' +
+'footer{padding:2rem 0;border-top:1px solid var(--borde);text-align:center;color:var(--gris);font-size:.85rem;margin-top:1rem;}\n' +
+'@media (max-width:860px){.hero{grid-template-columns:1fr;}.metrics{grid-template-columns:1fr;}}\n' +
+'@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}\n' +
+'</style>\n</head>\n<body>\n' +
+'<header><div class="wrap logo"><span class="logo-mark" aria-hidden="true">A</span>AGENCY / STUDIO · Propuesta para ' + safeName + '</div></header>\n' +
+'<main class="wrap">\n' +
+'<section class="hero">\n' +
+'<div><p class="eyebrow">' + (safeSector ? safeSector : 'Propuesta interactiva') + '</p>' +
+'<h1>' + safeTitle + '</h1>' +
+'<p class="sub">' + safeDesc + '</p>' +
+'<div>' + waBtn + '</div></div>' +
+'<div aria-hidden="true" style="min-height:200px;border-radius:24px;background:linear-gradient(135deg,var(--accent),#FF914D);opacity:.85;"></div>\n' +
+'</section>\n' +
+'<section>\n' +
+'<h2>Antes / Después</h2>\n' +
+'<div class="stage" id="stage">' +
+'<div class="pane pane-before">' + beforePane + '<span class="pane-label">Antes</span></div>' +
+'<div class="pane pane-after" id="paneAfter">' + afterPane + '<span class="pane-label">Propuesta</span></div>' +
+'<div class="divider" id="divider"></div>' +
+'<div class="handle" id="handle" role="slider" tabindex="0" aria-label="Comparativa antes y después" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>' +
+'</div>\n' +
+'</section>\n' +
+'<section>\n' +
+'<h2>Métricas técnicas</h2>\n' +
+'<div class="metrics">' + metricCards + '</div>\n' +
+'<div class="audit card"><h3>Contexto de la auditoría</h3>' + auditBlock + sourceNote + '</div>\n' +
+'<p class="note">Las vistas son conceptuales. Las puntuaciones solo deben considerarse resultados reales si han sido medidas y documentadas con la fuente y fecha indicadas.</p>\n' +
+'</section>\n' +
+'</main>\n' +
+'<footer><div class="wrap"><strong>AGENCY / STUDIO</strong> · Propuesta conceptual personalizable<br>Diseño claro. Datos honestos. Siguiente paso concreto.</div></footer>\n' +
+'<script>\n' +
+'(function(){"use strict";\n' +
+'var stage=document.getElementById("stage");\n' +
+'var paneAfter=document.getElementById("paneAfter");\n' +
+'var divider=document.getElementById("divider");\n' +
+'var handle=document.getElementById("handle");\n' +
+'var dragging=false;\n' +
+'function setSlider(p){p=Math.max(0,Math.min(100,p));paneAfter.style.clipPath="inset(0 0 0 "+p+"%)";divider.style.left=p+"%";handle.style.left=p+"%";handle.setAttribute("aria-valuenow",String(Math.round(p)));}\n' +
+'function pct(e){var r=stage.getBoundingClientRect();var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;return (x/r.width)*100;}\n' +
+'function down(e){dragging=true;setSlider(pct(e));if(e.cancelable)e.preventDefault();}\n' +
+'function move(e){if(!dragging)return;setSlider(pct(e));if(e.cancelable)e.preventDefault();}\n' +
+'function up(){dragging=false;}\n' +
+'if(window.PointerEvent){handle.addEventListener("pointerdown",down);stage.addEventListener("pointerdown",function(e){if(e.target===stage)down(e);});window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);}\n' +
+'else{handle.addEventListener("mousedown",down);stage.addEventListener("mousedown",function(e){if(e.target===stage)down(e);});window.addEventListener("mousemove",move);window.addEventListener("mouseup",up);handle.addEventListener("touchstart",down,{passive:false});stage.addEventListener("touchstart",function(e){if(e.target===stage)down(e);},{passive:false});window.addEventListener("touchmove",move,{passive:false});window.addEventListener("touchend",up);}\n' +
+'handle.addEventListener("keydown",function(e){var s=e.shiftKey?10:2;var cur=Number(handle.getAttribute("aria-valuenow"))||50;if(e.key==="ArrowLeft"){setSlider(cur-s);e.preventDefault();}if(e.key==="ArrowRight"){setSlider(cur+s);e.preventDefault();}if(e.key==="Home"){setSlider(0);e.preventDefault();}if(e.key==="End"){setSlider(100);e.preventDefault();}});\n' +
+'})();\n' +
+'<\/script>\n' +
+'</body>\n</html>';
+  }
+
+  $("#btnExport").addEventListener("click", () => {
+    const status = $("#exportStatus");
+    try {
+      const html = buildExportHtml(state);
+      const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "propuesta_interactiva_" + sanitizeFileName(state.client.name) + ".html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      status.textContent = "Propuesta generada: " + a.download;
+    } catch(err){
+      status.textContent = "No se pudo generar la propuesta: " + err.message;
+    }
+  });
+
+  /* =========================================================
+     INIT
+     ========================================================= */
+  renderMetrics();
+  setSlider(50);
+  applyImages();
+  updatePreview();
+
+})();
+</script>
+</body>
+</html>
