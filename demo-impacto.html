@@ -7,6 +7,8 @@
   <meta name="description" content="Demo comercial de transformación web Antes y Después para Agency AI OS.">
   <meta property="og:title" content="Agency AI OS — Demo Impacto">
   <meta property="og:description" content="Compara la experiencia anterior con una nueva propuesta digital.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{ink:"#111116",lilac:"#B7A1FF",tangerine:"#FF8A4C",lemon:"#FFE66D"}}}};</script>
   <title>Demo Impacto · Agency AI OS</title>
   <style>
     :root{color-scheme:dark;--ink:#111116;--lilac:#b7a1ff;--orange:#ff8a4c;--green:#63f0a7}
@@ -35,6 +37,12 @@
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
   
     /* Agency AI OS shared light workspace theme and contrast fixes */
+    .metrics-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;background:#f5f5f9}
+    .metrics-summary .metrics{position:static;inset:auto;width:auto;max-width:none;pointer-events:auto;min-width:0}
+    .metric-badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#f1eaff;color:#6241a5;font-size:9px}
+    .stage .layer{min-width:0;min-height:0}
+    .stage .photo,.stage iframe{object-fit:contain;max-width:100%;max-height:100%}
+    @media(max-width:640px){.metrics-summary{grid-template-columns:minmax(0,1fr);padding:8px;gap:8px}.metrics-summary .metrics{padding:12px!important}.stage{height:clamp(260px,76vw,430px);max-height:430px}}
     :root{color-scheme:light;--ink:#f5f5f9;--lilac:#a678ff;--orange:#ff8a35;--green:#21885c}
     body{background:radial-gradient(ellipse at 82% 0,#f0e8ff 0,transparent 30%),#f5f5f9!important;color:#17151d!important}
     .glass{background:#fff;border:1px solid #e7e6ef;box-shadow:0 8px 24px #28173e0d;backdrop-filter:none}
@@ -85,11 +93,12 @@
           <img id="afterPhoto" class="photo" alt="Captura de la nueva propuesta del sitio">
           <div class="layer-inner" id="afterMock"><article class="mock mock-after"><div class="flex items-center justify-between text-xs text-white/60"><b class="tracking-widest">NOVA / STUDIO</b><span>Servicios　 Proyectos　 Contacto</span></div><div class="mt-14"><p class="eyebrow text-lilac">Diseñado para crecer</p><h2 class="mt-3 max-w-xl text-4xl font-semibold leading-tight md:text-6xl">Tu próxima etapa empieza aquí.</h2><p class="mt-4 max-w-md text-sm leading-6 text-white/65">Una presencia digital clara, rápida y memorable. Convierte cada visita en el principio de una relación.</p><span class="mt-6 inline-flex rounded-full bg-lilac px-5 py-3 text-xs font-bold text-ink">Hablemos de tu proyecto ↗</span></div><div class="mt-12 flex gap-2"><span class="h-1.5 w-16 rounded-full bg-lilac"></span><span class="h-1.5 w-6 rounded-full bg-white/20"></span><span class="h-1.5 w-6 rounded-full bg-white/20"></span></div></article></div>
         </div>
-        <div class="metrics before glass rounded-2xl p-4 md:p-5"><div class="flex items-center justify-between gap-1"><span class="eyebrow text-orange-200">Antes</span><span class="rounded-full bg-white/10 px-2 py-1 text-[9px] text-white/70">Web actual</span></div><div class="metric"><span>Rendimiento</span><strong id="beforePerformance">Sin medir</strong></div><div class="metric"><span>SEO</span><strong id="beforeSeo">Sin medir</strong></div><div class="metric"><span>Accesibilidad</span><strong id="beforeA11y">Sin medir</strong></div></div>
-        <div class="metrics after glass rounded-2xl p-4 md:p-5"><div class="flex items-center justify-between gap-1"><span class="eyebrow text-emerald-200">Después</span><span class="rounded-full bg-white/10 px-2 py-1 text-[9px] text-white/70">Propuesta</span></div><div class="metric"><span>Rendimiento</span><strong id="afterPerformance">Sin medir</strong></div><div class="metric"><span>SEO</span><strong id="afterSeo">Sin medir</strong></div><div class="metric"><span>Accesibilidad</span><strong id="afterA11y">Sin medir</strong></div></div>
+        
+        
         <div class="split" id="split" aria-hidden="true"><div class="knob">↔</div></div><input id="range" class="range" type="range" min="0" max="100" value="50" aria-label="Comparar la versión anterior con la nueva">
         <span class="pill-label left-4">ANTES</span><span class="pill-label right-4">DESPUÉS</span>
       </div>
+      <div class="metrics-summary"><section class="metrics before glass rounded-2xl p-4 md:p-5"><div class="flex items-center justify-between gap-1"><span class="eyebrow">Antes</span><span class="metric-badge">Web actual</span></div><div class="metric"><span>Rendimiento</span><strong id="beforePerformance">Sin medir</strong></div><div class="metric"><span>SEO</span><strong id="beforeSeo">Sin medir</strong></div><div class="metric"><span>Accesibilidad</span><strong id="beforeA11y">Sin medir</strong></div></section><section class="metrics after glass rounded-2xl p-4 md:p-5"><div class="flex items-center justify-between gap-1"><span class="eyebrow">Después</span><span class="metric-badge">Propuesta</span></div><div class="metric"><span>Rendimiento</span><strong id="afterPerformance">Sin medir</strong></div><div class="metric"><span>SEO</span><strong id="afterSeo">Sin medir</strong></div><div class="metric"><span>Accesibilidad</span><strong id="afterA11y">Sin medir</strong></div></section></div>
       <div class="flex flex-col gap-3 border-t border-white/10 p-4 md:flex-row md:items-center md:justify-between md:px-6"><p id="status" class="max-w-3xl text-xs leading-5 text-white/45" aria-live="polite">Sin mediciones verificadas. Las puntuaciones aparecerán únicamente al recibir resultados reales de Lighthouse.</p><button id="reset" class="btn secondary" type="button">Restablecer comparativa</button></div>
     </section>
     <section class="mt-6 grid gap-3 md:grid-cols-3"><article class="glass rounded-2xl p-5"><span class="text-2xl text-lilac">✳</span><h3 class="mt-3 font-semibold">Impacto a primera vista</h3><p class="mt-2 text-sm leading-6 text-white/55">Una narrativa visual para explicar el valor de la propuesta sin depender de tecnicismos.</p></article><article class="glass rounded-2xl p-5"><span class="text-2xl text-orange-300">⌁</span><h3 class="mt-3 font-semibold">Capturas del cliente</h3><p class="mt-2 text-sm leading-6 text-white/55">Las imágenes se cargan localmente en el navegador y no se suben a ningún servidor.</p></article><article class="glass rounded-2xl p-5"><span class="text-2xl text-emerald-300">◎</span><h3 class="mt-3 font-semibold">Lista para personalizar</h3><p class="mt-2 text-sm leading-6 text-white/55">Un único HTML, adaptable a móvil y con estilos y lógica propios del módulo.</p></article></section>
