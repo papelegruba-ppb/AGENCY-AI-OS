@@ -36,39 +36,27 @@
     @media(max-width:640px){.stage{height:680px;min-height:680px}.metrics{top:10px;width:calc(50% - 16px)}.metrics.before{left:8px}.metrics.after{right:8px}.metrics .glass{padding:10px!important}.metric{font-size:9px;gap:5px}.metric strong{font-size:11px}.mock{width:98%;min-height:310px;padding:1rem}.layer-inner{padding:.5rem}.knob{width:42px;height:42px}.pill-label{bottom:10px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
   
-    /* Agency AI OS shared light workspace theme and contrast fixes */
-    .metrics-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;background:#f5f5f9}
-    .metrics-summary .metrics{position:static;inset:auto;width:auto;max-width:none;pointer-events:auto;min-width:0}
-    .metric-badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#f1eaff;color:#6241a5;font-size:9px}
-    .stage .layer{min-width:0;min-height:0}
-    .stage .photo,.stage iframe{object-fit:contain;max-width:100%;max-height:100%}
-    @media(max-width:640px){.metrics-summary{grid-template-columns:minmax(0,1fr);padding:8px;gap:8px}.metrics-summary .metrics{padding:12px!important}.stage{height:clamp(260px,76vw,430px);max-height:430px}}
-    :root{color-scheme:light;--ink:#f5f5f9;--lilac:#a678ff;--orange:#ff8a35;--green:#21885c}
-    body{background:radial-gradient(ellipse at 82% 0,#f0e8ff 0,transparent 30%),#f5f5f9!important;color:#17151d!important}
-    .glass{background:#fff;border:1px solid #e7e6ef;box-shadow:0 8px 24px #28173e0d;backdrop-filter:none}
-    .btn{appearance:none;min-height:40px;border:1px solid #ded6ed;border-radius:10px;background:#fff;color:#292433!important;padding:10px 15px;font:700 12px/1.3 Inter,ui-sans-serif,system-ui,sans-serif;text-shadow:none;opacity:1}
-    .btn.primary{background:#a678ff!important;border-color:#a678ff!important;color:#17151d!important}
-    .btn.secondary{background:#fff!important;border-color:#d9c9f7!important;color:#292433!important}
-    .btn:focus-visible{outline:3px solid #8a5af1;outline-offset:3px}
-    .tag,.eyebrow{color:#7542e8}
-    .metrics{width:min(230px,calc(50% - 24px))}
-    .metric{color:#514b5d}
-    .metric strong{color:#17151d}
-    .badge{color:#696777}
-    .stage{height:clamp(300px,55vw,620px);min-height:0;max-height:620px;overflow:hidden}
-    .layer-inner{padding:clamp(8px,2vw,24px)}
-    .mock{width:min(680px,94%);min-height:0;max-height:90%;overflow:auto;padding:clamp(14px,3vw,32px)}
-    .mock-before{background:linear-gradient(145deg,#fff0e6,#ffe0c9);border-color:#ffb67c}
-    .mock-after{background:radial-gradient(ellipse at 90% 10%,#a678ff24,transparent 42%),linear-gradient(145deg,#fff,#f0e7ff 65%,#fff0dc);border-color:#d8c5ff}
-    .mock p{color:#555064}
-    .mock .eyebrow{color:#7542e8}
-    .pill-label{color:#fff;background:#17151ddd}
-    .split{background:#fff;box-shadow:0 0 18px #a678ff55}
-    .knob{border:2px solid #a678ff}
-    main{max-width:1440px;margin:0 auto;padding-left:clamp(12px,2.5vw,32px)!important;padding-right:clamp(12px,2.5vw,32px)!important}
-    .stage-wrap{min-width:0;max-width:100%}
-    img,iframe{max-width:100%}
-    @media(max-width:640px){.stage{height:clamp(270px,78vw,430px);max-height:430px}.metrics{top:8px;width:calc(50% - 14px)}.metrics.before{left:7px}.metrics.after{right:7px}.metrics .glass{padding:8px!important}.metric{font-size:9px;gap:5px}.metric strong{font-size:11px}.mock{width:96%;padding:12px}.layer-inner{padding:4px}.knob{width:40px;height:40px}.pill-label{bottom:8px;font-size:9px;padding:7px 9px}}
+    /* Tema compartido con el Centro de mando + contraste accesible */
+:root{color-scheme:dark;--ink:#111318;--lilac:#a78bfa;--orange:#ff8a4c;--green:#71d7ac}
+body{background:radial-gradient(ellipse at 82% 0,#a78bfa1b,transparent 30%),#111318!important;color:#f2f3f7!important}
+.glass{background:#191c23;border:1px solid #2a2e38;box-shadow:0 8px 24px #0004;backdrop-filter:none}
+.btn{appearance:none;min-height:40px;border:1px solid #424654;border-radius:10px;background:#252832;color:#f2f3f7!important;padding:10px 15px;font:700 12px/1.3 Inter,ui-sans-serif,system-ui,sans-serif;text-shadow:none;opacity:1}
+.btn.primary{background:#a78bfa!important;border-color:#a78bfa!important;color:#17131f!important}
+.btn.secondary{background:#252832!important;border-color:#424654!important;color:#f2f3f7!important}
+.btn:focus-visible{outline:3px solid #c4b5fd;outline-offset:3px}
+.tag,.eyebrow{color:#c4b5fd}
+.metrics-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px;background:#111318}
+.metrics-summary .metrics{position:static;inset:auto;width:auto;max-width:none;pointer-events:auto;min-width:0;color:#f2f3f7}
+.metrics-summary .glass{background:#191c23;border-color:#393e4b}
+.metric-badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#292433;color:#e8dcff;font-size:9px}
+.metric{color:#d6d2df}.metric strong{color:#f2f3f7}.badge{color:#c5bdd5}
+.stage{height:clamp(300px,55vw,620px);min-height:0;max-height:620px;overflow:hidden;background:#171922}
+.layer-inner{padding:clamp(8px,2vw,24px)}.mock{width:min(680px,94%);min-height:0;max-height:90%;overflow:auto;padding:clamp(14px,3vw,32px)}
+.mock-before{background:linear-gradient(145deg,#281a20,#512b2d);border-color:#ff8a4c55}.mock-after{background:radial-gradient(ellipse at 90% 10%,#a78bfa35,transparent 42%),linear-gradient(145deg,#171522,#2b2050 65%,#35203d);border-color:#a78bfa75}
+.mock p{color:#e0dce9}.mock .eyebrow{color:#c4b5fd}.pill-label{color:#fff;background:#08070be8}.split{background:#fff;box-shadow:0 0 18px #a78bfa55}.knob{border:2px solid #a78bfa}
+main{max-width:1440px;margin:0 auto;padding-left:clamp(12px,2.5vw,32px)!important;padding-right:clamp(12px,2.5vw,32px)!important}
+.stage .layer{min-width:0;min-height:0}.stage .photo,.stage iframe{object-fit:contain;max-width:100%;max-height:100%}
+@media(max-width:640px){.metrics-summary{grid-template-columns:minmax(0,1fr);padding:8px;gap:8px}.metrics-summary .metrics{padding:12px!important}.stage{height:clamp(260px,76vw,430px);max-height:430px}}
 </style>
 </head>
 <body>
