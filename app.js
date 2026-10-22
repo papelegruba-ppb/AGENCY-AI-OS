@@ -5,7 +5,7 @@
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
-  let activeProjectId = (() => { try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || null; } catch (_) { return null; } })();
+  let activeProjectId = (() => { try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || (projects[0] && projects[0].id) || null; } catch (_) { return (projects[0] && projects[0].id) || null; } })();
   let toastTimer;
 
   function loadProjects() {
@@ -148,6 +148,14 @@
   function renderProjects() {
     $("#project-count").textContent = projects.length;
     $("#stat-projects").textContent = projects.length;
+    const activeSelector = $("#active-project-select");
+    if (activeSelector) {
+      const previous = activeProjectId;
+      activeSelector.innerHTML = '<option value="">Selecciona proyecto…</option>' + projects.map(p => '<option value="' + esc(p.id) + '">' + esc(p.name || "Proyecto sin nombre") + '</option>').join("");
+      activeProjectId = projects.some(p => p.id === previous) ? previous : (projects[0] && projects[0].id) || null;
+      activeSelector.value = activeProjectId || "";
+      try { localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId || ""); } catch (_) {}
+    }
     const recent = $("#recent-projects");
     if (!projects.length) {
       recent.className = "empty-state";
