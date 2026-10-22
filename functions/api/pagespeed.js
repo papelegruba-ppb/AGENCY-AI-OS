@@ -38,8 +38,18 @@ export async function onRequestGet({ request, env }) {
     const response = await fetch(googleUrl.toString(), { headers: { accept: "application/json" }, signal: AbortSignal.timeout(50000) });
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      const message = body && body.error && body.error.message;
-      return json({ error: message || "Google PageSpeed Insights no pudo completar el análisis.", provider: "Google PageSpeed Insights", providerStatus: response.status }, response.status === 429 ? 429 : response.status >= 500 ? 502 : 400);
+      const message = body && body.error && body.error.message || "";
+      const quota = /quota exceeded|queries per day|rate limit|daily limit/i.test(message);
+      if (quota) {
+        return json({
+          error: "Google PageSpeed Insights ha agotado la cuota disponible para su clave o proyecto de Google Cloud. No se han generado puntuaciones. Revisa las cuotas de PageSpeed Insights y la facturación/API key del proyecto de Google Cloud, o vuelve a intentarlo cuando se restablezca la cuota.",
+          code: "PAGESPEED_QUOTA_EXCEEDED",
+          provider: "Google PageSpeed Insights",
+          providerStatus: response.status,
+          providerMessage: message
+        }, response.status === 429 ? 429 : 403);
+      }
+      return json({ error: message || "Google PageSpeed Insights no pudo completar el análisis.", code: "PAGESPEED_PROVIDER_ERROR", provider: "Google PageSpeed Insights", providerStatus: response.status }, response.status === 429 ? 429 : response.status >= 500 ? 502 : 400);
     }
     if (!body || !body.lighthouseResult) return json({ error: "Google respondió sin un informe Lighthouse válido." }, 502);
     return json(body);
