@@ -27,3 +27,8 @@ body{background:var(--bg);color:var(--text)}
 .module-frame-panel{padding:8px;overflow:hidden}
 .module-frame{display:block;width:100%;height:calc(100vh - 210px);min-height:760px;border:0;border-radius:12px;background:var(--bg)}
 @media(max-width:760px){.active-project-wrap{max-width:48%;display:grid;gap:3px}.active-project-wrap select{max-width:100%;min-width:0}.module-frame{height:calc(100vh - 170px);min-height:700px}}
+
+
+/* Pipeline de producción: etapas navegables, no solo decorativas */
+.production-pipeline{display:grid;gap:0}.pipeline-link{appearance:none;width:100%;font:inherit;text-align:left;background:transparent;color:inherit;border:0;border-bottom:1px solid #f0edf5;cursor:pointer;transition:background .16s ease,padding .16s ease}.pipeline-link:hover,.pipeline-link:focus-visible{background:#f8f4ff;outline:2px solid #c7afff;outline-offset:-2px;padding-left:13px}.pipeline-link .step-copy{flex:1}.pipeline-link .step-state{font-size:9px;color:#7c58b7}.pipeline-link.featured{background:linear-gradient(90deg,#faf6ff,#fff)}.pipeline-link:last-child{border-bottom:0}
+@media(max-width:600px){.pipeline-link{gap:8px}.pipeline-link .step-state{display:block;font-size:8px;max-width:78px;white-space:normal;text-align:right}}
