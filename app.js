@@ -7,6 +7,7 @@
   let activeProjectId = null;
   let toastTimer;
   let currentWebsiteAudit = null;
+  let pendingAssistantChanges = null;
 
   function loadProjects() {
     try {
@@ -293,6 +294,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       ];
       setFieldValue("requirements", requirements.join("\n"));
       renderWebsiteAudit(data);
+      $("#website-performance").hidden = false;
+      $("#project-assistant").hidden = false;
       status.textContent = "Análisis listo. Hemos rellenado los campos que pudimos identificar; revisa y completa audiencia y objetivo antes de generar el proyecto.";
       notify("Web analizada. Revisa los datos antes de guardar el proyecto.");
     } catch (error) {
@@ -303,6 +306,108 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     }
   }
 
+
+  function summarizePageSpeed(data, strategy) {
+    const lr = data.lighthouseResult || {}, cats = lr.categories || {}, audits = lr.audits || {};
+    const scores = {};
+    ["performance","seo","accessibility","best-practices"].forEach(k => {
+      const n = cats[k] && cats[k].score;
+      scores[k] = typeof n === "number" ? Math.round(n * 100) : null;
+    });
+    const refs = [];
+    const seen = new Set();
+    ["seo","performance"].forEach(category => {
+      const categoryData = cats[category];
+      (categoryData && categoryData.auditRefs || []).forEach(ref => {
+        const a = audits[ref.id];
+        if (!a || seen.has(ref.id) || ["notApplicable","informative","hidden"].includes(a.scoreDisplayMode)) return;
+        const failed = typeof a.score === "number" && a.score < 1;
+        const manual = a.scoreDisplayMode === "manual";
+        if (!failed && !manual) return;
+        seen.add(ref.id);
+        refs.push({id:ref.id,category,title:String(a.title||ref.id).slice(0,180),score:typeof a.score==="number"?a.score:null,displayValue:String(a.displayValue||"").slice(0,180),description:String(a.description||"").replace(/\[[^\]]*\]\([^)]*\)/g,"").slice(0,700),manual,weight:ref.weight||0});
+      });
+    });
+    refs.sort((a,b)=>(b.weight||0)-(a.weight||0));
+    return {strategy, finalUrl:lr.finalDisplayedUrl||"", lighthouseVersion:lr.lighthouseVersion||"", scores, issues:refs.slice(0,18), metrics:Object.fromEntries(["largest-contentful-paint","first-contentful-paint","speed-index","total-blocking-time","cumulative-layout-shift","interactive"].map(id=>[id,audits[id]&&audits[id].displayValue||null]))};
+  }
+  function renderPerformance() {
+    const host=$("#performance-results");
+    if(!host || !currentWebsiteAudit || !currentWebsiteAudit.pageSpeed){if(host)host.innerHTML="";return;}
+    const reports=currentWebsiteAudit.pageSpeed;
+    const labels={performance:"Rendimiento",seo:"SEO",accessibility:"Accesibilidad", "best-practices":"Buenas prácticas"};
+    let out="";
+    ["mobile","desktop"].forEach(strategy=>{
+      const report=reports[strategy]; if(!report)return;
+      out+=`<div class="section-title"><h3>${strategy==="mobile"?"Móvil":"Escritorio"}</h3><span class="pill">${esc(report.finalUrl||"Lighthouse")}</span></div><div class="performance-grid">${Object.keys(labels).map(k=>{const n=report.scores[k],c=n==null?"":n>=90?"good":n>=50?"mid":"low";return `<article class="performance-score ${c}"><span>${labels[k]}</span><strong>${n==null?"N/D":n}</strong><small>${n==null?"Sin puntuación":"sobre 100"}</small></article>`;}).join("")}</div>`;
+      const issues=report.issues||[];
+      out+=`<div class="performance-columns"><div><div class="section-title"><h3>Prioridades detectadas</h3><span class="pill">${issues.length} incidencias</span></div><div class="performance-issues">${issues.slice(0,7).map(issue=>`<article class="performance-issue"><div class="performance-issue-head"><span class="status ${issue.manual?"manual":"fail"}">${issue.manual?"REVISAR":"MEJORAR"}</span><strong>${esc(issue.title)}</strong></div><p>${esc(issue.displayValue)} ${esc(issue.description)}</p></article>`).join("")||'<p class="sub">No se han encontrado incidencias listables.</p>'}</div></div><div><div class="section-title"><h3>Métricas de laboratorio</h3></div><div class="performance-issues">${Object.entries(report.metrics||{}).filter(([,v])=>v).map(([k,v])=>`<article class="performance-issue"><strong>${esc(k)}</strong><p>${esc(v)}</p></article>`).join("")||'<p class="sub">Sin métricas disponibles.</p>'}</div></div></div>`;
+    });
+    out+='<p class="scan-footnote">Las puntuaciones proceden de Lighthouse/PageSpeed y pueden variar entre ejecuciones. Los resultados de laboratorio no equivalen necesariamente a la experiencia de todos los usuarios.</p>';
+    host.innerHTML=out;
+  }
+  async function runPerformanceAudit() {
+    const button=$("#run-performance"), status=$("#performance-status");
+    if(!currentWebsiteAudit || !currentWebsiteAudit.url){notify("Analiza primero una web.");return;}
+    button.disabled=true;button.textContent="Midiendo…";status.textContent="Consultando Google PageSpeed para móvil y escritorio. Puede tardar hasta un minuto.";
+    try{
+      const url=currentWebsiteAudit.url;
+      const results=await Promise.all(["mobile","desktop"].map(async strategy=>{
+        const res=await fetch("/api/pagespeed?url="+encodeURIComponent(url)+"&strategy="+strategy,{headers:{Accept:"application/json"}});
+        const body=await res.json().catch(()=>({}));
+        if(!res.ok)throw new Error((strategy==="mobile"?"Móvil: ":"Escritorio: ")+(body.error||"Error HTTP "+res.status));
+        return summarizePageSpeed(body,strategy);
+      }));
+      currentWebsiteAudit.pageSpeed=Object.fromEntries(results.map(r=>[r.strategy,r]));
+      renderPerformance();
+      status.textContent="Auditoría completada. Los problemas detectados ya están disponibles para el copiloto IA.";
+      notify("Auditoría SEO + PageSpeed completada.");
+    }catch(error){status.textContent=error.message||"No se pudo completar la auditoría.";notify(status.textContent);}
+    finally{button.disabled=false;button.textContent="Volver a analizar ↻";}
+  }
+  function assistantProjectContext() {
+    const val=id=>String(($("#"+id)||{}).value||"").trim();
+    return {name:val("projectName"),sector:val("sector"),offer:val("offer"),audience:val("audience"),goal:val("goal"),domain:val("domain"),phone:val("phone"),color:val("color"),requirements:val("requirements"),audit:currentWebsiteAudit?{url:currentWebsiteAudit.url,businessName:currentWebsiteAudit.businessName,description:currentWebsiteAudit.description,headings:(currentWebsiteAudit.headings||[]).slice(0,25),pages:(currentWebsiteAudit.pages||[]).map(p=>({url:p.url,title:p.title,description:p.description,content:String(p.content||"").slice(0,900)})).slice(0,7),images:(currentWebsiteAudit.images||[]).slice(0,15).map(i=>({src:i.src,alt:i.alt})),emails:currentWebsiteAudit.emails,phones:currentWebsiteAudit.phones,socialLinks:currentWebsiteAudit.socialLinks,pageSpeed:currentWebsiteAudit.pageSpeed||null}:null};
+  }
+  function addAssistantMessage(text, role) {
+    const host=$("#assistant-messages");
+    const item=document.createElement("div");
+    item.className="assistant-message "+role;
+    item.textContent=text;
+    host.appendChild(item);
+    host.scrollTop=host.scrollHeight;
+  }
+  function renderAssistantProposal(changes, summary) {
+    const host=$("#assistant-proposal");
+    pendingAssistantChanges=changes&&Object.keys(changes).length?changes:null;
+    if(!pendingAssistantChanges){host.hidden=true;host.innerHTML="";return;}
+    const fieldNames={name:"Nombre",sector:"Sector",offer:"Oferta",audience:"Audiencia",goal:"Objetivo",domain:"Dominio",phone:"Teléfono",requirements:"Notas y requisitos",color:"Color de marca"};
+    host.hidden=false;
+    host.innerHTML=`<strong>Propuesta de cambios</strong><p>${esc(summary||"La IA propone actualizar los siguientes campos del briefing.")}</p><ul>${Object.entries(changes).map(([k,v])=>`<li><b>${esc(fieldNames[k]||k)}:</b> ${esc(String(v).slice(0,280))}</li>`).join("")}</ul><div class="assistant-proposal-actions"><button type="button" id="apply-assistant-changes" class="button button-primary">Aplicar al briefing</button><button type="button" id="discard-assistant-changes" class="button button-secondary">Descartar</button></div>`;
+    $("#apply-assistant-changes").addEventListener("click",()=>{
+      const map={name:"projectName",sector:"sector",offer:"offer",audience:"audience",goal:"goal",domain:"domain",phone:"phone",requirements:"requirements",color:"color"};
+      Object.entries(pendingAssistantChanges||{}).forEach(([key,value])=>{const id=map[key],el=id&&$("#"+id);if(!el)return;el.value=value;if(key==="color")$("#color-picker").value=value;});
+      host.hidden=true;host.innerHTML="";pendingAssistantChanges=null;
+      addAssistantMessage("He aplicado los cambios aceptados al briefing. Revisa los campos y guarda el proyecto para conservarlos.","assistant");
+      notify("Cambios aplicados al briefing; guarda el proyecto para conservarlos.");
+    });
+    $("#discard-assistant-changes").addEventListener("click",()=>{host.hidden=true;host.innerHTML="";pendingAssistantChanges=null;});
+  }
+  async function sendAssistantMessage(event) {
+    event.preventDefault();
+    const input=$("#assistant-prompt"),button=$("#assistant-send"),message=input.value.trim();
+    if(!message)return;
+    addAssistantMessage(message,"user");input.value="";button.disabled=true;button.textContent="Pensando…";
+    try{
+      const res=await fetch("/api/project-assistant",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({message,project:assistantProjectContext()})});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok)throw new Error(data.error||"No se pudo obtener respuesta de la IA.");
+      addAssistantMessage(data.reply||"No se recibió una respuesta.", "assistant");
+      renderAssistantProposal(data.changes||{},data.changeSummary||"");
+    }catch(error){addAssistantMessage(error.message||"No se pudo conectar con la IA.","assistant");}
+    finally{button.disabled=false;button.textContent="Consultar IA ↗";}
+  }
+
   $(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
   $("#top-new").addEventListener("click",()=>currentView("builder"));
@@ -310,6 +415,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
   $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
   $("#analyze-website").addEventListener("click", analyzeWebsite);
+  $("#run-performance").addEventListener("click", runPerformanceAudit);
+  $("#assistant-form").addEventListener("submit", sendAssistantMessage);
   $("#project-form").addEventListener("submit",e=>{
     e.preventDefault();
     const form=e.currentTarget;
@@ -326,7 +433,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const dialog=$("#project-dialog");
     if(typeof dialog.showModal==="function")dialog.showModal();
     else {currentView("deliverables");}
-    form.reset();currentWebsiteAudit=null;$("#website-url").value="";$("#website-scan-status").textContent="";$("#website-scan-results").hidden=true;$("#color").value="#8B5CF6";$("#color-picker").value="#8B5CF6";
+    form.reset();currentWebsiteAudit=null;$("#website-url").value="";$("#website-scan-status").textContent="";$("#website-scan-results").hidden=true;$("#website-performance").hidden=true;$("#project-assistant").hidden=true;$("#performance-results").innerHTML="";$("#performance-status").textContent="";$("#assistant-messages").innerHTML='<div class="assistant-message assistant">Soy tu copiloto de proyecto. Puedo priorizar mejoras SEO, explicar el informe y proponer cambios de contenido, oferta o estilo.</div>';$("#assistant-proposal").hidden=true;pendingAssistantChanges=null;$("#color").value="#8B5CF6";$("#color-picker").value="#8B5CF6";
   });
   $("#dialog-close").addEventListener("click",()=>$("#project-dialog").close());
   $("#dialog-open").addEventListener("click",()=>{$("#project-dialog").close();currentView("deliverables");});
