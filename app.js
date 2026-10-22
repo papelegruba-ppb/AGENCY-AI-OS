@@ -5,7 +5,8 @@
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
   let activeProjectId = null;
-  let toastTimer;\n  let currentWebsiteAudit = null;
+  let toastTimer;
+  let currentWebsiteAudit = null;
 
   function loadProjects() {
     try {
@@ -304,7 +305,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   $("#top-new").addEventListener("click",()=>currentView("builder"));
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
-  $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});\n  $("#analyze-website").addEventListener("click", analyzeWebsite);
+  $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
+  $("#analyze-website").addEventListener("click", analyzeWebsite);
   $("#project-form").addEventListener("submit",e=>{
     e.preventDefault();
     const form=e.currentTarget;
