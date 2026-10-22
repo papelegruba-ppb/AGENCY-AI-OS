@@ -300,9 +300,11 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       const first = data.pages && data.pages[0] || data;
       const fill = (id, value) => { const el=$("#"+id); if(el && value && !el.value.trim()) el.value=value; };
       fill("projectName", first.businessName || first.title || parsed.hostname.replace(/^www\./,""));
-      fill("sector", (first.headings || []).slice(0,3).join(" · ") || first.title || "");
+      const serviceNames = Array.isArray(data.services) ? data.services : [];
+      const businessSector = serviceNames.length ? serviceNames.slice(0,3).join(", ") : (first.title || first.businessName || "Servicios profesionales");
+      fill("sector", businessSector.slice(0,180));
       fill("offer", first.description || (first.content || "").slice(0,900));
-      fill("requirements", (first.headings || []).slice(0,15).join(", "));
+      fill("requirements", (serviceNames.length ? serviceNames : (first.headings || []).filter(h => /asesor[ií]a|fiscal|contable|laboral|jur[ií]dic|legal|seguros|calidad|control de gesti[oó]n|financiaci[oó]n|creaci[oó]n de empresas|inversores/i.test(h))).slice(0,12).join(", "));
       fill("audience", "Pendiente de confirmar: la web pública no identifica necesariamente al cliente ideal.");
       fill("goal", "Pendiente de confirmar contigo; la web no demuestra por sí sola el objetivo comercial actual.");
       if(first.phones && first.phones.length) fill("phone", first.phones[0].replace(/\D/g,""));
