@@ -5,7 +5,7 @@
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
   let activeProjectId = null;
-  let toastTimer;
+  let toastTimer;\n  let currentWebsiteAudit = null;
 
   function loadProjects() {
     try {
@@ -50,7 +50,7 @@
       color: /^#[0-9a-f]{6}$/i.test(fd.get("color") || "") ? fd.get("color") : "#8B5CF6",
       phone: String(fd.get("phone") || "").replace(/\D/g,""), requirements: String(fd.get("requirements") || "").trim(),
       domain: String(fd.get("domain") || "").trim(), deliverables: fd.getAll("deliverables"),
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
+      websiteAudit: currentWebsiteAudit,\n      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
     };
   }
   function makePlan(p) {
@@ -234,12 +234,77 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     notify("HTML de demostración exportado. El formulario aún requiere backend.");
   }
 
-  $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
+
+  function setFieldValue(id, value) {
+    const el = document.getElementById(id);
+    if (el && value && !String(el.value || "").trim()) el.value = value;
+  }
+  function renderWebsiteAudit(audit) {
+    const host = $("#website-scan-results");
+    if (!host) return;
+    const imgs = (audit.images || []).slice(0, 8);
+    const pages = (audit.pages || []).slice(0, 12);
+    const links = (audit.socialLinks || []).slice(0, 6);
+    host.hidden = false;
+    host.innerHTML = `
+      <div class="scan-result-top"><div><span class="pill pill-green">ANÁLISIS COMPLETADO</span><h3>${esc(audit.businessName || audit.title || audit.url)}</h3><p>${esc(audit.description || "No se encontró una meta descripción; puedes revisar el contenido extraído.")}</p></div>${audit.logo ? `<img class="scan-logo" src="${esc(audit.logo)}" alt="Logotipo detectado" loading="lazy" referrerpolicy="no-referrer">` : ""}</div>
+      <div class="scan-metrics"><span><b>${audit.pagesScanned || 1}</b> páginas revisadas</span><span><b>${(audit.images || []).length}</b> imágenes detectadas</span><span><b>${(audit.emails || []).length}</b> correos</span><span><b>${(audit.phones || []).length}</b> teléfonos</span></div>
+      ${pages.length ? `<div class="scan-subsection"><strong>Páginas detectadas</strong><div class="scan-chips">${pages.map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">${esc(p.title || p.url)}</a>`).join("")}</div></div>` : ""}
+      ${imgs.length ? `<div class="scan-subsection"><strong>Imágenes detectadas</strong><div class="scan-image-grid">${imgs.map(im=>`<a href="${esc(im.src)}" target="_blank" rel="noopener noreferrer" title="${esc(im.alt || "Abrir imagen")}"><img src="${esc(im.src)}" alt="${esc(im.alt || "Imagen extraída de la web")}" loading="lazy" referrerpolicy="no-referrer"></a>`).join("")}</div></div>` : ""}
+      ${links.length ? `<div class="scan-subsection"><strong>Redes sociales</strong><div class="scan-chips">${links.map(l=>`<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)}</a>`).join("")}</div></div>` : ""}
+      <p class="scan-footnote">Los datos son una extracción automática de páginas accesibles, no una auditoría exhaustiva. Las imágenes se muestran desde sus URL originales.</p>`;
+  }
+  async function analyzeWebsite() {
+    const input = $("#website-url");
+    const button = $("#analyze-website");
+    const status = $("#website-scan-status");
+    const results = $("#website-scan-results");
+    const rawUrl = (input.value || "").trim();
+    if (!rawUrl) { input.focus(); notify("Introduce la URL de la web que quieres analizar."); return; }
+    let url;
+    try { url = new URL(rawUrl); } catch (_) { notify("La URL no parece válida. Incluye https://"); return; }
+    if (!["http:", "https:"].includes(url.protocol)) { notify("Solo se admiten URLs HTTP o HTTPS."); return; }
+    button.disabled = true; button.textContent = "Analizando…"; status.textContent = "Leyendo páginas públicas, datos de marca e imágenes…"; results.hidden = true;
+    try {
+      const response = await fetch("/api/site-audit", { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({url:url.href}) });
+      const data = await response.json().catch(()=>({}));
+      if (!response.ok) throw new Error(data.error || "No se pudo analizar esta web.");
+      currentWebsiteAudit = data;
+      setFieldValue("projectName", data.businessName || data.title || url.hostname.replace(/^www\./,""));
+      setFieldValue("sector", data.sector || "Sector por confirmar");
+      setFieldValue("offer", data.description || (data.headings || []).slice(0,4).join(". ") || "Oferta por revisar a partir de la web analizada.");
+      setFieldValue("audience", "Audiencia por confirmar con el cliente; revisar la web original.");
+      setFieldValue("goal", "Objetivo de conversión por confirmar con el cliente.");
+      setFieldValue("domain", data.url || url.href);
+      setFieldValue("phone", (data.phones || []).map(p=>p.replace(/\D/g,"")).find(Boolean) || "");
+      if (data.colors && data.colors[0]) {
+        const color = data.colors[0];
+        if (/^#[0-9a-f]{6}$/i.test(color)) { $("#color").value=color; $("#color-picker").value=color; }
+      }
+      const requirements = [
+        ...(data.services || []).map(s=>"Servicio detectado: "+s),
+        ...(data.emails || []).map(e=>"Email detectado: "+e),
+        ...(data.phones || []).map(p=>"Teléfono detectado: "+p),
+        ...(data.addresses || []).map(a=>"Dirección detectada: "+a),
+        ...(data.socialLinks || []).map(l=>l.label+": "+l.url)
+      ];
+      setFieldValue("requirements", requirements.join("\n"));
+      renderWebsiteAudit(data);
+      status.textContent = "Análisis listo. Hemos rellenado los campos que pudimos identificar; revisa y completa audiencia y objetivo antes de generar el proyecto.";
+      notify("Web analizada. Revisa los datos antes de guardar el proyecto.");
+    } catch (error) {
+      status.textContent = error.message || "Error al analizar la web.";
+      notify(status.textContent);
+    } finally {
+      button.disabled = false; button.textContent = "Analizar web ↗";
+    }
+  }
+\n  $(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
   $("#top-new").addEventListener("click",()=>currentView("builder"));
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
-  $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
+  $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});\n  $("#analyze-website").addEventListener("click", analyzeWebsite);
   $("#project-form").addEventListener("submit",e=>{
     e.preventDefault();
     const form=e.currentTarget;
@@ -256,7 +321,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const dialog=$("#project-dialog");
     if(typeof dialog.showModal==="function")dialog.showModal();
     else {currentView("deliverables");}
-    form.reset();$("#color").value="#8B5CF6";$("#color-picker").value="#8B5CF6";
+    form.reset();currentWebsiteAudit=null;$("#website-url").value="";$("#website-scan-status").textContent="";$("#website-scan-results").hidden=true;$("#color").value="#8B5CF6";$("#color-picker").value="#8B5CF6";
   });
   $("#dialog-close").addEventListener("click",()=>$("#project-dialog").close());
   $("#dialog-open").addEventListener("click",()=>{$("#project-dialog").close();currentView("deliverables");});
