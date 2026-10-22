@@ -35,7 +35,7 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","agent-studio":"Agent Studio","modo-rapido":"Modo rápido","agente-8":"Agente 8","demo-impacto":"Demo Impacto",seo:"SEO & Performance"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","agent-studio":"Agent Studio","modo-rapido":"Modo rápido","agente-8":"Auditoría y mejora web","demo-impacto":"Comparativa de impacto",seo:"SEO & Performance"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
