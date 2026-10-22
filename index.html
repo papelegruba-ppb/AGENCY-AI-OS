@@ -22,11 +22,11 @@
         <button class="nav-item" data-view="builder"><span class="nav-icon">✳</span> Nuevo proyecto</button>
         <button class="nav-item" data-view="projects"><span class="nav-icon">▤</span> Proyectos <span id="project-count" class="nav-count">0</span></button>
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
-        <a class="nav-item" href="./modo-rapido.html" style="display:flex;align-items:center;gap:10px;text-decoration:none"><span class="nav-icon">↗</span> Modo rápido <span class="nav-count" style="margin-left:auto">NEW</span></a>
-      <a class="nav-item" href="./agente-8.html" style="display:flex;align-items:center;gap:10px;text-decoration:none"><span class="nav-icon">⇄</span> Agente 8 <span class="nav-count" style="margin-left:auto">NEW</span></a>
+        <button class="nav-item" data-view="modo-rapido"><span class="nav-icon">↗</span> Modo rápido <span class="nav-count" style="margin-left:auto">NEW</span></button>
+      <button class="nav-item" data-view="agente-8"><span class="nav-icon">⇄</span> Agente 8 <span class="nav-count" style="margin-left:auto">NEW</span></button>
       <button class="nav-item" data-view="agent-studio"><span class="nav-icon">✳</span> Agent Studio <span class="nav-count" style="margin-left:auto">AI</span></button>
-      <a class="nav-item" href="./demo-impacto.html" style="display:flex;align-items:center;gap:10px;text-decoration:none"><span class="nav-icon">✳</span> Demo Impacto <span class="nav-count" style="margin-left:auto">08</span></a>
-      <a class="nav-item" href="./seo.html" style="display:flex;align-items:center;gap:10px;text-decoration:none"><span class="nav-icon">⌕</span> SEO &amp; Performance <span class="nav-count" style="margin-left:auto">NEW</span></a>
+      <button class="nav-item" data-view="demo-impacto"><span class="nav-icon">✳</span> Demo Impacto <span class="nav-count" style="margin-left:auto">08</span></button>
+      <button class="nav-item" data-view="seo"><span class="nav-icon">⌕</span> SEO &amp; Performance <span class="nav-count" style="margin-left:auto">NEW</span></button>
       </nav>
       <div class="sidebar-bottom">
         <div class="local-note"><span class="lock-icon">⌑</span><div><strong>Modo local</strong><small>Los datos se guardan en este navegador.</small></div></div>
@@ -39,7 +39,7 @@
       <header class="topbar">
         <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menú">☰</button>
         <div class="breadcrumbs"><span>Workspace</span><b>/</b><strong id="breadcrumb-current">Centro de mando</strong></div>
-        <div class="top-actions"><span class="local-badge"><i></i> LOCAL · SIN API</span><button id="top-new" class="button button-primary button-small">＋ Nuevo proyecto</button></div>
+        <div class="top-actions"><label class="active-project-wrap"><span>Proyecto activo</span><select id="active-project-select" aria-label="Proyecto activo"><option value="">Sin proyecto</option></select></label><span class="local-badge"><i></i> WORKSPACE</span><button id="top-new" class="button button-primary button-small">＋ Nuevo proyecto</button></div>
       </header>
 
       <section class="view active" id="view-dashboard">
@@ -80,7 +80,7 @@
 
       <section class="view" id="view-agent-studio"><div class="page-heading compact-heading"><div><p class="eyebrow">CENTRO DE COORDINACIÓN</p><h1>Agent Studio<span class="heading-period">.</span></h1><p class="subheading">Los agentes trabajan sobre el proyecto activo. No necesitas salir de Agency AI OS.</p></div></div><div class="panel" style="padding:8px;overflow:hidden"><iframe id="agent-studio-frame" title="Agent Studio integrado" src="./agent-studio.html?embedded=1" style="display:block;width:100%;height:calc(100vh - 190px);min-height:850px;border:0;border-radius:12px;background:#f6f4f9" loading="lazy"></iframe></div></section>
 
-      <section class="view" id="view-builder">
+      <section class="view module-view" id="view-modo-rapido"><div class="page-heading compact-heading"><div><p class="eyebrow">PROTOTIPADO RÁPIDO</p><h1>Modo rápido<span class="heading-period">.</span></h1><p class="subheading">Vista previa de propuesta integrada en el workspace.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-modo-rapido" title="Modo rápido" src="./modo-rapido.html?embedded=1" loading="lazy"></iframe></div></section>\n\n      <section class="view module-view" id="view-agente-8"><div class="page-heading compact-heading"><div><p class="eyebrow">COMPARATIVA PERSONALIZADA</p><h1>Agente 8<span class="heading-period">.</span></h1><p class="subheading">Compara la situación actual y la propuesta del proyecto seleccionado.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-agente-8" title="Agente 8" src="./agente-8.html?embedded=1" loading="lazy"></iframe></div></section>\n\n      <section class="view module-view" id="view-demo-impacto"><div class="page-heading compact-heading"><div><p class="eyebrow">PRESENTACIÓN VISUAL</p><h1>Demo Impacto<span class="heading-period">.</span></h1><p class="subheading">Comparativa visual dentro del mismo proyecto.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-demo-impacto" title="Demo Impacto" src="./demo-impacto.html?embedded=1" loading="lazy"></iframe></div></section>\n\n      <section class="view module-view" id="view-seo"><div class="page-heading compact-heading"><div><p class="eyebrow">VISIBILIDAD Y RENDIMIENTO</p><h1>SEO &amp; Performance<span class="heading-period">.</span></h1><p class="subheading">Auditoría técnica integrada en Agency AI OS.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-seo" title="SEO & Performance" src="./seo.html?embedded=1" loading="lazy"></iframe></div></section>\n\n      <section class="view" id="view-builder">
         <div class="page-heading compact-heading"><div><p class="eyebrow">NUEVO ESPACIO DE TRABAJO</p><h1>Construye algo <span class="heading-period">extraordinario.</span></h1><p class="subheading">Define el encargo una vez. Organiza todos los entregables desde un único briefing.</p></div></div>
         <div class="builder-layout">
           <form id="project-form" class="panel project-form">
