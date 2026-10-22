@@ -116,7 +116,7 @@ function extractPage(html, url) {
   const orgEmail=org && org.email ? [String(org.email).replace(/^mailto:/i,"")] : [];
   const orgPhone=org && org.telephone ? [String(org.telephone)] : [];
   const orgAddress=org && org.address ? [typeof org.address==="string" ? org.address : [org.address.streetAddress,org.address.postalCode,org.address.addressLocality,org.address.addressRegion,org.address.addressCountry].filter(Boolean).join(", ")] : [];
-  return {url,title:title||ogTitle,description:description.slice(0,1000),businessName,headings,images,pageLinks,emails:[...new Set([...emails,...orgEmail])].slice(0,20),phones:[...new Set([...phones,...orgPhone])].slice(0,20),socialLinks:socialLinks.slice(0,20),colors,addresses:[...new Set([...addresses,...orgAddress])].slice(0,8),logo,ogImage,links:links.length};
+  return {url,title:title||ogTitle,description:description.slice(0,1000),content:textOnly(html).slice(0,8000),businessName,headings,images,pageLinks,emails:[...new Set([...emails,...orgEmail])].slice(0,20),phones:[...new Set([...phones,...orgPhone])].slice(0,20),socialLinks:socialLinks.slice(0,20),colors,addresses:[...new Set([...addresses,...orgAddress])].slice(0,8),logo,ogImage,links:links.length};
 }
 export async function onRequestPost({ request }) {
   let body;
@@ -147,7 +147,7 @@ export async function onRequestPost({ request }) {
     const mergedSocial=[...new Map(pages.flatMap(p=>p.socialLinks).map(x=>[x.url,x])).values()].slice(0,30);
     const mergedColors=[...new Set(pages.flatMap(p=>p.colors))].slice(0,12);
     const mergedAddresses=[...new Set(pages.flatMap(p=>p.addresses))].slice(0,10);
-    const allPages=pages.map(p=>({url:p.url,title:p.title||p.url}));
+    const allPages=pages.map(p=>({url:p.url,title:p.title||p.url,description:p.description,content:p.content,headings:p.headings}));
     const services=mergedHeadings.filter(h=>/servicio|soluci|producto|qué hacemos|que hacemos|especialidad|tratamiento|proyecto/i.test(h)).slice(0,15);
     return json({
       url:first.url,title:firstPage.title,businessName:firstPage.businessName,description:firstPage.description,
