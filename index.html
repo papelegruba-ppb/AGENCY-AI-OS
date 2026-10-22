@@ -23,9 +23,9 @@
         <button class="nav-item" data-view="projects"><span class="nav-icon">▤</span> Proyectos <span id="project-count" class="nav-count">0</span></button>
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
         <button class="nav-item" data-view="modo-rapido"><span class="nav-icon">↗</span> Modo rápido <span class="nav-count" style="margin-left:auto">NEW</span></button>
-      <button class="nav-item" data-view="agente-8"><span class="nav-icon">⇄</span> Agente 8 <span class="nav-count" style="margin-left:auto">NEW</span></button>
+      <button class="nav-item" data-view="agente-8"><span class="nav-icon">⇄</span> Auditoría y mejora web <span class="nav-count" style="margin-left:auto">WEB</span></button>
       <button class="nav-item" data-view="agent-studio"><span class="nav-icon">✳</span> Agent Studio <span class="nav-count" style="margin-left:auto">AI</span></button>
-      <button class="nav-item" data-view="demo-impacto"><span class="nav-icon">✳</span> Agente 8 · Demo Impacto <span class="nav-count" style="margin-left:auto">08</span></button>
+      <button class="nav-item" data-view="demo-impacto"><span class="nav-icon">✳</span> Comparativa de impacto <span class="nav-count" style="margin-left:auto">VISUAL</span></button>
       <button class="nav-item" data-view="seo"><span class="nav-icon">⌕</span> SEO &amp; Performance <span class="nav-count" style="margin-left:auto">NEW</span></button>
       </nav>
       <div class="sidebar-bottom">
@@ -56,14 +56,14 @@
         <div class="dashboard-grid">
           <article class="panel workflow-panel">
             <div class="panel-heading"><div><p class="eyebrow">PIPELINE DE PRODUCCIÓN</p><h2>Flujo multiagente</h2></div><span class="pill pill-muted">7 especialistas</span></div>
-            <div class="workflow-list">
-              <div class="workflow-step"><span class="step-number">01</span><div class="step-copy"><strong>Marketing & Copywriting</strong><small>Propuesta de valor, titulares y CTA</small></div><span class="step-state">ESTRATEGIA</span></div>
-              <div class="workflow-step"><span class="step-number">02</span><div class="step-copy"><strong>UX/UI Design</strong><small>Arquitectura, wireframe y sistema visual</small></div><span class="step-state">DISEÑO</span></div>
-              <div class="workflow-step featured"><span class="step-number">03</span><div class="step-copy"><strong>Creative Coding & Motion UX</strong><small>Movimiento, microinteracciones y efecto WOW</small></div><span class="step-state purple-state">MOTION</span></div>
-              <div class="workflow-step"><span class="step-number">04</span><div class="step-copy"><strong>Frontend Development</strong><small>Interfaz responsive y componentes</small></div><span class="step-state">BUILD</span></div>
-              <div class="workflow-step"><span class="step-number">05</span><div class="step-copy"><strong>Backend Architecture</strong><small>API, datos e integraciones</small></div><span class="step-state">LÓGICA</span></div>
-              <div class="workflow-step"><span class="step-number">06</span><div class="step-copy"><strong>SEO Técnico</strong><small>Semántica, metadatos y rastreabilidad</small></div><span class="step-state">VISIBILIDAD</span></div>
-              <div class="workflow-step"><span class="step-number">07</span><div class="step-copy"><strong>WhatsApp Conversion Bot</strong><small>Conversación y cualificación de leads</small></div><span class="step-state">CONVERSIÓN</span></div>
+            <div class="workflow-list production-pipeline" aria-label="Etapas del pipeline de producción">
+              <button type="button" class="workflow-step pipeline-link" data-go="builder"><span class="step-number">01</span><span class="step-copy"><strong>Marketing y estrategia</strong><small>Propuesta de valor, titulares y llamadas a la acción</small></span><span class="step-state">ABRIR BRIEFING ↗</span></button>
+              <button type="button" class="workflow-step pipeline-link" data-go="builder"><span class="step-number">02</span><span class="step-copy"><strong>UX/UI y dirección visual</strong><small>Estructura, experiencia y sistema visual de la marca</small></span><span class="step-state">CONFIGURAR ↗</span></button>
+              <button type="button" class="workflow-step featured pipeline-link" data-go="modo-rapido"><span class="step-number">03</span><span class="step-copy"><strong>Prototipo y motion UX</strong><small>Probar una propuesta visual e interacciones</small></span><span class="step-state purple-state">PROTOTIPAR ↗</span></button>
+              <button type="button" class="workflow-step pipeline-link" data-go="agente-8"><span class="step-number">04</span><span class="step-copy"><strong>Construcción y mejora web</strong><small>Revisar la web y preparar mejoras para el proyecto</small></span><span class="step-state">REVISAR ↗</span></button>
+              <button type="button" class="workflow-step pipeline-link" data-go="deliverables"><span class="step-number">05</span><span class="step-copy"><strong>Integraciones y entregables técnicos</strong><small>Especificación de API, formularios y datos</small></span><span class="step-state">ENTREGABLES ↗</span></button>
+              <button type="button" class="workflow-step pipeline-link" data-go="seo"><span class="step-number">06</span><span class="step-copy"><strong>SEO y rendimiento</strong><small>Auditoría técnica, semántica y métricas</small></span><span class="step-state">AUDITAR ↗</span></button>
+              <button type="button" class="workflow-step pipeline-link" data-go="deliverables"><span class="step-number">07</span><span class="step-copy"><strong>Conversión y WhatsApp</strong><small>Flujo de cualificación y contacto comercial</small></span><span class="step-state">VER FLUJO ↗</span></button>
             </div>
             <div class="panel-footer"><span class="tiny-check">✓</span> QA revisa la coherencia y los resultados al final del flujo.</div>
           </article>
@@ -82,9 +82,9 @@
 
       <section class="view module-view" id="view-modo-rapido"><div class="page-heading compact-heading"><div><p class="eyebrow">PROTOTIPADO RÁPIDO</p><h1>Modo rápido<span class="heading-period">.</span></h1><p class="subheading">Vista previa de propuesta integrada en el workspace.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-modo-rapido" title="Modo rápido" src="./modo-rapido.html?embedded=1" loading="lazy"></iframe></div></section>
 
-      <section class="view module-view" id="view-agente-8"><div class="page-heading compact-heading"><div><p class="eyebrow">COMPARATIVA PERSONALIZADA</p><h1>Agente 8<span class="heading-period">.</span></h1><p class="subheading">Compara la situación actual y la propuesta del proyecto seleccionado.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-agente-8" title="Agente 8" src="./agente-8.html?embedded=1" loading="lazy"></iframe></div></section>
+      <section class="view module-view" id="view-agente-8"><div class="page-heading compact-heading"><div><p class="eyebrow">COMPARATIVA PERSONALIZADA</p><h1>Auditoría y mejora web<span class="heading-period">.</span></h1><p class="subheading">Revisa la web actual y prepara una propuesta de mejora basada en los datos disponibles.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-agente-8" title="Agente 8" src="./agente-8.html?embedded=1" loading="lazy"></iframe></div></section>
 
-      <section class="view module-view" id="view-demo-impacto"><div class="page-heading compact-heading"><div><p class="eyebrow">PRESENTACIÓN VISUAL</p><h1>Demo Impacto<span class="heading-period">.</span></h1><p class="subheading">Comparativa visual dentro del mismo proyecto.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-demo-impacto" title="Demo Impacto" src="./demo-impacto.html?embedded=1" loading="lazy"></iframe></div></section>
+      <section class="view module-view" id="view-demo-impacto"><div class="page-heading compact-heading"><div><p class="eyebrow">PRESENTACIÓN VISUAL</p><h1>Comparativa de impacto<span class="heading-period">.</span></h1><p class="subheading">Presentación visual de la situación actual frente a la propuesta.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-demo-impacto" title="Demo Impacto" src="./demo-impacto.html?embedded=1" loading="lazy"></iframe></div></section>
 
       <section class="view module-view" id="view-seo"><div class="page-heading compact-heading"><div><p class="eyebrow">VISIBILIDAD Y RENDIMIENTO</p><h1>SEO &amp; Performance<span class="heading-period">.</span></h1><p class="subheading">Auditoría técnica integrada en Agency AI OS.</p></div></div><div class="panel module-frame-panel"><iframe class="module-frame" id="frame-seo" title="SEO & Performance" src="./seo.html?embedded=1" loading="lazy"></iframe></div></section>
 
