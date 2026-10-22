@@ -1,6 +1,7 @@
 (() => {
   "use strict";
   const STORE_KEY = "agency-ai-os.projects.v1";
+  const ACTIVE_PROJECT_KEY = "agency-ai-os.active-project.v1";
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
@@ -33,11 +34,12 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","agent-studio":"Agent Studio"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
     if (view === "deliverables") renderDeliverables();
+    if (view === "agent-studio") { try { localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId || ""); } catch (_) {} const frame = $("#agent-studio-frame"); if (frame && frame.contentWindow) frame.contentWindow.postMessage({type:"AGENCY_ACTIVE_PROJECT", projectId:activeProjectId || ""}, location.origin); }
     window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
   }
   function getFormData(form) {
@@ -158,7 +160,7 @@
     return `<article class="project-row"><div class="project-row-icon">✳</div><div class="project-row-main"><strong>${esc(p.name)}</strong><small>${esc(p.sector)} · ${esc(p.type)} · ${date}</small></div><div class="project-row-actions"><button class="button-quiet" data-open="${esc(p.id)}">Abrir</button>${compact ? "" : `<button class="button-quiet" data-export="${esc(p.id)}">Exportar JSON</button><button class="button-quiet" data-delete="${esc(p.id)}">Eliminar</button>`}</div></article>`;
   }
   function bindProjectRowActions() {
-    $$("[data-open]").forEach(b=>b.addEventListener("click",()=>{activeProjectId=b.dataset.open;currentView("deliverables");}));
+    $$("[data-open]").forEach(b=>b.addEventListener("click",()=>{activeProjectId=b.dataset.open;try{localStorage.setItem(ACTIVE_PROJECT_KEY,activeProjectId)}catch(_){}currentView("deliverables");}));
     $$("[data-export]").forEach(b=>b.addEventListener("click",()=>exportProject(b.dataset.export)));
     $$("[data-delete]").forEach(b=>b.addEventListener("click",()=>deleteProject(b.dataset.delete)));
   }
@@ -174,6 +176,7 @@
     }
     if (!activeProjectId || !findProject(activeProjectId)) activeProjectId = projects[0].id;
     const p = findProject(activeProjectId);
+    try { localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId); } catch (_) {}
     const plan = p.plan || makePlan(p);
     const selector = `<div class="panel deliverable-project-select"><label for="deliverable-select">Proyecto</label><select id="deliverable-select">${projects.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select><button class="button button-primary" id="export-package">Exportar paquete completo ↧</button></div>`;
     const cards = [
@@ -187,7 +190,7 @@
       deliverableCard("QA y estado","08 · QA","Distingue propuesta, implementación y pruebas pendientes.",JSON.stringify(plan.qa,null,2),`${slugify(p.name)}-qa.json`)
     ].join("");
     host.innerHTML = selector + `<div class="panel export-site-row"><div><strong>Agente 8 · Comparativa personalizada</strong><p class="body-copy">Genera una demo Antes/Después con el briefing, copy y paleta de este proyecto. Añade capturas y métricas con evidencia.</p></div><button class="button button-primary" id="open-agent8">Preparar comparativa ↗</button><button class="button button-secondary" id="export-landing">Exportar landing HTML ↧</button></div><div class="deliverable-grid">${cards}</div>`;
-    $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;renderDeliverables();});
+    $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;try{localStorage.setItem(ACTIVE_PROJECT_KEY,activeProjectId)}catch(_){}renderDeliverables();});
     $("#export-package").addEventListener("click",()=>exportProject(p.id));
     $("#export-landing").addEventListener("click",()=>exportSite(p));
     $("#open-agent8").addEventListener("click",()=>{window.location.href=`./agente-8.html?project=${encodeURIComponent(p.id)}`;});
@@ -250,6 +253,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     projects.unshift(p);
     if(!saveProjects()){projects=projects.filter(x=>x.id!==p.id);return;}
     activeProjectId=p.id;
+    try { localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId); } catch (_) {}
     renderProjects();
     $("#dialog-title").textContent=p.name;
     $("#dialog-description").textContent=`Briefing guardado. Se ha generado una primera propuesta de trabajo para ${p.sector}. Recuerda: son entregables iniciales basados en plantillas; no se ha llamado a ningún modelo de IA externo.`;
