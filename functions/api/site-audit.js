@@ -153,7 +153,7 @@ export async function onRequestPost({ request }) {
     const mergedColors=[...new Set(pages.flatMap(p=>p.colors))].slice(0,12);
     const mergedAddresses=[...new Set(pages.flatMap(p=>p.addresses))].slice(0,10);
     const allPages=pages.map(p=>({url:p.url,title:p.title||p.url,description:p.description,content:p.content,headings:p.headings}));
-    const services=mergedHeadings.filter(h=>/servicio|soluci|producto|qué hacemos|que hacemos|especialidad|tratamiento|proyecto/i.test(h)).slice(0,15);
+    const servicePattern=/asesor[ií]a|asesoramiento|control de gesti[oó]n|gesti[oó]n de|fiscal|contable|econ[oó]mic|laboral|jur[ií]dic|legal|seguros|calidad|inversi[oó]n|emprend|financiaci[oó]n|log[ií]stic|consultor[ií]a|auditor[ií]a|cuadros? de mando|business plan|compraventa|servicio|soluci[oó]n|producto|especialidad|tratamiento/i;\n    const genericHeading=/^(inicio|home|servicios?|services|soluciones?|contacto|contact|blog|noticias|qu[ií]enes somos|qui[eé]nes somos|la tranquilidad de sentirse bien asesorado|que no sea demasiado tarde)$/i;\n    const services=[...new Set(mergedHeadings.filter(h=>servicePattern.test(h)&&!genericHeading.test(h.trim())&&!/ha quedado peque[nñ]o|cu[aá]nto tiempo|c[oó]mo va su empresa|oportunidad de emprender/i.test(h)))].slice(0,20);
     return json({
       url:first.url,title:firstPage.title,businessName:firstPage.businessName,description:firstPage.description,
       logo:firstPage.logo,ogImage:firstPage.ogImage,headings:mergedHeadings,images:mergedImages,
