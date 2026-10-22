@@ -5,6 +5,7 @@
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
+  let latestSiteAudit = null;
   let activeProjectId = (() => { try { return localStorage.getItem(ACTIVE_PROJECT_KEY) || (projects[0] && projects[0].id) || null; } catch (_) { return (projects[0] && projects[0].id) || null; } })();
   let toastTimer;
 
@@ -60,6 +61,7 @@
       location: String(fd.get("location") || "").trim(), style: fd.get("style") || "editorial premium",
       color: /^#[0-9a-f]{6}$/i.test(fd.get("color") || "") ? fd.get("color") : "#8B5CF6",
       phone: String(fd.get("phone") || "").replace(/\D/g,""), requirements: String(fd.get("requirements") || "").trim(),
+      websiteAudit: latestSiteAudit ? JSON.parse(JSON.stringify(latestSiteAudit)) : null,
       domain: String(fd.get("domain") || "").trim(), deliverables: fd.getAll("deliverables"),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
     };
@@ -298,6 +300,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "No se pudo leer esta web.");
       const first = data.pages && data.pages[0] || data;
+      latestSiteAudit = {url:data.url||parsed.href, title:data.title||"", businessName:data.businessName||"", description:data.description||"", services:Array.isArray(data.services)?data.services:[], pagesScanned:Number(data.pagesScanned)||0, pages:(data.pages||[]).map(p=>({url:p.url,title:p.title,description:p.description,headings:p.headings||[]})), headings:data.headings||[], images:(data.images||[]).slice(0,30).map(im=>({src:im.src,alt:im.alt||"",title:im.title||""})), phones:data.phones||[], emails:data.emails||[], colors:data.colors||[], extractedAt:new Date().toISOString(), evidenceNote:"Fuente: análisis de web pública "+(data.url||parsed.href)+"; "+(Number(data.pagesScanned)||0)+" páginas analizadas. Las imágenes extraídas son recursos de la web, no capturas de pantalla ni métricas PageSpeed."};
       const fill = (id, value) => { const el=$("#"+id); if(el && value && !el.value.trim()) el.value=value; };
       fill("projectName", first.businessName || first.title || parsed.hostname.replace(/^www\./,""));
       const serviceNames = Array.isArray(data.services) ? data.services : [];
