@@ -202,7 +202,7 @@
     $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;try{localStorage.setItem(ACTIVE_PROJECT_KEY,activeProjectId)}catch(_){}renderDeliverables();});
     $("#export-package").addEventListener("click",()=>exportProject(p.id));
     $("#export-landing").addEventListener("click",()=>exportSite(p));
-    $("#open-agent8").addEventListener("click",()=>{window.location.href=`./agente-8.html?project=${encodeURIComponent(p.id)}`;});
+    $("#open-agent8").addEventListener("click",()=>{activeProjectId=p.id;try{localStorage.setItem(ACTIVE_PROJECT_KEY,activeProjectId)}catch(_){}currentView("agente-8");});
     $$("[data-download]",host).forEach(btn=>btn.addEventListener("click",()=>{
       download(decodeURIComponent(btn.dataset.download),decodeURIComponent(btn.dataset.content),decodeURIComponent(btn.dataset.mime));
       notify("Descarga preparada.");
