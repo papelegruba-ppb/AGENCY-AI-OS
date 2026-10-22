@@ -81,6 +81,25 @@
         <div class="page-heading compact-heading"><div><p class="eyebrow">NUEVO ESPACIO DE TRABAJO</p><h1>Construye algo <span class="heading-period">extraordinario.</span></h1><p class="subheading">Define el encargo una vez. Organiza todos los entregables desde un único briefing.</p></div></div>
         <div class="builder-layout">
           <form id="project-form" class="panel project-form">
+            <section class="website-scan panel" aria-labelledby="website-scan-title">
+              <div class="scan-heading"><span class="scan-icon">↗</span><div><p class="eyebrow">IMPORTAR AUTOMÁTICAMENTE</p><h2 id="website-scan-title">Analiza una web existente</h2><p>Introduce la URL y rellenaremos la ficha con los datos públicos que encontremos.</p></div></div>
+              <div class="scan-controls"><label class="field"><span>URL de la web</span><input id="website-url" type="url" placeholder="https://empresa.com" autocomplete="url" inputmode="url"></label><button type="button" id="analyze-website" class="button button-primary">Analizar web ↗</button></div>
+              <p class="scan-privacy">Se analizarán páginas públicas. Revisa los datos extraídos antes de generar el proyecto.</p>
+              <div id="website-scan-status" class="scan-status" role="status" aria-live="polite"></div>
+              <div id="website-scan-results" class="scan-results" hidden></div>
+              <section id="website-performance" class="scan-subpanel" hidden>
+                <div class="scan-subpanel-head"><div><p class="eyebrow">DIAGNÓSTICO TÉCNICO</p><h3>SEO &amp; PageSpeed</h3><p>Mediciones reales de Google Lighthouse y recomendaciones iniciales.</p></div><button type="button" id="run-performance" class="button button-secondary">Analizar SEO + PageSpeed ↗</button></div>
+                <div id="performance-status" class="scan-status" role="status" aria-live="polite"></div>
+                <div id="performance-results"></div>
+              </section>
+              <section id="project-assistant" class="scan-subpanel assistant-panel" hidden>
+                <div class="scan-subpanel-head"><div><p class="eyebrow">AGENCIA ASISTIDA POR IA</p><h3>Copiloto del proyecto</h3><p>Pide diagnósticos, ideas comerciales o cambios en el briefing. Las modificaciones se aplican solo cuando tú las aceptas.</p></div><span class="assistant-orb">AI</span></div>
+                <div id="assistant-messages" class="assistant-messages" aria-live="polite"><div class="assistant-message assistant">Soy tu copiloto de proyecto. Puedo priorizar mejoras SEO, explicar el informe y proponer cambios de contenido, oferta o estilo.</div></div>
+                <form id="assistant-form" class="assistant-form"><label class="field"><span>¿Qué quieres mejorar?</span><textarea id="assistant-prompt" rows="2" maxlength="3000" placeholder="Ej. Prioriza los problemas SEO y propón mejoras que pueda ofrecer al cliente." required></textarea></label><button type="submit" id="assistant-send" class="button button-primary">Consultar IA ↗</button></form>
+                <div id="assistant-proposal" class="assistant-proposal" hidden></div>
+                <p class="scan-footnote">Requiere configurar OPENAI_API_KEY en Cloudflare. El uso de la API de IA puede tener coste; no se envía la clave al navegador.</p>
+              </section>
+            </section>
             <div class="form-section-title"><span class="form-step">01</span><div><h2>Briefing del negocio</h2><p>Los datos esenciales para alinear a todos los agentes.</p></div></div>
             <div class="field-grid">
               <label class="field full"><span>Nombre del proyecto <b>*</b></span><input name="projectName" id="projectName" required maxlength="90" placeholder="Ej. Nébula Studio"><small>Nombre interno para identificar el proyecto.</small></label>
