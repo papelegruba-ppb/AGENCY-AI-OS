@@ -23,6 +23,11 @@ function decode(s = "") {
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
     .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
+    .replace(/&ntilde;/gi, "ñ").replace(/&Ntilde;/g, "Ñ")
+    .replace(/&aacute;/gi, "á").replace(/&eacute;/gi, "é").replace(/&iacute;/gi, "í").replace(/&oacute;/gi, "ó").replace(/&uacute;/gi, "ú")
+    .replace(/&Aacute;/g, "Á").replace(/&Eacute;/g, "É").replace(/&Iacute;/g, "Í").replace(/&Oacute;/g, "Ó").replace(/&Uacute;/g, "Ú")
+    .replace(/&uuml;/gi, "ü").replace(/&Uuml;/g, "Ü").replace(/&iquest;/gi, "¿").replace(/&iexcl;/gi, "¡")
+    .replace(/&rsquo;|&lsquo;/gi, "’").replace(/&rdquo;|&ldquo;/gi, "”").replace(/&ndash;/gi, "–").replace(/&mdash;/gi, "—").replace(/&hellip;/gi, "…").replace(/&copy;/gi, "©").replace(/&reg;/gi, "®")
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Math.min(0x10ffff, Number(n))))
     .replace(/&#x([\da-f]+);/gi, (_, n) => String.fromCodePoint(Math.min(0x10ffff, parseInt(n, 16))))
     .replace(/\s+/g, " ").trim();
