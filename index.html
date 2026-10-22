@@ -81,6 +81,13 @@
         <div class="page-heading compact-heading"><div><p class="eyebrow">NUEVO ESPACIO DE TRABAJO</p><h1>Construye algo <span class="heading-period">extraordinario.</span></h1><p class="subheading">Define el encargo una vez. Organiza todos los entregables desde un único briefing.</p></div></div>
         <div class="builder-layout">
           <form id="project-form" class="panel project-form">
+            <section class="website-scan panel" aria-labelledby="website-scan-title">
+              <div class="scan-heading"><span class="scan-icon">↗</span><div><p class="eyebrow">IMPORTAR AUTOMÁTICAMENTE</p><h2 id="website-scan-title">Analiza una web existente</h2><p>Introduce la URL y rellenaremos la ficha con los datos públicos que encontremos.</p></div></div>
+              <div class="scan-controls"><label class="field"><span>URL de la web</span><input id="website-url" type="url" placeholder="https://empresa.com" autocomplete="url" inputmode="url"></label><button type="button" id="analyze-website" class="button button-primary">Analizar web ↗</button></div>
+              <p class="scan-privacy">Se analizarán páginas públicas. Revisa los datos extraídos antes de generar el proyecto.</p>
+              <div id="website-scan-status" class="scan-status" role="status" aria-live="polite"></div>
+              <div id="website-scan-results" class="scan-results" hidden></div>
+            </section>
             <div class="form-section-title"><span class="form-step">01</span><div><h2>Briefing del negocio</h2><p>Los datos esenciales para alinear a todos los agentes.</p></div></div>
             <div class="field-grid">
               <label class="field full"><span>Nombre del proyecto <b>*</b></span><input name="projectName" id="projectName" required maxlength="90" placeholder="Ej. Nébula Studio"><small>Nombre interno para identificar el proyecto.</small></label>
