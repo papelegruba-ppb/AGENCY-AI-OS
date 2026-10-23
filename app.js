@@ -2,10 +2,12 @@
   "use strict";
   const STORE_KEY = "agency-ai-os.projects.v1";
   const HISTORY_KEY = "agency-ai-os.history.v1";
+  const ACTIVE_PROJECT_KEY = "agency-ai-os.active-project-id.v1";
+  let latestWebsiteAudit = null;
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
-  let activeProjectId = null;
+  let activeProjectId = localStorage.getItem(ACTIVE_PROJECT_KEY) || null;
   let toastTimer;
 
   function loadProjects() {
@@ -70,6 +72,12 @@
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
     if (view === "deliverables") renderDeliverables();
+    if (view === "propuesta-comercial") {
+      const frame = $("#frame-propuesta-comercial");
+      const selected = activeProjectId || projects[0]?.id || "";
+      if (selected) { activeProjectId = selected; localStorage.setItem(ACTIVE_PROJECT_KEY, selected); }
+      if (frame) frame.src = "./propuesta-comercial.html?embedded=1" + (selected ? "&project=" + encodeURIComponent(selected) : "");
+    }
     window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
   }
 
@@ -82,7 +90,7 @@
       location: String(fd.get("location") || "").trim(), style: fd.get("style") || "editorial premium",
       color: /^#[0-9a-f]{6}$/i.test(fd.get("color") || "") ? fd.get("color") : "#8B5CF6",
       phone: String(fd.get("phone") || "").replace(/\D/g,""), requirements: String(fd.get("requirements") || "").trim(),
-      domain: String(fd.get("domain") || "").trim(), deliverables: fd.getAll("deliverables"),
+      domain: String(fd.get("domain") || "").trim(), websiteAudit: latestWebsiteAudit, deliverables: fd.getAll("deliverables"),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
     };
   }
@@ -113,19 +121,25 @@
       
       if (!response.ok) throw new Error(data.error || "Error al analizar");
 
-      // Autocompletar campos
-      if (data.title) {
-        $("#projectName").value = data.businessName || data.title.split("|")[0].trim();
+      // /api/site-audit devuelve projectName, sector, offer, audience, goal,
+      // requirements, h1/h2 y score; no devuelve businessName ni headings.
+      latestWebsiteAudit = data;
+      const setIfEmpty = (selector, value) => {
+        const field = $(selector);
+        if (field && value && !field.value.trim()) field.value = value;
+      };
+      setIfEmpty("#projectName", data.projectName || (data.title || "").split(/[|–—-]/)[0].trim() || new URL(domainInput).hostname);
+      setIfEmpty("#sector", data.sector);
+      setIfEmpty("#offer", data.offer || data.description);
+      setIfEmpty("#audience", data.audience);
+      setIfEmpty("#goal", data.goal);
+      setIfEmpty("#requirements", data.requirements || [...(data.h1 || []), ...(data.h2 || [])].slice(0, 8).join("\n"));
+      if (data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
+        $("#color").value = data.themeColor;
+        $("#color-picker").value = data.themeColor;
       }
-      if (data.description) {
-        $("#offer").value = data.description;
-      }
-      if (data.headings && data.headings.length > 0) {
-        $("#requirements").value = data.headings.slice(0, 5).join("\n");
-      }
-      
-      statusText.textContent = "✅ Datos importados. Revisa el briefing antes de generar.";
-      notify("Datos de la web importados con éxito.");
+      statusText.textContent = "✅ Web analizada: SEO " + (data.score ?? "—") + "/100. Revisa el briefing antes de guardarlo.";
+      notify("Datos públicos importados al briefing.");
     } catch (error) {
       statusText.textContent = "❌ Error: " + error.message;
       notify("No se pudo importar la web. Revisa que sea una URL pública.");
@@ -294,7 +308,7 @@ Responde siempre en español.`
 
     host.innerHTML = selector + `<div class="panel export-site-row"><div><strong>Propuesta Comercial</strong><p class="body-copy">Genera el comparador visual Antes/Después para enseñárselo al cliente.</p></div><button class="button button-primary" id="open-propuesta">Preparar comparativa ↗</button><button class="button button-secondary" id="export-landing">Exportar landing rápida ↧</button></div><div class="deliverable-grid">${cardsArray.join("")}</div>`;
     
-    $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;renderDeliverables();});
+    $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;localStorage.setItem(ACTIVE_PROJECT_KEY,activeProjectId);renderDeliverables();});
     $("#export-package").addEventListener("click",()=>exportProject(p.id));
     $("#export-landing").addEventListener("click",()=>exportSite(p));
     $("#open-propuesta").addEventListener("click",()=>{window.location.href=`./propuesta-comercial.html?project=${encodeURIComponent(p.id)}`;});
@@ -349,6 +363,8 @@ Responde siempre en español.`
     projects.unshift(p);
     if(!saveProjects()){projects=projects.filter(x=>x.id!==p.id);return;}
     activeProjectId=p.id;
+    localStorage.setItem(ACTIVE_PROJECT_KEY, p.id);
+    latestWebsiteAudit = null;
     renderProjects();
     $("#dialog-title").textContent=p.name;
     $("#dialog-description").textContent=`Briefing guardado. Se ha generado una primera propuesta de trabajo para ${p.sector}.`;
