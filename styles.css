@@ -320,4 +320,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .step-copy small { font-size: 9px; }
   .builder-layout { gap: 12px; }
   .project-form { padding: 17px; }
-  .field-grid { grid-template-columns: 1fr; gap: 15
+  .field-grid { grid-template-columns: 1fr; gap: 15px; }
+  .field.full { grid-column: auto; }
+  .deliverable-options { grid-template-columns: 1fr; }
+  .builder-aside { grid-template-columns: 1fr; }
+  .form-actions { align-items: stretch; flex-direction: column; }
+  .form-actions .button { width: 100%; }
+  .project-row { align-items: flex-start; padding: 13px; flex-wrap: wrap; }
+  .project-row-main { min-width: calc(100% - 60px); }
+  .project-row-actions { width: 100%; padding-left: 57px; }
+  .deliverable-grid, .settings-grid { grid-template-columns: 1fr; }
+  .deliverable-project-select select { width: 100%; min-width: 0; }
+  .compact-heading > .button { font-size: 10px; padding: 9px; }
+  .project-dialog { padding: 18px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .button-primary { position: relative; overflow: hidden; }
+  .button-primary::after { content: ""; position: absolute; top: -80%; left: -35%; width: 25%; height: 260%; background: #ffffff42; transform: rotate(24deg); transition: left .55s ease; }
+  .button-primary:hover::after { left: 125%; }
+  .panel, .project-row, .deliverable-card { transition: transform .2s, border-color .2s, box-shadow .2s; }
+  .project-row:hover, .deliverable-card:hover { transform: translateY(-2px); border-color: #d8c5ff; box-shadow: 0 10px 25px #28173e0b; }
+}
