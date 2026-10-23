@@ -388,18 +388,40 @@ $("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"be
 $("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
 
 $("#btn-run-seo").addEventListener("click", async () => {
-  const btn = $("#btn-run-seo"); const resDiv = $("#seo-audit-results"); const url = $("#site-url").value.trim();
-  if(!url || !url.startsWith("http")) { toast("Introduce una URL válida."); return; }
+  const btn = $("#btn-run-seo"), resDiv = $("#seo-audit-results"), url = $("#site-url").value.trim();
+  let parsed;
+  try { parsed = new URL(url); } catch { toast("Introduce una URL válida, incluyendo https://."); return; }
+  if (!["http:", "https:"].includes(parsed.protocol)) { toast("La URL debe usar HTTP o HTTPS."); return; }
   btn.disabled = true; btn.textContent = "Analizando...";
+  resDiv.style.display = "block"; $("#seo-score").textContent = "…"; $("#seo-text").textContent = "Descargando y analizando la web pública…";
   try {
-    const res = await fetch('/api/seo-audit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: url }) });
-    const data = await res.json();
-    if(data.error) throw new Error(data.error);
+    const res = await fetch("/api/site-audit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: parsed.href }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error || data.ok === false) throw new Error(data.error || ("La auditoría falló (HTTP " + res.status + ")."));
     $("#seo-score").textContent = data.score + " / 100";
-    $("#seo-score").style.color = data.score >= 80 ? 'var(--green)' : data.score >= 50 ? 'var(--yellow)' : 'var(--orange)';
-    $("#seo-text").textContent = data.analysis;
-    resDiv.style.display = "block"; toast("Auditoría SEO completada.");
-  } catch(e) { toast("Error: " + e.message); } finally { btn.disabled = false; btn.textContent = "Ejecutar análisis SEO ↗"; }
+    $("#seo-score").style.color = data.score >= 80 ? "var(--green)" : data.score >= 50 ? "var(--yellow)" : "var(--orange)";
+    const lines = [
+      data.summary || "Auditoría SEO básica completada.",
+      "",
+      "TITLE: " + (data.title || "No encontrado"),
+      "META DESCRIPTION: " + (data.description || "No encontrada"),
+      "H1: " + ((data.h1 || []).join(" | ") || "No encontrado"),
+      "H2: " + ((data.h2 || []).join(" | ") || "No encontrados"),
+      "Imágenes sin ALT: " + (data.images?.missingAlt ?? 0),
+      "Enlaces internos: " + (data.links?.internal ?? 0),
+      "Enlaces salientes: " + (data.links?.outbound ?? 0),
+      "",
+      "HALLAZGOS:",
+      ...(data.findings || [])
+    ];
+    $("#seo-text").textContent = lines.join("\n");
+    toast("Auditoría SEO completada.");
+  } catch (e) {
+    $("#seo-score").textContent = "Error";
+    $("#seo-score").style.color = "var(--orange)";
+    $("#seo-text").textContent = e.message;
+    toast("Error en la auditoría: " + e.message);
+  } finally { btn.disabled = false; btn.textContent = "Ejecutar análisis SEO ↗"; }
 });
 
 $("#export-html").addEventListener("click", () => {
