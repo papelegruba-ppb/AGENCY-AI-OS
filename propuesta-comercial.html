@@ -258,6 +258,22 @@ function toast(s){const t=$("#toast");t.textContent=s;t.classList.remove("hidden
 function saved(){try{const p=JSON.parse(localStorage.getItem(PKEY)||"[]");return Array.isArray(p)?p:[]}catch(e){return []}}
 function all(){return saved().concat(imported)}
 function options(){const sel=$("#project-select"),current=sel.value;sel.innerHTML='<option value="">— Seleccionar proyecto —</option>'+all().map((p,i)=>'<option value="'+esc(p.id||"import-"+i)+'">'+esc(p.name||p.projectName||p.client||"Proyecto sin nombre")+'</option>').join("");if(current&&[...sel.options].some(o=>o.value===current))sel.value=current}
+function restoreSavedProposal(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LKEY)||"null");if(!d)return false;
+    const map={client:"client",sector:"sector",accent:"accent",offer:"offer",siteUrl:"site-url",beforeTitle:"before-title",beforeCopy:"before-copy",afterTitle:"after-title",afterCopy:"after-copy",cta:"cta",phone:"phone",note:"evidence-note"};
+    Object.entries(map).forEach(([key,id])=>{if(d[key]!==undefined&&$("#"+id))$("#"+id).value=d[key]});
+    if(typeof d.showMetrics==="boolean")$("#show-metrics").checked=d.showMetrics;
+    if(d.images){beforeImg=d.images.before||"";afterImg=d.images.after||""}
+    if(d.metrics)for(const side of ["before","after"])for(const [id] of defs){
+      const m=d.metrics[side]?.[id];if(!m)continue;
+      const prefix=side==="before"?"b-":"a-";const value=$("#"+prefix+id),status=$("#"+(side==="before"?"bs-":"as-")+id);
+      if(value&&m.value!==null&&m.value!==undefined)value.value=m.value;
+      if(status&&m.status)status.value=m.status;
+    }
+    render();return true;
+  }catch(e){return false}
+}
 function applyProject(p){
   if(!p)return; active=p;
   const plan=p.plan||{},copy=plan.copy||{},audit=p.websiteAudit||p.audit||null;
@@ -539,7 +555,7 @@ metricUI();
 options();
 const requestedProject=new URLSearchParams(location.search).get("project")||localStorage.getItem("agency-ai-os.active-project-id.v1");
 const initialProject=all().find(p=>String(p.id)===String(requestedProject))||all()[0];
-if(initialProject)applyProject(initialProject);else render();
+if(initialProject)applyProject(initialProject);else if(!restoreSavedProposal())render();
 })();
 </script>
 </body>
