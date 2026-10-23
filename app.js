@@ -2,10 +2,12 @@
   "use strict";
   const STORE_KEY = "agency-ai-os.projects.v1";
   const HISTORY_KEY = "agency-ai-os.history.v1";
+  const ACTIVE_PROJECT_KEY = "agency-ai-os.active-project-id.v1";
+  let latestWebsiteAudit = null;
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
-  let activeProjectId = null;
+  let activeProjectId = localStorage.getItem(ACTIVE_PROJECT_KEY) || null;
   let toastTimer;
 
   function loadProjects() {
@@ -70,6 +72,12 @@
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
     if (view === "deliverables") renderDeliverables();
+    if (view === "propuesta-comercial") {
+      const frame = $("#frame-propuesta-comercial");
+      const selected = activeProjectId || projects[0]?.id || "";
+      if (selected) { activeProjectId = selected; localStorage.setItem(ACTIVE_PROJECT_KEY, selected); }
+      if (frame) frame.src = "./propuesta-comercial.html?embedded=1" + (selected ? "&project=" + encodeURIComponent(selected) : "");
+    }
     window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
   }
 
@@ -82,7 +90,7 @@
       location: String(fd.get("location") || "").trim(), style: fd.get("style") || "editorial premium",
       color: /^#[0-9a-f]{6}$/i.test(fd.get("color") || "") ? fd.get("color") : "#8B5CF6",
       phone: String(fd.get("phone") || "").replace(/\D/g,""), requirements: String(fd.get("requirements") || "").trim(),
-      domain: String(fd.get("domain") || "").trim(), deliverables: fd.getAll("deliverables"),
+      domain: String(fd.get("domain") || "").trim(), websiteAudit: latestWebsiteAudit, deliverables: fd.getAll("deliverables"),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
     };
   }
@@ -113,19 +121,25 @@
       
       if (!response.ok) throw new Error(data.error || "Error al analizar");
 
-      // Autocompletar campos
-      if (data.title) {
-        $("#projectName").value = data.businessName || data.title.split("|")[0].trim();
+      // /api/site-audit devuelve projectName, sector, offer, audience, goal,
+      // requirements, h1/h2 y score; no devuelve businessName ni headings.
+      latestWebsiteAudit = data;
+      const setIfEmpty = (selector, value) => {
+        const field = $(selector);
+        if (field && value && !field.value.trim()) field.value = value;
+      };
+      setIfEmpty("#projectName", data.projectName || (data.title || "").split(/[|–—-]/)[0].trim() || new URL(domainInput).hostname);
+      setIfEmpty("#sector", data.sector);
+      setIfEmpty("#offer", data.offer || data.description);
+      setIfEmpty("#audience", data.audience);
+      setIfEmpty("#goal", data.goal);
+      setIfEmpty("#requirements", data.requirements || [...(data.h1 || []), ...(data.h2 || [])].slice(0, 8).join("\n"));
+      if (data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
+        $("#color").value = data.themeColor;
+        $("#color-picker").value = data.themeColor;
       }
-      if (data.description) {
-        $("#offer").value = data.description;
-      }
-      if (data.headings && data.headings.length > 0) {
-        $("#requirements").value = data.headings.slice(0, 5).join("\n");
-      }
-      
-      statusText.textContent = "✅ Datos importados. Revisa el briefing antes de generar.";
-      notify("Datos de la web importados con éxito.");
+      statusText.textContent = "✅ Web analizada: SEO " + (data.score ?? "—") + "/100. Revisa el briefing antes de guardarlo.";
+      notify("Datos públicos importados al briefing.");
     } catch (error) {
       statusText.textContent = "❌ Error: " + error.message;
       notify("No se pudo importar la web. Revisa que sea una URL pública.");
@@ -294,7 +308,7 @@ Responde siempre en español.`
 
     host.innerHTML = selector + `<div class="panel export-site-row"><div><strong>Propuesta Comercial</strong><p class="body-copy">Genera el comparador visual Antes/Después para enseñárselo al cliente.</p></div><button class="button button-primary" id="open-propuesta">Preparar comparativa ↗</button><button class="button button-secondary" id="export-landing">Exportar landing rápida ↧</button></div><div class="deliverable-grid">${cardsArray.join("")}</div>`;
     
-    $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;renderDeliverables();});
+    $("#deliverable-select").addEventListener("change",e=>{activeProjectId=e.target.value;localStorage.setItem(ACTIVE_PROJECT_KEY,activeProjectId);renderDeliverables();});
     $("#export-package").addEventListener("click",()=>exportProject(p.id));
     $("#export-landing").addEventListener("click",()=>exportSite(p));
     $("#open-propuesta").addEventListener("click",()=>{window.location.href=`./propuesta-comercial.html?project=${encodeURIComponent(p.id)}`;});
@@ -325,8 +339,37 @@ Responde siempre en español.`
     notify("Copia del workspace exportada.");
   }
 
-  function buildLandingHtml(p) { return ""; /* ... (tu código anterior) ... */ }
-  function exportSite(p) { /* ... (tu código anterior) ... */ }
+  function buildLandingHtml(p) {
+    const plan = p.plan || makePlan(p);
+    const c = plan.copy;
+    const s = plan.seo || {};
+    const og = s.openGraph || { title: s.title || p.name, description: s.description || p.offer };
+    const color = /^#[0-9a-f]{6}$/i.test(p.color || "") ? p.color : "#8B5CF6";
+    const phoneLink = p.phone ? `https://wa.me/${p.phone}?text=${encodeURIComponent("Hola, me gustaría recibir información sobre " + p.name + ".")}` : "#contacto";
+    const sectionHtml = c.sections.map((sec,i)=>{
+      const sectionId = slugify(sec.name) || ("seccion-" + (i+1));
+      const isFaq = /preguntas|faq/i.test(sec.name);
+      const isContact = /contacto/i.test(sec.name);
+      let html = '<section class="section ' + (i%2 ? 'section-alt' : '') + '" id="' + esc(sectionId) + '"><div class="container">';
+      html += '<p class="kicker">0' + (i+1) + ' / ' + esc(sec.name) + '</p><h2>' + esc(sec.headline) + '</h2><p class="section-copy">' + esc(sec.body) + '</p>';
+      if(isFaq) html += '<details><summary>¿Cómo empezamos?</summary><p>Cuéntanos tu objetivo y revisaremos el alcance del proyecto.</p></details><details><summary>¿Qué información necesitáis?</summary><p>Una descripción de tu negocio, tus necesidades y el resultado que buscas.</p></details>';
+      if(isContact) html += '<form class="lead-form" id="lead-form"><label>Nombre<input required name="name" autocomplete="name"></label><label>Email<input required type="email" name="email" autocomplete="email"></label><label>¿Qué necesitas?<textarea required name="message" rows="4"></textarea></label><label class="consent"><input required type="checkbox" name="consent"> He leído la política de privacidad.</label><button class="cta" type="submit">Enviar solicitud ↗</button><p class="form-note" id="form-note" role="status">Formulario de demostración: configura un endpoint para recibir solicitudes.</p></form>';
+      html += '<a class="text-link" href="' + (isContact ? phoneLink : '#contacto') + '">' + esc(sec.cta) + ' ↗</a></div></section>';
+      return html;
+    }).join("");
+    return `<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(s.title)}</title><meta name="description" content="${esc(s.description)}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(og.title)}"><meta property="og:description" content="${esc(og.description)}"><meta name="theme-color" content="${esc(color)}"><style>
+:root{--accent:${color};--ink:#17151d;--muted:#696777;--paper:#f5f5f9;--line:#e7e6ef}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,sans-serif}a{color:inherit}.nav{height:76px;padding:0 6vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{font-weight:800;letter-spacing:-.04em}.nav a{text-decoration:none;font-size:13px}.hero{min-height:74vh;display:flex;align-items:center;padding:90px 6vw;background:radial-gradient(ellipse at 80% 10%,${color}25,transparent 45%),var(--paper)}.container{max-width:1080px;margin:auto;width:100%}.hero .container{max-width:1080px}.kicker{text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--accent);font-weight:700}.hero h1{font-size:clamp(42px,7.5vw,88px);letter-spacing:-.075em;line-height:.98;max-width:900px;margin:25px 0}.hero p{max-width:620px;font-size:clamp(16px,2vw,20px);line-height:1.7;color:var(--muted)}.cta{display:inline-flex;background:var(--ink);color:white;border:0;border-radius:100px;padding:15px 22px;text-decoration:none;font-size:13px;font-weight:700;cursor:pointer;margin-top:15px}.section{padding:100px 6vw;border-top:1px solid var(--line)}.section-alt{background:#ffffff}.section h2{font-size:clamp(32px,5vw,56px);line-height:1.05;letter-spacing:-.06em;max-width:750px;margin:15px 0}.section-copy{max-width:680px;color:var(--muted);font-size:17px;line-height:1.8}.text-link{display:inline-block;margin-top:22px;text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:5px;font-size:13px;font-weight:700}.lead-form{max-width:580px;display:grid;gap:14px;margin:30px 0}.lead-form label{display:grid;gap:6px;font-size:12px;font-weight:700}.lead-form input,.lead-form textarea{border:1px solid #d3cfc8;border-radius:8px;padding:12px;background:white;font:inherit}.lead-form .consent{display:flex;align-items:center;gap:8px;font-weight:400}.lead-form .consent input{width:auto}.form-note{font-size:12px;color:var(--muted)}details{border-bottom:1px solid var(--line);padding:18px 0;max-width:700px}summary{cursor:pointer;font-weight:700}footer{padding:35px 6vw;background:#15151b;color:#d8d8df;font-size:12px}footer .container{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}@media(max-width:600px){.nav{padding:0 5vw;height:64px}.hero{padding:70px 6vw;min-height:68vh}.section{padding:70px 6vw}.hero h1{font-size:clamp(40px,13vw,64px)}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head><body><header class="nav"><a class="brand" href="#inicio">${esc(p.name)}</a><a href="#contacto">Hablemos ↗</a></header><main><section class="hero" id="inicio"><div class="container"><p class="kicker">${esc(p.sector)}</p><h1>${esc(c.headline)}</h1><p>${esc(c.subheadline)}</p><a class="cta" href="${phoneLink}">${esc(c.primaryCTA)} ↗</a></div></section>${sectionHtml}</main><footer><div class="container"><strong>${esc(p.name)}</strong><span>© <span id="year"></span> · Todos los derechos reservados</span></div></footer><script>
+document.getElementById("year").textContent=new Date().getFullYear();
+const form=document.getElementById("lead-form");if(form){form.addEventListener("submit",async e=>{e.preventDefault();const note=document.getElementById("form-note");note.textContent="Formulario validado en este navegador. Para recibir solicitudes, conecta un endpoint en el servidor.";note.setAttribute("aria-live","polite");});}
+</script></body></html>`;
+  }
+  function exportSite(p) {
+    const html = buildLandingHtml(p);
+    download(`${slugify(p.name)}-landing.html`,html,"text/html;charset=utf-8");
+    notify("Landing HTML exportada. El formulario de demostración requiere conectar un endpoint para recibir leads.");
+  }
 
   // --- LISTENERS ---
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
@@ -349,6 +392,8 @@ Responde siempre en español.`
     projects.unshift(p);
     if(!saveProjects()){projects=projects.filter(x=>x.id!==p.id);return;}
     activeProjectId=p.id;
+    localStorage.setItem(ACTIVE_PROJECT_KEY, p.id);
+    latestWebsiteAudit = null;
     renderProjects();
     $("#dialog-title").textContent=p.name;
     $("#dialog-description").textContent=`Briefing guardado. Se ha generado una primera propuesta de trabajo para ${p.sector}.`;
