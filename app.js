@@ -346,4 +346,49 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     projects=[];activeProjectId=null;saveProjects();renderProjects();renderDeliverables();notify("Datos locales eliminados.");
   });
   renderProjects();
+    // --- LÓGICA DE GOOGLE DRIVE ---
+  const driveStatus = document.getElementById("drive-status");
+  const btnLink = document.getElementById("btn-link-drive");
+  const btnSync = document.getElementById("btn-sync-drive");
+
+  // Comprobar si venimos de darle a vincular en Google
+  if (window.location.search.includes("drive=success")) {
+    if(driveStatus) driveStatus.textContent = "✅ Drive vinculado correctamente.";
+    if(btnSync) btnSync.disabled = false;
+    if(btnLink) btnLink.textContent = "Volver a vincular";
+    // Limpiamos la URL para que no se quede el ?drive=success
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  if (btnLink) {
+    btnLink.addEventListener("click", () => {
+      window.location.href = "/api/drive-auth";
+    });
+  }
+
+  if (btnSync) {
+    btnSync.addEventListener("click", async () => {
+      btnSync.disabled = true;
+      btnSync.textContent = "Sincronizando...";
+      if(driveStatus) driveStatus.textContent = "Subiendo datos a tu Google Drive...";
+      
+      try {
+        const payload = { projects, exportDate: new Date().toISOString() };
+        const res = await fetch("/api/drive-save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!res.ok) throw new Error("Fallo en el servidor");
+        
+        if(driveStatus) driveStatus.textContent = "✅ Copia guardada en Drive a las " + new Date().toLocaleTimeString();
+      } catch (e) {
+        if(driveStatus) driveStatus.textContent = "❌ Error al sincronizar. ¿Has vinculado tu cuenta?";
+      } finally {
+        btnSync.disabled = false;
+        btnSync.textContent = "Sincronizar ahora";
+      }
+    });
+  }
 })();
