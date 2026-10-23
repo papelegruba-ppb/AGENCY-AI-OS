@@ -93,6 +93,7 @@
           <form id="project-form" class="panel project-form">
             <div class="form-section-title"><span class="form-step">01</span><div><h2>Briefing del negocio</h2><p>Los datos esenciales para alinear a todos los agentes.</p></div></div>
             <div class="field-grid">
+              <label class="field full"><span>Dominio o web actual</span><input name="domain" id="domain" placeholder="https://tudominio.com"><small>Si ya existe una web, importa sus datos públicos para preparar el briefing.</small><button type="button" id="import-website" class="button button-secondary">↻ Autocompletar briefing desde la web</button><small id="website-import-status" role="status">Se importan datos visibles de la web; tendrás que revisar y completar lo que no esté publicado.</small></label>
               <label class="field full"><span>Nombre del proyecto <b>*</b></span><input name="projectName" id="projectName" required maxlength="90" placeholder="Ej. Nébula Studio"><small>Nombre interno para identificar el proyecto.</small></label>
               <label class="field"><span>Sector <b>*</b></span><input name="sector" id="sector" required placeholder="Ej. diseño web y automatización"></label>
               <label class="field"><span>Tipo de proyecto</span><select name="projectType" id="projectType"><option value="landing">Landing page</option><option value="corporate">Web corporativa</option><option value="ecommerce">Tienda online</option><option value="webapp">Aplicación web</option><option value="automation">Agente o automatización</option></select></label>
@@ -104,7 +105,6 @@
               <label class="field"><span>Color principal (HEX)</span><div class="color-input"><input name="color" id="color" value="#8B5CF6" pattern="^#[0-9A-Fa-f]{6}$" aria-label="Color principal hexadecimal"><input type="color" id="color-picker" value="#8B5CF6" aria-label="Selector de color"></div></label>
               <label class="field"><span>WhatsApp</span><input name="phone" id="phone" inputmode="tel" placeholder="Ej. 34600111222"><small>Opcional. Código de país, sin + ni espacios.</small></label>
               <label class="field full"><span>Servicios o secciones necesarias</span><textarea name="requirements" id="requirements" rows="2" placeholder="Servicios, portfolio, precios, reservas, FAQs, blog…"></textarea></label>
-              <label class="field full"><span>Dominio o web actual</span><input name="domain" id="domain" placeholder="https://tudominio.com"><small>Si ya existe una web, importa sus datos públicos para preparar el briefing.</small><button type="button" id="import-website" class="button button-secondary">↻ Autocompletar briefing desde la web</button><small id="website-import-status" role="status">Se importan datos visibles de la web; tendrás que revisar y completar lo que no esté publicado.</small></label>
             </div>
             <div class="form-section-title second-form-title"><span class="form-step">02</span><div><h2>Alcance y entrega</h2><p>Selecciona lo que quieres incluir en la primera versión.</p></div></div>
             <div class="deliverable-options">
