@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f5f9">
-  <title>SEO & Performance — Agency AI OS</title>
+  <title>SEO & Performance Pro — Agency AI OS</title>
   <style>
     :root { --bg: #f5f5f9; --panel: #ffffff; --line: #e7e6ef; --text: #17151d; --muted: #696777; --lilac: #a678ff; --lilac-2: #7542e8; --orange: #ff8a35; --green: #21885c; --red: #b3261e; }
     * { box-sizing: border-box; }
@@ -16,10 +16,12 @@
     .mark { width: 34px; height: 34px; border-radius: 11px; background: linear-gradient(135deg, var(--lilac), var(--orange)); display: grid; place-items: center; color: #fff; }
     .back { font-size: 13px; color: var(--muted); }
     .eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: 11px; font-weight: 800; color: var(--lilac-2); margin: 0 0 8px; }
+    
     .hero { display: grid; grid-template-columns: 1.3fr .7fr; gap: 25px; align-items: end; margin: 22px 0 27px; background: linear-gradient(112deg, #f0e7ff 0%, #fff 48%, #fff0dc 100%); border: 1px solid #ece4fa; border-radius: 23px; padding: 28px 30px; }
     .hero h1 { font-size: clamp(38px, 6vw, 68px); line-height: .98; letter-spacing: -.075em; margin: 0 0 16px; color: var(--text); }
     .hero h1 span { color: var(--lilac-2); }
     .hero p { max-width: 700px; color: var(--muted); margin: 0; }
+    
     .panel { border: 1px solid var(--line); border-radius: 18px; background: var(--panel); padding: 21px; margin-bottom: 18px; box-shadow: 0 7px 24px #28173e06; }
     .panel h2 { font-size: 19px; letter-spacing: -.03em; margin: 0 0 15px; color: var(--text); }
     .formrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; margin-top: 16px; }
@@ -28,19 +30,44 @@
     input[type=url] { background: transparent; border: 0; outline: 0; color: var(--text); width: 100%; min-width: 0; padding: 14px 0; }
     .btn { border: 0; border-radius: 12px; padding: 14px 20px; cursor: pointer; font-weight: 800; background: linear-gradient(105deg, var(--lilac), var(--lilac-2)); color: #fff; white-space: nowrap; box-shadow: 0 7px 18px #9462ef26; }
     .btn:disabled { opacity: .6; cursor: wait; }
-    .btn-google { background: #fff; color: #17151d; border: 1px solid var(--line); box-shadow: none; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; font-weight: 600; }
-    .btn-google:hover { background: #f9f9f9; }
-    .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-    .card { border: 1px solid var(--line); background: #fff; border-radius: 13px; padding: 15px; }
-    .card h3 { font-size: 14px; margin: 0 0 10px; color: var(--text); }
-    .metric { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 8px 0; font-size: 13px; }
-    .metric:last-child { border-bottom: 0; }
-    .metric strong { color: var(--text); }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-    th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
-    th { background: #f9f8fd; font-weight: 600; color: var(--muted); }
-    .hidden { display: none; }
-    .notice { background: #e7f8ef; color: #18814f; padding: 10px 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #bde9cf; font-weight: 600; display: none; }
+    
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 10px; overflow-x: auto; }
+    .tab-btn { background: transparent; border: 0; padding: 10px 15px; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 8px; white-space: nowrap; }
+    .tab-btn.active { background: #f0e7ff; color: var(--lilac-2); }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .score-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+    .score-box { border: 1px solid var(--line); border-radius: 13px; padding: 15px; text-align: center; background: #fff; }
+    .score-box .num { font-size: 32px; font-weight: 900; margin: 5px 0; }
+    .score-box .lbl { font-size: 12px; color: var(--muted); }
+    .score-box.good .num { color: var(--green); }
+    .score-box.mid .num { color: #b06000; }
+    .score-box.bad .num { color: var(--red); }
+    
+    .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .metric-card { border: 1px solid var(--line); border-radius: 13px; padding: 15px; background: #fff; }
+    .metric-card h3 { font-size: 14px; margin: 0 0 5px; }
+    .metric-card .val { font-size: 20px; font-weight: 800; margin-bottom: 5px; }
+    .metric-card .desc { font-size: 11px; color: var(--muted); }
+    
+    .audit-list { display: grid; gap: 10px; }
+    .audit-item { border: 1px solid var(--line); border-radius: 13px; padding: 15px; background: #fff; }
+    .audit-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .audit-title { font-weight: 700; font-size: 14px; }
+    .audit-score { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+    .score-fail { background: #ffe6e6; color: var(--red); }
+    .score-pass { background: #e6f8ef; color: var(--green); }
+    .audit-desc { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    
+    .gsc-error { background: #fff0f0; color: var(--red); border: 1px solid #f4caca; padding: 15px; border-radius: 10px; font-size: 13px; }
+    .gsc-success { background: #e6f8ef; color: var(--green); border: 1px solid #bde9cf; padding: 15px; border-radius: 10px; font-size: 13px; }
+    
+    @media(max-width:850px) {
+      .hero, .score-row, .metrics-grid { grid-template-columns: 1fr; }
+      .formrow { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -48,132 +75,205 @@
 <header class="top"><a class="brand" href="./index.html"><span class="mark">A✳</span><span>AGENCY AI / OS</span></a><a class="back" href="./index.html">← Volver al centro de mando</a></header>
 
 <section class="hero">
-  <div><p class="eyebrow">MÓDULO DE INTELIGENCIA</p><h1>SEO <span>&</span><br>Search Console.</h1><p>Conecta tu cuenta de Google para ver datos reales de tráfico, palabras clave y rendimiento técnico.</p></div>
+  <div><p class="eyebrow">MÓDULO DE INTELIGENCIA TÉCNICA</p><h1>SEO <span>&</span><br>Performance Pro.</h1><p>Auditoría completa de Google PageSpeed y Search Console. Todos los datos, sin resúmenes ocultos.</p></div>
 </section>
-
-<div id="gsc-notice" class="notice">✅ Google Search Console vinculado correctamente. Los datos se cargarán automáticamente.</div>
 
 <section class="panel">
   <h2>Analizar una URL</h2>
-  <p style="font-size:12px; color:var(--muted);">Introduce la URL exacta que tienes dada de alta en Search Console (ej. https://www.tudominio.com/).</p>
+  <p style="font-size:12px; color:var(--muted);">Introduce la URL exacta para obtener el informe completo de Google.</p>
   <div class="formrow">
     <label class="urlbox"><span>↗</span><input id="target-url" type="url" placeholder="https://www.ejemplo.com"></label>
     <button id="btn-analyze" class="btn">Analizar Web</button>
   </div>
 </section>
 
-<!-- SECCIÓN: SEARCH CONSOLE -->
-<section id="section-gsc" class="panel hidden">
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2>Datos de Google Search Console</h2>
-    <span style="font-size:11px; background:#f0e7ff; color:var(--lilac-2); padding:4px 8px; border-radius:6px; font-weight:800;">Últimos 28 días</span>
+<div id="results-area" style="display: none;">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-pagespeed">PageSpeed Insights</button>
+    <button class="tab-btn" data-tab="tab-searchconsole">Google Search Console</button>
   </div>
-  <div id="gsc-data-container">
-    <p style="font-size:13px; color:var(--muted);">Cargando datos...</p>
-  </div>
-</section>
 
-<!-- SECCIÓN: PAGESPEED -->
-<section id="section-pagespeed" class="panel hidden">
-  <h2>Rendimiento Técnico (PageSpeed)</h2>
-  <div class="results-grid">
-    <div class="card">
-      <h3>Móvil</h3>
-      <div id="mobile-scores"></div>
+  <!-- PESTAÑA PAGESPEED -->
+  <div id="tab-pagespeed" class="tab-content active">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2 style="margin:0;">Resultados de PageSpeed</h2>
+      <div style="display:flex; gap:5px;">
+        <button class="btn" id="btn-mode-mobile" style="padding: 5px 10px; font-size: 11px;">📱 Móvil</button>
+        <button class="btn" id="btn-mode-desktop" style="padding: 5px 10px; font-size: 11px;">🖥️ Escritorio</button>
+      </div>
     </div>
-    <div class="card">
-      <h3>Escritorio</h3>
-      <div id="desktop-scores"></div>
+
+    <div class="score-row" id="ps-scores">
+      <!-- Se llena con JS -->
+    </div>
+
+    <h3 style="margin-top: 25px;">Métricas Principales</h3>
+    <div class="metrics-grid" id="ps-metrics">
+      <!-- Se llena con JS -->
+    </div>
+
+    <h3 style="margin-top: 25px;">Oportunidades y Diagnósticos</h3>
+    <div class="audit-list" id="ps-audits">
+      <!-- Se llena con JS -->
     </div>
   </div>
-</section>
+
+  <!-- PESTAÑA SEARCH CONSOLE -->
+  <div id="tab-searchconsole" class="tab-content">
+    <h2>Datos de Search Console</h2>
+    <div id="gsc-data-container">
+      <p style="color:var(--muted);">Haz clic en "Analizar Web" para cargar los datos de Search Console (requiere permisos).</p>
+    </div>
+  </div>
+</div>
 
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+let currentStrategy = 'mobile';
+let fullReport = null;
 
-// 1. Comprobar si venimos de conectar Google
-if (window.location.search.includes("gsc=success")) {
-  $('#gsc-notice').style.display = 'block';
-  // Limpiamos la URL
-  window.history.replaceState({}, document.title, window.location.pathname);
-}
+// Cambio de pestañas
+$$('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.tab-btn').forEach(b => b.classList.remove('active'));
+    $$('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    $(`#${btn.dataset.tab}`).classList.add('active');
+  });
+});
 
-// 2. Manejar el botón de Analizar
+// Botones de móvil/escritorio
+$('#btn-mode-mobile').addEventListener('click', () => { currentStrategy = 'mobile'; renderPageSpeed(); });
+$('#btn-mode-desktop').addEventListener('click', () => { currentStrategy = 'desktop'; renderPageSpeed(); });
+
+// Botón de analizar
 $('#btn-analyze').addEventListener('click', async () => {
   const url = $('#target-url').value.trim();
-  if (!url || !url.startsWith('http')) return alert('Por favor, introduce una URL válida que empiece por http o https.');
+  if (!url || !url.startsWith('http')) return alert('Introduce una URL válida.');
   
   const btn = $('#btn-analyze');
   btn.disabled = true;
   btn.textContent = 'Analizando...';
-  
-  $('#section-gsc').classList.add('hidden');
-  $('#section-pagespeed').classList.add('hidden');
+  $('#results-area').style.display = 'none';
 
   try {
-    // Llamada 1: Search Console (Datos reales de Google)
-    const gscPromise = fetch('/api/gsc-data', {
+    // 1. Llamada a PageSpeed (pedimos ambos modos para tener el JSON completo)
+    const [mobileRes, desktopRes] = await Promise.all([
+      fetch(`/api/pagespeed?url=${encodeURIComponent(url)}&strategy=mobile`).then(r => r.json()),
+      fetch(`/api/pagespeed?url=${encodeURIComponent(url)}&strategy=desktop`).then(r => r.json())
+    ]);
+
+    fullReport = { mobile: mobileRes, desktop: desktopRes };
+
+    // 2. Renderizar PageSpeed
+    renderPageSpeed();
+    
+    // 3. Llamada a Search Console
+    const gscRes = await fetch('/api/gsc-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ siteUrl: url })
     }).then(r => r.json());
-
-    // Llamada 2 y 3: PageSpeed (Móvil y Escritorio)
-    const mobilePromise = fetch(`/api/pagespeed?url=${encodeURIComponent(url)}&strategy=mobile`).then(r => r.json());
-    const desktopPromise = fetch(`/api/pagespeed?url=${encodeURIComponent(url)}&strategy=desktop`).then(r => r.json());
-
-    // Esperamos a que terminen las 3
-    const [gscData, mobileData, desktopData] = await Promise.all([gscPromise, mobilePromise, desktopPromise]);
-
-    // --- RENDERIZAR SEARCH CONSOLE ---
-    $('#section-gsc').classList.remove('hidden');
-    const gscContainer = $('#gsc-data-container');
-
-    if (gscData.error) {
-      gscContainer.innerHTML = `<p style="color:var(--red); font-size:13px;">⚠️ ${gscData.error}</p><p style="font-size:12px; color:var(--muted);">Asegúrate de que la URL está verificada en tu Search Console.</p>`;
-    } else if (!gscData.data || gscData.data.length === 0) {
-      gscContainer.innerHTML = `<p style="font-size:13px; color:var(--muted);">No hay datos de tráfico para esta URL en los últimos 28 días.</p>`;
-    } else {
-      let tableHtml = `<table><thead><tr><th>Palabra clave</th><th>Clics</th><th>Impresiones</th><th>CTR</th><th>Posición</th></tr></thead><tbody>`;
-      gscData.data.forEach(row => {
-        const query = row.keys[0] || '(Sin query)';
-        const clicks = row.clicks || 0;
-        const impressions = row.impressions || 0;
-        const ctr = ((row.ctr || 0) * 100).toFixed(1) + '%';
-        const pos = (row.position || 0).toFixed(1);
-        tableHtml += `<tr><td>${query}</td><td>${clicks}</td><td>${impressions}</td><td>${ctr}</td><td>${pos}</td></tr>`;
-      });
-      tableHtml += `</tbody></table>`;
-      gscContainer.innerHTML = tableHtml;
-    }
-
-    // --- RENDERIZAR PAGESPEED ---
-    $('#section-pagespeed').classList.remove('hidden');
     
-    function renderScores(data, elementId) {
-      if (!data.lighthouseResult) return '<p style="font-size:12px; color:var(--red);">Error cargando datos.</p>';
-      const cats = data.lighthouseResult.categories;
-      return Object.keys(cats).map(key => {
-        const cat = cats[key];
-        if (!cat.score) return '';
-        const score = Math.round(cat.score * 100);
-        const color = score >= 90 ? 'var(--green)' : score >= 50 ? '#b06000' : 'var(--red)';
-        return `<div class="metric"><span>${cat.title}</span><strong style="color:${color}">${score}/100</strong></div>`;
-      }).join('');
-    }
-    $('#mobile-scores').innerHTML = renderScores(mobileData, 'mobile');
-    $('#desktop-scores').innerHTML = renderScores(desktopData, 'desktop');
+    renderSearchConsole(gscRes);
+
+    $('#results-area').style.display = 'block';
 
   } catch (error) {
-    console.error(error);
-    alert('Hubo un error al analizar la web: ' + error.message);
+    alert('Error al analizar: ' + error.message);
   } finally {
     btn.disabled = false;
     btn.textContent = 'Analizar Web';
   }
 });
+
+function renderPageSpeed() {
+  if (!fullReport) return;
+  const data = fullReport[currentStrategy];
+  if (!data.lighthouseResult) return;
+
+  const cats = data.lighthouseResult.categories;
+  const audits = data.lighthouseResult.audits;
+
+  // Puntuaciones
+  const scoreHtml = Object.keys(cats).map(key => {
+    const cat = cats[key];
+    const score = Math.round(cat.score * 100);
+    const cls = score >= 90 ? 'good' : score >= 50 ? 'mid' : 'bad';
+    return `
+      <div class="score-box ${cls}">
+        <div class="lbl">${cat.title}</div>
+        <div class="num">${score}</div>
+      </div>
+    `;
+  }).join('');
+  $('#ps-scores').innerHTML = scoreHtml;
+
+  // Métricas
+  const metricsToShow = ['first-contentful-paint', 'largest-contentful-paint', 'total-blocking-time', 'cumulative-layout-shift'];
+  const metricsHtml = metricsToShow.map(id => {
+    const a = audits[id];
+    if (!a) return '';
+    return `
+      <div class="metric-card">
+        <h3>${a.title}</h3>
+        <div class="val">${a.displayValue || a.numericValue || 'N/A'}</div>
+        <div class="desc">${a.description ? a.description.split('[')[0] : ''}</div>
+      </div>
+    `;
+  }).join('');
+  $('#ps-metrics').innerHTML = metricsHtml;
+
+  // Auditorías (todos los fallos y oportunidades)
+  const auditsHtml = Object.keys(audits).map(id => {
+    const a = audits[id];
+    // Mostramos solo los que tienen score < 1 o son de tipo 'opportunity'
+    if (a.score !== null && a.score >= 1 && a.scoreDisplayMode !== 'opportunity') return '';
+    if (!a.title) return '';
+    
+    const isFail = a.score !== null && a.score < 1;
+    return `
+      <div class="audit-item">
+        <div class="audit-header">
+          <div class="audit-title">${a.title}</div>
+          <div class="audit-score ${isFail ? 'score-fail' : 'score-pass'}">${isFail ? 'FALLO' : 'OPORTUNIDAD'}</div>
+        </div>
+        <div class="audit-desc">${a.description || ''}</div>
+        ${a.displayValue ? `<div class="audit-desc" style="font-weight:700; margin-top:5px;">Dato: ${a.displayValue}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+  $('#ps-audits').innerHTML = auditsHtml || '<p>No hay fallos críticos detectados.</p>';
+}
+
+function renderSearchConsole(data) {
+  const container = $('#gsc-data-container');
+  if (data.error) {
+    container.innerHTML = `<div class="gsc-error">⚠️ ${data.error}<br><br>Asegúrate de que la URL está verificada en tu Search Console.</div>`;
+  } else if (data.data && data.data.length > 0) {
+    let html = `<div class="gsc-success">✅ Datos cargados correctamente.</div>`;
+    html += `<table style="width:100%; border-collapse:collapse; margin-top:15px; font-size:13px;">
+      <thead><tr style="border-bottom:1px solid #ddd; text-align:left;">
+        <th style="padding:8px;">Query</th><th>Clics</th><th>Impresiones</th><th>CTR</th><th>Posición</th>
+      </tr></thead><tbody>`;
+    data.data.forEach(row => {
+      html += `<tr style="border-bottom:1px solid #eee;">
+        <td style="padding:8px;">${row.keys[0]}</td>
+        <td>${row.clicks}</td>
+        <td>${row.impressions}</td>
+        <td>${(row.ctr * 100).toFixed(1)}%</td>
+        <td>${row.position.toFixed(1)}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  } else {
+    container.innerHTML = `<p style="color:var(--muted);">No hay datos de tráfico para esta URL en los últimos 28 días.</p>`;
+  }
+}
 </script>
 </body>
 </html>
