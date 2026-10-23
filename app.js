@@ -382,25 +382,50 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   const importBtn = $("#import-website");
   if(importBtn) importBtn.addEventListener("click", importWebsiteData);
 
-  $("#project-form").addEventListener("submit",e=>{
+  $("#project-form").addEventListener("submit",async e=>{
     e.preventDefault();
     const form=e.currentTarget;
     if(!form.reportValidity())return;
     const p=getFormData(form);
     if(!p.deliverables.length){notify("Selecciona al menos un entregable.");return;}
-    p.plan=makePlan(p);
-    projects.unshift(p);
-    if(!saveProjects()){projects=projects.filter(x=>x.id!==p.id);return;}
-    activeProjectId=p.id;
-    localStorage.setItem(ACTIVE_PROJECT_KEY, p.id);
-    latestWebsiteAudit = null;
-    renderProjects();
-    $("#dialog-title").textContent=p.name;
-    $("#dialog-description").textContent=`Briefing guardado. Se ha generado una primera propuesta de trabajo para ${p.sector}.`;
-    const dialog=$("#project-dialog");
-    if(typeof dialog.showModal==="function")dialog.showModal();
-    else {currentView("deliverables");}
-    form.reset();$("#color").value="#8B5CF6";$("#color-picker").value="#8B5CF6";
+    const submitButton=form.querySelector('[type="submit"]');
+    const originalButtonText=submitButton?.textContent||"Crear proyecto";
+    if(submitButton){submitButton.disabled=true;submitButton.textContent="Preparando propuesta…";}
+    let usedLocalFallback=false;
+    try {
+      const basePlan=makePlan(p);
+      try {
+        const response=await fetch("/api/generate-proposal",{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({project:p}),signal:AbortSignal.timeout(38000)
+        });
+        const generated=await response.json();
+        if(response.ok&&generated?.ok&&generated.plan){
+          p.plan={...basePlan,...generated.plan,seo:basePlan.seo,bot:basePlan.bot,aiAgent:basePlan.aiAgent,socialMedia:basePlan.socialMedia,qa:basePlan.qa,superPromptCode:basePlan.superPromptCode};
+        } else {
+          usedLocalFallback=true;p.plan=basePlan;
+        }
+      } catch (_) {
+        usedLocalFallback=true;p.plan=basePlan;
+      }
+      projects.unshift(p);
+      if(!saveProjects()){projects=projects.filter(x=>x.id!==p.id);return;}
+      activeProjectId=p.id;
+      localStorage.setItem(ACTIVE_PROJECT_KEY,p.id);
+      latestWebsiteAudit=null;
+      renderProjects();
+      $("#dialog-title").textContent=p.name;
+      $("#dialog-description").textContent=usedLocalFallback
+        ? "Proyecto guardado. DeepSeek no respondió en este intento; se ha preparado una propuesta local que puedes editar."
+        : "Proyecto guardado y propuesta inicial generada con DeepSeek para "+p.sector+".";
+      const dialog=$("#project-dialog");
+      if(typeof dialog.showModal==="function")dialog.showModal();
+      else currentView("deliverables");
+      form.reset();$("#color").value="#8B5CF6";$("#color-picker").value="#8B5CF6";
+      if(usedLocalFallback)notify("Proyecto guardado; se usó la propuesta local como alternativa.");
+    } finally {
+      if(submitButton){submitButton.disabled=false;submitButton.textContent=originalButtonText;}
+    }
   });
 
   $("#dialog-close").addEventListener("click",()=>$("#project-dialog").close());
