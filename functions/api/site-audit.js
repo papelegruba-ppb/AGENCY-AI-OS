@@ -71,7 +71,11 @@ export async function onRequestPost({ request }) {
     const ogTag = metas.find(t => attr(t, "property").toLowerCase() === "og:description");
     const themeTag = metas.find(t => attr(t, "name").toLowerCase() === "theme-color");
     const themeColorRaw = themeTag ? attr(themeTag, "content") : "";
-    const themeColor = /^#[0-9a-f]{6}$/i.test(themeColorRaw) ? themeColorRaw : "";
+    const preferredCssColor = html.match(/--(?:brand|primary|accent|color-primary)[\\w-]*\\s*:\\s*(#[0-9a-f]{3,8})/i)?.[1]
+      || html.match(/(?:background-color|background|color)\\s*:\\s*(#[0-9a-f]{6})/i)?.[1]
+      || "";
+    const themeColor = /^#[0-9a-f]{6}$/i.test(themeColorRaw) ? themeColorRaw
+      : /^#[0-9a-f]{6}$/i.test(preferredCssColor) ? preferredCssColor : "";
     const description = descriptionTag ? attr(descriptionTag, "content") : ogTag ? attr(ogTag, "content") : "";
     const h1 = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/gi)].map(m => textOf(m[1])).filter(Boolean);
     const h2 = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2\s*>/gi)].map(m => textOf(m[1])).filter(Boolean);
