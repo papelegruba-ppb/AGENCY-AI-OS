@@ -3,84 +3,110 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#111116">
-  <meta name="description" content="Propuesta comercial interactiva para Agency AI OS.">
+  <meta name="theme-color" content="#f5f5f9">
   <title>Propuesta Comercial · Agency AI OS</title>
   <style>
-    :root{color-scheme:dark;--bg:#111318;--panel:#191c23;--line:#2a2e38;--lilac:#a78bfa;--orange:#ff8a4c;--yellow:#ffe66d;--green:#71d7ac;--red:#ff777f;--accent:#a78bfa;--font:Inter,ui-sans-serif,system-ui,sans-serif;--mono:SFMono-Regular,Consolas,monospace}
-    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0,#a78bfa1b,transparent 35%),var(--bg);color:#f2f3f7;font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
-    button,input,textarea,select{font:inherit}button{cursor:pointer}
-    .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px clamp(12px,3vw,30px);border-bottom:1px solid var(--line);background:#15171d}
-    .brand{color:#f2f3f7;text-decoration:none;font-weight:900;font-size:12px;letter-spacing:.12em}
-    .tag{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--lilac);font-weight:850}
-    .btn{border:1px solid #424654;border-radius:10px;background:#252832;color:#f2f3f7;padding:10px 14px;font-size:12px;font-weight:750;transition:background .18s,border-color .18s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
-    .btn:hover{background:#2f333f}
-    .primary{background:#a78bfa;color:#17131f;border-color:#a78bfa}
-    .primary:hover{background:#b9a1ff}
-    .warm{background:#ffe66d;color:#17131f;border-color:#ffe66d}
-    .warm:hover{background:#ffd633}
-    .wrap{max-width:1440px;margin:auto;padding:clamp(12px,3vw,28px)}
-    h1{font-size:clamp(29px,4vw,46px);line-height:1.05;letter-spacing:-.05em;margin:8px 0}
-    p{color:#a6aabd}
-    .hero{margin-bottom:20px}
-    .hero p{max-width:800px;font-size:13px}
-    .layout{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:20px;align-items:start}
-    .panel{min-width:0;border:1px solid var(--line);background:#191c23;border-radius:17px;padding:16px}
-    .panel h2{font-size:15px;margin:0 0 5px;color:#f2f3f7}
-    .muted,.fine{font-size:10px;color:#a6aabd;line-height:1.6}
-    .fields{display:grid;gap:10px}
-    .field{display:grid;gap:5px}
-    .field label{font-size:11px;font-weight:750;color:#f2f3f7}
-    .field input,.field textarea,.field select{width:100%;min-width:0;border:1px solid #393e4b;border-radius:9px;background:#111318;color:#f2f3f7;padding:10px;font-size:12px}
-    .field textarea{min-height:60px;resize:vertical}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-    .metric-edit{border:1px solid #393e4b;border-radius:10px;padding:9px;display:grid;gap:6px;background:#111318}
-    .metric-edit strong{font-size:11px;color:#f2f3f7}
-    .actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
-    .notice{font-size:10px;color:#e9dcaa;border:1px solid #ffe66d45;border-radius:9px;padding:9px;background:#292313}
-    .preview{position:sticky;top:10px;padding:16px;min-height:70vh;box-shadow:0 16px 45px #0004}
-    .preview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 3px 12px}
-    .preview-head strong{font-size:12px;color:#f2f3f7}
-    .devices{display:flex;gap:4px}
-    .devices button{border:1px solid #424654;border-radius:8px;background:transparent;color:#a6aabd;padding:7px;font-size:10px}
-    .devices button[aria-pressed=true]{background:#a78bfa;color:#17131f;border-color:#a78bfa;font-weight:700}
-    .stage{height:clamp(560px,66vw,820px);position:relative;overflow:hidden;border-radius:12px;background:#171922;touch-action:pan-y}
-    .layer{position:absolute;inset:0;overflow:hidden}
-    .mock-wrap{position:absolute;inset:0;display:grid;place-items:center;padding:clamp(8px,3vw,32px)}
-    .mock{width:min(680px,96%);min-height:300px;border-radius:20px;padding:clamp(15px,4vw,40px);display:flex;flex-direction:column;justify-content:center;overflow-wrap:anywhere}
-    .before{background:linear-gradient(145deg,#281a20,#512b2d);border:1px solid #ff8a4c55}
-    .after{background:radial-gradient(ellipse at 90% 10%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 44%),linear-gradient(145deg,#171522,#2b2050 65%,#35203d);border:1px solid #b7a1ff75}
-    .mocknav{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#ffffff9a}
-    .eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:#ffd1bc;margin-top:32px}
-    .after .eyebrow{color:var(--accent)}
-    .mock h3{font-size:clamp(24px,3.6vw,48px);line-height:1.03;letter-spacing:-.05em;margin:17px 0 10px;color:#fff}
-    .mock p{font-size:11px;line-height:1.7;color:#e0dce9;max-width:500px;margin:0}
-    .mockcta{align-self:flex-start;margin-top:19px;border-radius:999px;background:var(--accent);color:#17131f;padding:10px 14px;font-size:10px;font-weight:850;text-decoration:none}
-    .before .mockcta{background:var(--orange)}
-    .shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
-    .iframe-site{position:absolute;inset:0;width:100%;height:100%;border:0;background:white;display:none}
-    .metrics{position:absolute;z-index:20;top:10px;width:min(230px,calc(50% - 18px));pointer-events:none}
-    .metrics.before{left:10px}.metrics.after{right:10px}
-    .glass{background:#13111bdf;border:1px solid #ffffff29;backdrop-filter:blur(13px);border-radius:13px;padding:11px}
-    .mhead{display:flex;justify-content:space-between;gap:4px;font-size:9px;font-weight:850}
-    .badge{font-size:8px;color:#ddd3ee}
-    .metric{display:grid;grid-template-columns:1fr auto;gap:5px;margin-top:8px;font-size:9px;color:#ded9e7}
-    .metric strong{font-size:11px;color:#fff}
-    .bar{grid-column:1/-1;height:3px;background:#ffffff1b;border-radius:8px;overflow:hidden}
-    .bar span{display:block;height:100%;background:var(--green)}
-    .before .bar span{background:var(--orange)}
-    .split{position:absolute;z-index:35;top:0;bottom:0;left:50%;width:3px;transform:translateX(-50%);background:white;box-shadow:0 0 18px #fff9;pointer-events:none}
-    .knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:white;color:#17131f;font-weight:900;border:2px solid #a78bfa}
-    .range{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:40;cursor:ew-resize;margin:0}
-    .pill{position:absolute;z-index:30;bottom:10px;background:#08070bc9;padding:7px 10px;border-radius:99px;font-size:9px;letter-spacing:.12em;color:#fff}
-    .pill.left{left:10px}.pill.right{right:10px}
-    .status{font-size:10px;line-height:1.6;color:#a6aabd;padding:10px 3px}
-    .hidden{display:none!important}
-    .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#eee5ff;color:#1c1628;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:750;z-index:90;box-shadow:0 10px 30px #0005}
-    @media(max-width:850px){.layout{grid-template-columns:1fr}.preview{position:static}.stage{height:580px}}
-    @media(max-width:560px){.top{padding:11px}.wrap{padding:12px}.layout{gap:12px}.panel{padding:12px}.two,.three{grid-template-columns:1fr}.stage{height:670px}.metrics{width:calc(50% - 12px);top:6px}.metrics.before{left:6px}.metrics.after{right:6px}.glass{padding:7px}.metric{font-size:8px}.metric strong{font-size:10px}.mock{padding:14px;min-height:280px}.mock h3{font-size:26px}}
-    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    :root {
+      --bg: #f5f5f9;
+      --panel: #ffffff;
+      --line: #e7e6ef;
+      --text: #17151d;
+      --muted: #696777;
+      --lilac: #a678ff;
+      --lilac-2: #7542e8;
+      --orange: #ff8a35;
+      --yellow: #ffbf36;
+      --green: #21885c;
+      --font: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 var(--font); }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 15px 30px; border-bottom: 1px solid var(--line); background: #ffffffd9; backdrop-filter: blur(10px); }
+    .brand { color: var(--text); text-decoration: none; font-weight: 900; font-size: 12px; letter-spacing: .12em; }
+    .tag { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--lilac-2); font-weight: 850; }
+    .btn { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); padding: 10px 14px; font-size: 12px; font-weight: 750; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: background .18s; }
+    .btn:hover { background: #f9f8fd; }
+    .primary { background: linear-gradient(105deg, var(--lilac), var(--lilac-2)); color: #fff; border-color: transparent; box-shadow: 0 7px 18px #9462ef26; }
+    .primary:hover { background: linear-gradient(105deg, #9460f5, #7845e4); }
+    .warm { background: var(--yellow); color: #17131f; border-color: var(--yellow); }
+    
+    .wrap { max-width: 1440px; margin: auto; padding: 28px; }
+    h1 { font-size: clamp(29px, 4vw, 46px); line-height: 1.05; letter-spacing: -.05em; margin: 8px 0; color: var(--text); }
+    p { color: var(--muted); }
+    .hero { margin-bottom: 20px; background: linear-gradient(112deg, #f0e7ff 0%, #fff 48%, #fff0dc 100%); border: 1px solid #ece4fa; border-radius: 23px; padding: 28px 30px; }
+    .hero p { max-width: 800px; font-size: 13px; color: #676172; }
+    .eyebrow { color: var(--lilac-2); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; font-weight: 800; }
+    
+    .layout { display: grid; grid-template-columns: 390px 1fr; gap: 20px; align-items: start; }
+    .panel { border: 1px solid var(--line); background: var(--panel); border-radius: 18px; padding: 20px; box-shadow: 0 7px 24px #28173e06; }
+    .panel h2 { font-size: 15px; margin: 0 0 5px; color: var(--text); }
+    .muted { font-size: 10px; color: var(--muted); line-height: 1.6; }
+    
+    .fields { display: grid; gap: 12px; margin-top: 15px; }
+    .field { display: grid; gap: 5px; }
+    .field label { font-size: 11px; font-weight: 750; color: #393343; }
+    .field input, .field textarea, .field select { width: 100%; border: 1px solid #e5e0ed; border-radius: 10px; background: #fcfbfe; color: var(--text); padding: 11px; font-size: 12px; }
+    .field textarea { min-height: 60px; resize: vertical; }
+    .field input:focus, .field textarea:focus { outline: 2px solid var(--lilac); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    
+    .metric-edit { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 6px; background: #f9f8fd; }
+    .metric-edit strong { font-size: 11px; color: var(--text); }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+    .notice { font-size: 11px; color: #89500f; border: 1px solid #ffe66d45; border-radius: 10px; padding: 10px; background: #fff0df; }
+    
+    .preview { position: sticky; top: 20px; padding: 20px; }
+    .preview-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 3px 12px; }
+    .preview-head strong { font-size: 12px; color: var(--text); }
+    .devices { display: flex; gap: 4px; background: #f4f2f8; padding: 4px; border-radius: 10px; }
+    .devices button { border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--muted); padding: 6px 10px; font-size: 10px; }
+    .devices button[aria-pressed=true] { background: #fff; color: var(--text); border-color: var(--line); font-weight: 700; box-shadow: 0 2px 6px #0001; }
+    
+    .stage { height: clamp(560px, 66vw, 820px); position: relative; overflow: hidden; border-radius: 12px; background: #eae8ef; touch-action: pan-y; border: 1px solid var(--line); }
+    .layer { position: absolute; inset: 0; overflow: hidden; }
+    .mock-wrap { position: absolute; inset: 0; display: grid; place-items: center; padding: 32px; }
+    
+    .mock { width: min(680px, 96%); min-height: 300px; border-radius: 20px; padding: 40px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 10px 30px #0001; }
+    .before { background: linear-gradient(145deg, #fff5f0, #ffe6d9); border: 1px solid #ff8a4c55; }
+    .after { background: radial-gradient(ellipse at 90% 10%, #a78bfa25, transparent 44%), linear-gradient(145deg, #fff, #f8f5ff); border: 1px solid #a78bfa55; }
+    .mocknav { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; color: #888; }
+    .eyebrow { font-size: 9px; text-transform: uppercase; letter-spacing: .2em; color: #b4541f; margin-top: 32px; font-weight: 800; }
+    .after .eyebrow { color: var(--lilac-2); }
+    .mock h3 { font-size: clamp(24px, 3.6vw, 48px); line-height: 1.03; letter-spacing: -.05em; margin: 17px 0 10px; color: #17151d; }
+    .mock p { font-size: 11px; line-height: 1.7; color: #555; max-width: 500px; margin: 0; }
+    .mockcta { align-self: flex-start; margin-top: 19px; border-radius: 999px; background: var(--lilac-2); color: #fff; padding: 10px 14px; font-size: 10px; font-weight: 850; text-decoration: none; }
+    .before .mockcta { background: var(--orange); }
+    
+    .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+    .iframe-site { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: white; display: none; }
+    
+    .metrics { position: absolute; z-index: 20; top: 10px; width: min(230px, calc(50% - 18px)); pointer-events: none; }
+    .metrics.before { left: 10px; }
+    .metrics.after { right: 10px; }
+    .glass { background: #ffffffdf; border: 1px solid #ffffff; backdrop-filter: blur(13px); border-radius: 13px; padding: 11px; box-shadow: 0 8px 24px #0002; }
+    .mhead { display: flex; justify-content: space-between; gap: 4px; font-size: 9px; font-weight: 850; color: #555; }
+    .badge { font-size: 8px; color: #888; }
+    .metric { display: grid; grid-template-columns: 1fr auto; gap: 5px; margin-top: 8px; font-size: 9px; color: #555; }
+    .metric strong { font-size: 11px; color: #17151d; }
+    .bar { grid-column: 1/-1; height: 3px; background: #eee; border-radius: 8px; overflow: hidden; }
+    .bar span { display: block; height: 100%; background: var(--green); }
+    .before .bar span { background: var(--orange); }
+    
+    .split { position: absolute; z-index: 35; top: 0; bottom: 0; left: 50%; width: 3px; transform: translateX(-50%); background: #fff; box-shadow: 0 0 18px #fff9; pointer-events: none; }
+    .knob { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: white; color: #17151d; font-weight: 900; border: 2px solid var(--lilac-2); box-shadow: 0 4px 12px #0002; }
+    .range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; z-index: 40; cursor: ew-resize; margin: 0; }
+    .pill { position: absolute; z-index: 30; bottom: 10px; background: #00000099; padding: 7px 10px; border-radius: 99px; font-size: 9px; letter-spacing: .12em; color: #fff; }
+    .pill.left { left: 10px; }
+    .pill.right { right: 10px; }
+    .status { font-size: 11px; line-height: 1.6; color: var(--muted); padding: 10px 3px; }
+    .hidden { display: none !important; }
+    .toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: #17151d; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 750; z-index: 90; box-shadow: 0 10px 30px #0005; }
+    
+    @media (max-width: 850px) { .layout { grid-template-columns: 1fr; } .preview { position: static; } .stage { height: 580px; } }
   </style>
 </head>
 <body>
@@ -91,39 +117,36 @@
 </header>
 <main class="wrap">
   <section class="hero">
-    <span class="tag">De briefing a propuesta visual</span>
-    <h1>Una comparativa que <span style="color:var(--lilac)">habla de tu cliente.</span></h1>
+    <span class="eyebrow">De briefing a propuesta visual</span>
+    <h1>Una comparativa que <span style="color:var(--lilac-2)">habla de tu cliente.</span></h1>
     <p>Selecciona un proyecto guardado o importa su JSON. Personaliza la narrativa, carga capturas y documenta si las métricas son reales, estimaciones, objetivos o están pendientes.</p>
   </section>
 
   <div class="layout">
-    <!-- COLUMNA IZQUIERDA (FORMULARIO) -->
     <section class="panel">
       <h2>1 · Proyecto y copy</h2>
-      <p class="muted">Se leen los proyectos del mismo navegador/origen. Para otro dispositivo, importa el JSON exportado desde Agency AI OS.</p>
-      
       <div class="fields">
         <div class="field"><label for="project-select">Proyecto guardado</label><select id="project-select"><option value="">Selecciona un proyecto</option></select></div>
         <div class="field"><label for="import-json">Importar proyecto JSON</label><input id="import-json" type="file" accept=".json,application/json"></div>
         <div class="field"><label for="client">Cliente / negocio</label><input id="client" maxlength="100" value="Cliente de demostración"></div>
         <div class="two">
           <div class="field"><label for="sector">Sector</label><input id="sector" maxlength="100" value="Servicios profesionales"></div>
-          <div class="field"><label for="accent">Color de marca</label><input id="accent" type="color" value="#A78BFA"></div>
+          <div class="field"><label for="accent">Color de marca</label><input id="accent" type="color" value="#7542E8" style="height: 40px; padding: 4px;"></div>
         </div>
         <div class="field"><label for="offer">Propuesta de valor</label><textarea id="offer" maxlength="500">Una experiencia digital más clara para convertir visitas en conversaciones.</textarea></div>
         
-        <div class="field"><label for="site-url">URL de la web actual (opcional)</label><input id="site-url" type="url" placeholder="https://www.ejemplo.com"><small class="muted">Si pones una URL, se cargará la web real en el lado "Antes".</small></div>
+        <div class="field"><label for="site-url">URL de la web actual (opcional)</label><input id="site-url" type="url" placeholder="https://www.ejemplo.com"></div>
         
-        <div class="seo-audit-box" id="seo-audit-panel" style="border:1px solid #393e4b;border-radius:12px;padding:12px;margin-top:12px;background:#1f222c;">
-          <strong style="font-size:12px; display:block; margin-bottom:8px; color:#f2f3f7;">Auditoría SEO de la web actual</strong>
-          <button class="btn" id="btn-run-seo" style="width:100%; margin-bottom:10px;" type="button">Ejecutar análisis SEO ↗</button>
+        <div class="seo-audit-box" style="border:1px solid var(--line);border-radius:12px;padding:12px;background:#f9f8fd;">
+          <strong style="font-size:12px; display:block; margin-bottom:8px; color:var(--text);">Auditoría SEO</strong>
+          <button class="btn primary" id="btn-run-seo" style="width:100%; margin-bottom:10px;" type="button">Ejecutar análisis SEO ↗</button>
           <div id="seo-audit-results" style="display:none;">
-            <div class="seo-score" id="seo-score" style="font-size:24px; font-weight:900; color:var(--accent); margin-bottom:8px;">0</div>
-            <div class="seo-details" id="seo-text" style="font-size:11px; color:#a6aabd; line-height:1.5; white-space:pre-wrap;"></div>
+            <div class="seo-score" id="seo-score" style="font-size:24px; font-weight:900; color:var(--lilac-2); margin-bottom:8px;">0</div>
+            <div class="seo-details" id="seo-text" style="font-size:11px; color:var(--muted); line-height:1.5; white-space:pre-wrap;"></div>
           </div>
         </div>
 
-        <hr style="width:100%;border:0;border-top:1px solid #393542;margin:10px 0">
+        <hr style="border:0;border-top:1px solid var(--line);margin:10px 0">
         
         <h2>2 · Antes y después</h2>
         <div class="field"><label for="before-title">Titular anterior / problema</label><textarea id="before-title" maxlength="180">Una presencia digital que no explica con claridad el valor del negocio.</textarea></div>
@@ -136,30 +159,27 @@
           <div class="field"><label for="phone">WhatsApp opcional</label><input id="phone" inputmode="tel" maxlength="20" placeholder="34600111222"></div>
         </div>
 
-        <hr style="width:100%;border:0;border-top:1px solid #393542;margin:10px 0">
+        <hr style="border:0;border-top:1px solid var(--line);margin:10px 0">
         
-        <h2>3 · Métricas y evidencia</h2>
-        <p class="muted">Los valores son opcionales. Si no hay medición, déjalos vacíos.</p>
+        <h2>3 · Métricas</h2>
         <div class="three" id="metric-fields"></div>
-        <div class="field"><label for="evidence-note">Fuente, fecha y condiciones de medición</label><textarea id="evidence-note" maxlength="350" placeholder="Ej. PageSpeed Insights, URL, móvil/escritorio, fecha y condiciones…"></textarea></div>
-        <div class="notice">No confundas objetivos con resultados. Para comparar PageSpeed, registra URL, fecha, dispositivo y condiciones equivalentes.</div>
+        <div class="field"><label for="evidence-note">Fuente y condiciones</label><textarea id="evidence-note" maxlength="350" placeholder="Ej. PageSpeed Insights, URL, móvil/escritorio, fecha…"></textarea></div>
+        <div class="notice">No confundas objetivos con resultados.</div>
         
         <div class="field"><label for="upload-before">Captura anterior (opcional)</label><input id="upload-before" type="file" accept="image/*"></div>
         <div class="field"><label for="upload-after">Captura de la propuesta (opcional)</label><input id="upload-after" type="file" accept="image/*"></div>
-        <label style="display:flex;gap:8px;align-items:center;font-size:11px;color:#a6aabd"><input id="show-metrics" type="checkbox" checked> Mostrar tarjetas de métricas</label>
+        <label style="display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)"><input id="show-metrics" type="checkbox" checked> Mostrar tarjetas de métricas</label>
         
         <div class="actions">
           <button class="btn primary" id="refresh" type="button">Actualizar ↻</button>
           <button class="btn" id="save-local" type="button">Guardar ajustes</button>
         </div>
-        <p class="fine">El borrador se guarda en este navegador. Las capturas se incrustan en el HTML exportado y no se suben a un servidor.</p>
       </div>
     </section>
 
-    <!-- COLUMNA DERECHA (PREVIEW) -->
     <section class="panel preview">
       <div class="preview-head">
-        <div><span class="tag">Live preview</span><br><strong id="preview-title">Cliente de demostración · Antes / Después</strong></div>
+        <div><span class="eyebrow">Live preview</span><br><strong id="preview-title">Cliente de demostración · Antes / Después</strong></div>
         <div class="devices">
           <button data-device="desktop" aria-pressed="true">Escritorio</button>
           <button data-device="tablet" aria-pressed="false">Tablet</button>
@@ -209,7 +229,7 @@
         </div>
         
         <div class="split" id="split"><div class="knob">↔</div></div>
-        <input class="range" id="range" type="range" min="0" max="100" value="50" aria-label="Deslizador para comparar antes y después">
+        <input class="range" id="range" type="range" min="0" max="100" value="50" aria-label="Deslizador">
         <span class="pill left">ANTES</span>
         <span class="pill right">DESPUÉS</span>
       </div>
@@ -221,13 +241,10 @@
         <button class="btn warm" id="present" type="button">Modo presentación ⛶</button>
         <button class="btn" id="export-json" type="button">Exportar datos JSON</button>
       </div>
-      <p class="fine">Exporta un único HTML con CSS, interacción y capturas embebidas; no requiere CDN. No es una auditoría automática de rendimiento.</p>
     </section>
   </div>
 </main>
-
-<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
-
+<div class="toast hidden" id="toast"></div>
 <script>
 (()=>{"use strict";
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -241,33 +258,26 @@ function toast(s){const t=$("#toast");t.textContent=s;t.classList.remove("hidden
 function saved(){try{const p=JSON.parse(localStorage.getItem(PKEY)||"[]");return Array.isArray(p)?p:[]}catch(e){return []}}
 function all(){return saved().concat(imported)}
 function options(){const sel=$("#project-select"),current=sel.value;sel.innerHTML='<option value="">— Seleccionar proyecto —</option>'+all().map((p,i)=>'<option value="'+esc(p.id||"import-"+i)+'">'+esc(p.name||p.projectName||p.client||"Proyecto sin nombre")+'</option>').join("");if(current&&[...sel.options].some(o=>o.value===current))sel.value=current}
-function project(id){return all().find((p,i)=>String(p.id||"import-"+i)===String(id))||null}
 
 function metricUI(){
   const h=$("#metric-fields");
-  h.innerHTML=defs.map(([id,label])=>'<div class="metric-edit"><strong>'+label+'</strong><div class="field"><label>Antes (0–100)</label><input id="b-'+id+'" type="number" min="0" max="100" placeholder="Sin dato"></div><div class="field"><label>Estado antes</label><select id="bs-'+id+'"><option value="pending">Pendiente</option><option value="measured">Medición real</option><option value="estimate">Estimación</option></select></div><div class="field"><label>Después (0–100)</label><input id="a-'+id+'" type="number" min="0" max="100" placeholder="Sin dato"></div><div class="field"><label>Estado después</label><select id="as-'+id+'"><option value="pending">Pendiente</option><option value="measured">Medición real</option><option value="estimate">Estimación</option><option value="target">Objetivo</option></select></div></div>').join("");
+  h.innerHTML=defs.map(([id,label])=>'<div class="metric-edit"><strong>'+label+'</strong><div class="field"><label>Antes</label><input id="b-'+id+'" type="number" min="0" max="100" placeholder="—"></div><div class="field"><label>Estado</label><select id="bs-'+id+'"><option value="pending">Pendiente</option><option value="measured">Medición real</option><option value="estimate">Estimación</option></select></div><div class="field"><label>Después</label><input id="a-'+id+'" type="number" min="0" max="100" placeholder="—"></div><div class="field"><label>Estado</label><select id="as-'+id+'"><option value="pending">Pendiente</option><option value="measured">Medición real</option><option value="estimate">Estimación</option><option value="target">Objetivo</option></select></div></div>').join("");
 }
-function metricState(s){return ({pending:"Pendiente de medir",measured:"Medición real",estimate:"Estimación",target:"Objetivo"})[s]||"Pendiente de medir"}
+
+function metricHtml(ms,side){
+  return defs.map(([id,label])=>{
+    const m=ms[id],v=m.value===null?"—":String(m.value),w=m.value===null?0:m.value;
+    return '<div class="metric"><span>'+label+'</span><strong>'+v+'</strong><div class="bar"><span style="width:'+w+'%;background:'+(side==="before"?"var(--orange)":"var(--green)")+'"></span></div></div>';
+  }).join("");
+}
 
 function data(){
   const v=id=>$("#"+id).value.trim();
   const d={
-    client:v("client")||"Cliente",
-    sector:v("sector"),
-    accent:/^#[0-9a-f]{6}$/i.test(v("accent"))?v("accent"):"#A78BFA",
-    offer:v("offer"),
-    siteUrl:v("site-url"),
-    beforeTitle:v("before-title"),
-    beforeCopy:v("before-copy"),
-    afterTitle:v("after-title"),
-    afterCopy:v("after-copy"),
-    cta:v("cta")||"Contactar",
-    phone:v("phone").replace(/\D/g,""),
-    note:v("evidence-note"),
-    showMetrics:$("#show-metrics").checked,
-    metrics:{},
-    images:{before:beforeImg,after:afterImg},
-    projectId:active?.id||""
+    client:v("client")||"Cliente", sector:v("sector"), accent:/^#[0-9a-f]{6}$/i.test(v("accent"))?v("accent"):"#7542E8",
+    offer:v("offer"), siteUrl:v("site-url"), beforeTitle:v("before-title"), beforeCopy:v("before-copy"),
+    afterTitle:v("after-title"), afterCopy:v("after-copy"), cta:v("cta")||"Contactar", phone:v("phone").replace(/\D/g,""),
+    note:v("evidence-note"), showMetrics:$("#show-metrics").checked, metrics:{}, images:{before:beforeImg,after:afterImg}
   };
   for(const side of ["before","after"]){
     d.metrics[side]={};
@@ -280,44 +290,22 @@ function data(){
   return d;
 }
 
-function metricHtml(ms,side){
-  return defs.map(([id,label])=>{
-    const m=ms[id],v=m.value===null?"—":String(m.value),w=m.value===null?0:m.value;
-    return '<div class="metric"><span>'+label+'</span><strong>'+v+'</strong><div class="bar"><span style="width:'+w+'%;background:'+(side==="before"?"var(--orange)":"var(--green)")+'"></span></div></div>';
-  }).join("");
-}
-
 function render(){
   const d=data();
   document.documentElement.style.setProperty("--accent",d.accent);
   
-  // Lógica del Iframe para el "Antes"
-  const iframe = $("#before-site");
-  const mockBefore = $("#before-mock");
-  const shotBefore = $("#before-shot");
-  const status = $("#status");
-
+  const iframe = $("#before-site"), mockBefore = $("#before-mock"), shotBefore = $("#before-shot"), status = $("#status");
   if(d.siteUrl && !beforeImg){
-    iframe.src = d.siteUrl;
-    iframe.style.display = "block";
-    mockBefore.style.display = "none";
-    shotBefore.style.display = "none";
-    status.textContent = "Cargando web desde " + d.siteUrl + ". Si no se ve, el sitio bloquea iframes; sube una captura.";
-    iframe.onload = () => { status.textContent = "Web cargada desde " + d.siteUrl + "."; };
+    iframe.src = d.siteUrl; iframe.style.display = "block"; mockBefore.style.display = "none"; shotBefore.style.display = "none";
+    status.textContent = "Cargando web desde " + d.siteUrl + "...";
   } else if (beforeImg) {
-    iframe.style.display = "none";
-    shotBefore.src = beforeImg;
-    shotBefore.style.display = "block";
-    mockBefore.style.display = "none";
-    status.textContent = "Captura anterior cargada localmente.";
+    iframe.style.display = "none"; shotBefore.src = beforeImg; shotBefore.style.display = "block"; mockBefore.style.display = "none";
+    status.textContent = "Captura anterior cargada.";
   } else {
-    iframe.style.display = "none";
-    shotBefore.style.display = "none";
-    mockBefore.style.display = "grid";
-    status.textContent = "Sin web ni captura anterior. Mostrando mockup por defecto.";
+    iframe.style.display = "none"; shotBefore.style.display = "none"; mockBefore.style.display = "grid";
+    status.textContent = "Sin web ni captura anterior. Mockup por defecto.";
   }
 
-  // Textos
   $("#preview-title").textContent=d.client+" · Antes / Después";
   $("#before-brand").textContent=d.client.toUpperCase();
   $("#after-brand").textContent=d.client.toUpperCase();
@@ -330,46 +318,35 @@ function render(){
   cta.textContent = d.cta + " ↗";
   if(d.phone){ cta.href = "https://wa.me/"+d.phone; cta.target="_blank"; } else { cta.removeAttribute("href"); cta.removeAttribute("target"); }
 
-  // Imágenes "Después"
-  const shotAfter = $("#after-shot");
-  const mockAfter = $("#after-mock");
+  const shotAfter = $("#after-shot"), mockAfter = $("#after-mock");
   if(afterImg){
-    shotAfter.src = afterImg;
-    shotAfter.style.display = "block";
-    mockAfter.style.display = "none";
+    shotAfter.src = afterImg; shotAfter.style.display = "block"; mockAfter.style.display = "none";
   } else {
-    shotAfter.style.display = "none";
-    mockAfter.style.display = "grid";
+    shotAfter.style.display = "none"; mockAfter.style.display = "grid";
   }
 
-  // Métricas
   for(const side of ["before","after"]){
     const m=d.metrics[side];
     $("#"+side+"-metric-list").innerHTML=metricHtml(m,side);
-    $("#"+side+"-badge").textContent=Object.values(m).some(x=>x.status==="measured")?"Incluye mediciones":metricState(Object.values(m)[0]?.status);
+    $("#"+side+"-badge").textContent=Object.values(m).some(x=>x.status==="measured")?"Incluye mediciones":"Pendiente";
     $("#"+side+"-metrics").classList.toggle("hidden",!d.showMetrics);
   }
 }
 
-// COMPARADOR
 const stage=$("#stage"),paneAfter=$("#after-layer"),divider=$("#split"),handle=$("#split"),range=$("#range");
 let dragging=false;
 function setSlider(pct){
   pct=Math.max(0,Math.min(100,pct));
   paneAfter.style.clipPath="inset(0 0 0 "+pct+"%)";
-  divider.style.left=pct+"%";
-  handle.style.left=pct+"%";
-  range.value=pct;
+  divider.style.left=pct+"%"; handle.style.left=pct+"%"; range.value=pct;
 }
 function pctFromEvent(e){
-  const rect=stage.getBoundingClientRect();
-  const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+  const rect=stage.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
   return (x/rect.width)*100;
 }
 function onPointerDown(e){dragging=true;setSlider(pctFromEvent(e));e.preventDefault();}
 function onPointerMove(e){if(!dragging)return;setSlider(pctFromEvent(e));}
 function onPointerUp(){dragging=false;}
-
 if(window.PointerEvent){
   range.addEventListener("pointerdown",onPointerDown);
   window.addEventListener("pointermove",onPointerMove);
@@ -384,24 +361,18 @@ if(window.PointerEvent){
 }
 range.addEventListener("input",e=>setSlider(e.target.value));
 
-// DISPOSITIVOS
 $$("[data-device]").forEach(b=>b.addEventListener("click",()=>{
   const stage=$("#stage");
   stage.style.height=b.dataset.device==="mobile"?"670px":b.dataset.device==="tablet"?"580px":"";
   $$("[data-device]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
 }));
 
-// FORMULARIO
 ["client","sector","offer","site-url","before-title","before-copy","after-title","after-copy","cta","phone","evidence-note","accent"].forEach(id=>{
-  const el=$("#"+id);
-  if(el) el.addEventListener("input",render);
+  const el=$("#"+id); if(el) el.addEventListener("input",render);
 });
-
-// MÉTRICAS
 $("#metric-fields").addEventListener("input",render);
 $("#metric-fields").addEventListener("change",render);
 
-// IMÁGENES
 function readImage(file, key){
   if(!file || !file.type.startsWith("image/")) return;
   if(file.size > 8*1024*1024) { toast("La imagen es demasiado grande (máx 8MB)"); return; }
@@ -409,79 +380,43 @@ function readImage(file, key){
   reader.onload = () => {
     if(key==="before") beforeImg = reader.result;
     else afterImg = reader.result;
-    render();
-    toast("Captura actualizada");
+    render(); toast("Captura actualizada");
   };
   reader.readAsDataURL(file);
 }
 $("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"before"));
 $("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
 
-// SEO
 $("#btn-run-seo").addEventListener("click", async () => {
-  const btn = $("#btn-run-seo");
-  const resDiv = $("#seo-audit-results");
-  const url = $("#site-url").value.trim();
-  
-  if(!url || !url.startsWith("http")) {
-     toast("Introduce una URL válida para analizar.");
-     return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Analizando...";
-  
+  const btn = $("#btn-run-seo"); const resDiv = $("#seo-audit-results"); const url = $("#site-url").value.trim();
+  if(!url || !url.startsWith("http")) { toast("Introduce una URL válida."); return; }
+  btn.disabled = true; btn.textContent = "Analizando...";
   try {
-    const res = await fetch('/api/seo-audit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url })
-    });
+    const res = await fetch('/api/seo-audit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: url }) });
     const data = await res.json();
     if(data.error) throw new Error(data.error);
-    
     $("#seo-score").textContent = data.score + " / 100";
     $("#seo-score").style.color = data.score >= 80 ? 'var(--green)' : data.score >= 50 ? 'var(--yellow)' : 'var(--orange)';
     $("#seo-text").textContent = data.analysis;
-    resDiv.style.display = "block";
-    toast("Auditoría SEO completada.");
-  } catch(e) {
-    toast("Error en auditoría SEO: " + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Ejecutar análisis SEO ↗";
-  }
+    resDiv.style.display = "block"; toast("Auditoría SEO completada.");
+  } catch(e) { toast("Error: " + e.message); } finally { btn.disabled = false; btn.textContent = "Ejecutar análisis SEO ↗"; }
 });
 
-// EXPORTAR
 $("#export-html").addEventListener("click", () => {
-  const d = data();
-  const html = buildExportHtml(d);
-  const blob = new Blob([html], {type:"text/html;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "propuesta_" + slug(d.client) + ".html";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-  toast("HTML exportado correctamente.");
+  const d = data(); const html = buildExportHtml(d);
+  const blob = new Blob([html], {type:"text/html;charset=utf-8"}); const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "propuesta_" + slug(d.client) + ".html";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000); toast("HTML exportado.");
 });
 
 function buildExportHtml(data){
-  const c = data;
-  const accent = c.accent || "#A78BFA";
-  const beforeSrc = c.images.before || "";
-  const afterSrc = c.images.after || "";
-  
-  // Lógica para el iframe en el HTML exportado (no puede usar iframes cruzados por CORS, así que solo mostramos captura o mockup)
+  const c = data; const accent = c.accent || "#7542E8"; const beforeSrc = c.images.before || ""; const afterSrc = c.images.after || "";
   let beforePane, afterPane;
-  if(beforeSrc) beforePane = '<img src="'+beforeSrc+'" alt="Sitio actual" style="width:100%;height:100%;object-fit:cover">';
-  else beforePane = '<div style="display:grid;place-items:center;height:100%;background:linear-gradient(135deg,#d9d5e2,#c9c4d6);color:#3a3546;padding:2rem;text-align:center">Vista «Antes» — captura del sitio actual.</div>';
-  
-  if(afterSrc) afterPane = '<img src="'+afterSrc+'" alt="Propuesta" style="width:100%;height:100%;object-fit:cover">';
-  else afterPane = '<div style="display:grid;place-items:center;height:100%;background:linear-gradient(135deg,#ece8ff,#ffd8bf);color:#3a3546;padding:2rem;text-align:center">Vista «Propuesta» — captura del diseño propuesto.</div>';
+  if(beforeSrc) beforePane = '<img src="'+beforeSrc+'" style="width:100%;height:100%;object-fit:cover">';
+  else beforePane = '<div style="display:grid;place-items:center;height:100%;background:#f0f0f0;color:#666;padding:2rem;text-align:center">Vista «Antes» — captura del sitio actual.</div>';
+  if(afterSrc) afterPane = '<img src="'+afterSrc+'" style="width:100%;height:100%;object-fit:cover">';
+  else afterPane = '<div style="display:grid;place-items:center;height:100%;background:#f9f5ff;color:#666;padding:2rem;text-align:center">Vista «Propuesta» — captura del diseño propuesto.</div>';
 
   const metricCards = defs.map(([key,label])=>{
     const m = c.metrics["before"][key] || {value:null,status:"pending"};
@@ -544,7 +479,6 @@ function buildExportHtml(data){
   </body></html>`;
 }
 
-// INIT
 metricUI();
 render();
 })();
