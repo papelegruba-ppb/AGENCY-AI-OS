@@ -91,6 +91,7 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="tab-pagespeed">PageSpeed Insights</button>
     <button class="tab-btn" data-tab="tab-searchconsole">Google Search Console</button>
+    <button class="tab-btn" data-tab="tab-onpage">On-Page / Enlaces</button>
   </div>
 
   <!-- PESTAÑA PAGESPEED -->
@@ -126,154 +127,69 @@
     </div>
   </div>
 </div>
+  <div id="tab-onpage" class="tab-content"><h2>Auditoría On-Page y enlaces</h2><div id="onpage-container"><p style="color:var(--muted)">La auditoría técnica se ejecutará al analizar la URL.</p></div></div>
+</div>
 
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-let currentStrategy = 'mobile';
-let fullReport = null;
-
-// Cambio de pestañas
-$$('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    $$('.tab-btn').forEach(b => b.classList.remove('active'));
-    $$('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    $(`#${btn.dataset.tab}`).classList.add('active');
-  });
+let currentStrategy = "mobile", fullReport = null;
+function esc(v){return String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function fetchJson(url,options){const r=await fetch(url,options);const d=await r.json().catch(()=>({}));if(!r.ok||d.error||d.ok===false){const e=new Error(d.error||("La solicitud ha fallado (HTTP "+r.status+")."));e.status=r.status;throw e;}return d;}
+function showError(el,msg){el.innerHTML='<div class="gsc-error">⚠️ '+esc(msg)+'</div>';}
+$$(".tab-btn").forEach(b=>b.addEventListener("click",()=>{$$(".tab-btn").forEach(x=>x.classList.toggle("active",x===b));$$(".tab-content").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab));}));
+$("#btn-mode-mobile").addEventListener("click",()=>{currentStrategy="mobile";renderPageSpeed();});
+$("#btn-mode-desktop").addEventListener("click",()=>{currentStrategy="desktop";renderPageSpeed();});
+$("#btn-analyze").addEventListener("click",async()=>{
+ const raw=$("#target-url").value.trim();let u;try{u=new URL(raw);}catch{alert("Introduce una URL válida, por ejemplo https://www.ejemplo.com");return;}
+ if(!["http:","https:"].includes(u.protocol)){alert("La URL debe usar HTTP o HTTPS.");return;}
+ const url=u.href,btn=$("#btn-analyze");btn.disabled=true;btn.textContent="Analizando...";$("#results-area").style.display="block";
+ $("#ps-scores").innerHTML="";$("#ps-metrics").innerHTML="";$("#ps-audits").innerHTML="";
+ $("#gsc-data-container").innerHTML='<p style="color:var(--muted)">Consultando Google Search Console…</p>';
+ $("#onpage-container").innerHTML='<p style="color:var(--muted)">Analizando etiquetas, imágenes y enlaces…</p>';
+ try{
+  const ps=await Promise.allSettled([
+   fetchJson("/api/pagespeed?url="+encodeURIComponent(url)+"&strategy=mobile"),
+   fetchJson("/api/pagespeed?url="+encodeURIComponent(url)+"&strategy=desktop")
+  ]);
+  fullReport={mobile:ps[0].status==="fulfilled"?ps[0].value:{error:ps[0].reason.message},desktop:ps[1].status==="fulfilled"?ps[1].value:{error:ps[1].reason.message}};
+  if(ps.every(x=>x.status==="rejected"))showError($("#ps-scores"),"PageSpeed no ha podido analizar la web. "+ps[0].reason.message);else renderPageSpeed();
+  const results=await Promise.allSettled([
+   fetchJson("/api/gsc-data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({siteUrl:url})}),
+   fetchJson("/api/site-audit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})})
+  ]);
+  if(results[0].status==="fulfilled")renderSearchConsole(results[0].value);else showError($("#gsc-data-container"),results[0].reason.message+" Comprueba que la cuenta esté vinculada y tenga permisos sobre la propiedad exacta.");
+  if(results[1].status==="fulfilled")renderOnPage(results[1].value);else showError($("#onpage-container"),results[1].reason.message);
+ }catch(e){alert("No se pudo completar el análisis: "+e.message);}finally{btn.disabled=false;btn.textContent="Analizar Web";}
 });
-
-// Botones de móvil/escritorio
-$('#btn-mode-mobile').addEventListener('click', () => { currentStrategy = 'mobile'; renderPageSpeed(); });
-$('#btn-mode-desktop').addEventListener('click', () => { currentStrategy = 'desktop'; renderPageSpeed(); });
-
-// Botón de analizar
-$('#btn-analyze').addEventListener('click', async () => {
-  const url = $('#target-url').value.trim();
-  if (!url || !url.startsWith('http')) return alert('Introduce una URL válida.');
-  
-  const btn = $('#btn-analyze');
-  btn.disabled = true;
-  btn.textContent = 'Analizando...';
-  $('#results-area').style.display = 'none';
-
-  try {
-    // 1. Llamada a PageSpeed (pedimos ambos modos para tener el JSON completo)
-    const [mobileRes, desktopRes] = await Promise.all([
-      fetch(`/api/pagespeed?url=${encodeURIComponent(url)}&strategy=mobile`).then(r => r.json()),
-      fetch(`/api/pagespeed?url=${encodeURIComponent(url)}&strategy=desktop`).then(r => r.json())
-    ]);
-
-    fullReport = { mobile: mobileRes, desktop: desktopRes };
-
-    // 2. Renderizar PageSpeed
-    renderPageSpeed();
-    
-    // 3. Llamada a Search Console
-    const gscRes = await fetch('/api/gsc-data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ siteUrl: url })
-    }).then(r => r.json());
-    
-    renderSearchConsole(gscRes);
-
-    $('#results-area').style.display = 'block';
-
-  } catch (error) {
-    alert('Error al analizar: ' + error.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Analizar Web';
-  }
-});
-
-function renderPageSpeed() {
-  if (!fullReport) return;
-  const data = fullReport[currentStrategy];
-  if (!data.lighthouseResult) return;
-
-  const cats = data.lighthouseResult.categories;
-  const audits = data.lighthouseResult.audits;
-
-  // Puntuaciones
-  const scoreHtml = Object.keys(cats).map(key => {
-    const cat = cats[key];
-    const score = Math.round(cat.score * 100);
-    const cls = score >= 90 ? 'good' : score >= 50 ? 'mid' : 'bad';
-    return `
-      <div class="score-box ${cls}">
-        <div class="lbl">${cat.title}</div>
-        <div class="num">${score}</div>
-      </div>
-    `;
-  }).join('');
-  $('#ps-scores').innerHTML = scoreHtml;
-
-  // Métricas
-  const metricsToShow = ['first-contentful-paint', 'largest-contentful-paint', 'total-blocking-time', 'cumulative-layout-shift'];
-  const metricsHtml = metricsToShow.map(id => {
-    const a = audits[id];
-    if (!a) return '';
-    return `
-      <div class="metric-card">
-        <h3>${a.title}</h3>
-        <div class="val">${a.displayValue || a.numericValue || 'N/A'}</div>
-        <div class="desc">${a.description ? a.description.split('[')[0] : ''}</div>
-      </div>
-    `;
-  }).join('');
-  $('#ps-metrics').innerHTML = metricsHtml;
-
-  // Auditorías (todos los fallos y oportunidades)
-  const auditsHtml = Object.keys(audits).map(id => {
-    const a = audits[id];
-    // Mostramos solo los que tienen score < 1 o son de tipo 'opportunity'
-    if (a.score !== null && a.score >= 1 && a.scoreDisplayMode !== 'opportunity') return '';
-    if (!a.title) return '';
-    
-    const isFail = a.score !== null && a.score < 1;
-    return `
-      <div class="audit-item">
-        <div class="audit-header">
-          <div class="audit-title">${a.title}</div>
-          <div class="audit-score ${isFail ? 'score-fail' : 'score-pass'}">${isFail ? 'FALLO' : 'OPORTUNIDAD'}</div>
-        </div>
-        <div class="audit-desc">${a.description || ''}</div>
-        ${a.displayValue ? `<div class="audit-desc" style="font-weight:700; margin-top:5px;">Dato: ${a.displayValue}</div>` : ''}
-      </div>
-    `;
-  }).join('');
-  $('#ps-audits').innerHTML = auditsHtml || '<p>No hay fallos críticos detectados.</p>';
+function renderPageSpeed(){
+ if(!fullReport)return;const d=fullReport[currentStrategy];
+ if(!d||d.error||!d.lighthouseResult){showError($("#ps-scores"),d?.error||"Google no ha devuelto un informe Lighthouse válido.");$("#ps-metrics").innerHTML="";$("#ps-audits").innerHTML="";return;}
+ const cats=d.lighthouseResult.categories||{},audits=d.lighthouseResult.audits||{};
+ $("#ps-scores").innerHTML=Object.keys(cats).map(k=>{const c=cats[k],s=Number.isFinite(c.score)?Math.round(c.score*100):null,cl=s===null?"":s>=90?"good":s>=50?"mid":"bad";return '<div class="score-box '+cl+'"><div class="lbl">'+esc(c.title)+'</div><div class="num">'+(s===null?"—":s)+'</div></div>';}).join("");
+ $("#ps-metrics").innerHTML=["first-contentful-paint","largest-contentful-paint","total-blocking-time","cumulative-layout-shift"].map(id=>{const a=audits[id];return a?'<div class="metric-card"><h3>'+esc(a.title)+'</h3><div class="val">'+esc(a.displayValue||a.numericValue||"N/D")+'</div><div class="desc">'+esc((a.description||"").split("[")[0])+'</div></div>':"";}).join("");
+ const html=Object.keys(audits).map(id=>{const a=audits[id];if(!a||!a.title||(a.score!==null&&a.score>=1&&a.scoreDisplayMode!=="opportunity"))return "";const fail=a.score!==null&&a.score<1;return '<div class="audit-item"><div class="audit-header"><div class="audit-title">'+esc(a.title)+'</div><div class="audit-score '+(fail?"score-fail":"score-pass")+'">'+(fail?"REVISAR":"OPORTUNIDAD")+'</div></div><div class="audit-desc">'+esc(a.description||"")+'</div>'+(a.displayValue?'<div class="audit-desc"><strong>Dato:</strong> '+esc(a.displayValue)+'</div>':"")+'</div>';}).join("");
+ $("#ps-audits").innerHTML=html||"<p>No hay oportunidades relevantes detectadas en este informe.</p>";
+}
+function renderSearchConsole(d){
+ const el=$("#gsc-data-container");if(!Array.isArray(d.data)||!d.data.length){el.innerHTML='<div class="gsc-success">Conexión completada. No hay filas para el periodo '+esc(d.period?.start||"")+" – "+esc(d.period?.end||"")+".</div>";return;}
+ let html='<div class="gsc-success">Datos cargados. Periodo: '+esc(d.period?.start||"")+" – "+esc(d.period?.end||"")+'</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;margin-top:15px;font-size:13px"><thead><tr style="border-bottom:1px solid #ddd;text-align:left"><th style="padding:8px">Consulta</th><th>Clics</th><th>Impresiones</th><th>CTR</th><th>Posición</th><th>Página</th></tr></thead><tbody>';
+ d.data.forEach(r=>{const k=Array.isArray(r.keys)?r.keys:[];html+='<tr style="border-bottom:1px solid #eee"><td style="padding:8px">'+esc(k[0]||"—")+'</td><td>'+esc(r.clicks??0)+'</td><td>'+esc(r.impressions??0)+'</td><td>'+(Number(r.ctr||0)*100).toFixed(1)+'%</td><td>'+Number(r.position||0).toFixed(1)+'</td><td style="overflow-wrap:anywhere">'+esc(k[1]||"—")+'</td></tr>';});
+ el.innerHTML=html+"</tbody></table></div>";
+}
+function renderOnPage(d){
+ const el=$("#onpage-container"),findings=(d.findings||[]).map(x=>"<li>"+esc(x)+"</li>").join()||"<li>No se han detectado problemas básicos.</li>";
+ const missing=(d.images?.details||[]).map(x=>'<li><code>'+esc(x.src||"(sin src)")+"</code></li>").join();
+ const list=(arr)=>arr.map(x=>'<li><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">'+esc(x.text||x.url)+"</a></li>").join();
+ const internal=list((d.links?.internalDetails||[]).slice(0,20)),outbound=list((d.links?.outboundDetails||[]).slice(0,20));
+ el.innerHTML='<div class="score-row" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="score-box"><div class="lbl">Puntuación básica</div><div class="num">'+esc(d.score)+'/100</div></div><div class="score-box"><div class="lbl">Imágenes sin ALT</div><div class="num">'+esc(d.images?.missingAlt??0)+'</div></div><div class="score-box"><div class="lbl">Enlaces internos / salientes</div><div class="num">'+esc(d.links?.internal??0)+' / '+esc(d.links?.outbound??0)+'</div></div></div>'+
+ '<div class="panel"><h3>Etiquetas SEO</h3><p><strong>Title:</strong> '+esc(d.title||"No encontrado")+' ('+esc(d.titleLength)+' caracteres)</p><p><strong>Meta descripción:</strong> '+esc(d.description||"No encontrada")+' ('+esc(d.descriptionLength)+' caracteres)</p><p><strong>H1:</strong> '+esc((d.h1||[]).join(" · ")||"No encontrado")+'</p><p><strong>H2:</strong> '+esc((d.h2||[]).join(" · ")||"No encontrados")+'</p></div>'+
+ '<div class="panel"><h3>Hallazgos</h3><ul>'+findings+'</ul></div><div class="panel"><h3>Imágenes sin ALT o con ALT vacío</h3>'+(missing?"<ul>"+missing+"</ul>":"<p>No se han detectado imágenes con ALT ausente o vacío.</p>")+'</div>'+
+ '<div class="panel"><h3>Enlaces internos</h3>'+(internal?"<ul>"+internal+"</ul>":"<p>No se han detectado enlaces internos.</p>")+'</div><div class="panel"><h3>Enlaces salientes</h3>'+(outbound?"<ul>"+outbound+"</ul>":"<p>No se han detectado enlaces salientes.</p>")+'</div><p style="color:var(--muted);font-size:11px">Auditoría HTML básica; no sustituye un rastreo SEO completo.</p>';
 }
 
-function renderSearchConsole(data) {
-  const container = $('#gsc-data-container');
-  if (data.error) {
-    container.innerHTML = `<div class="gsc-error">⚠️ ${data.error}<br><br>Asegúrate de que la URL está verificada en tu Search Console.</div>`;
-  } else if (data.data && data.data.length > 0) {
-    let html = `<div class="gsc-success">✅ Datos cargados correctamente.</div>`;
-    html += `<table style="width:100%; border-collapse:collapse; margin-top:15px; font-size:13px;">
-      <thead><tr style="border-bottom:1px solid #ddd; text-align:left;">
-        <th style="padding:8px;">Query</th><th>Clics</th><th>Impresiones</th><th>CTR</th><th>Posición</th>
-      </tr></thead><tbody>`;
-    data.data.forEach(row => {
-      html += `<tr style="border-bottom:1px solid #eee;">
-        <td style="padding:8px;">${row.keys[0]}</td>
-        <td>${row.clicks}</td>
-        <td>${row.impressions}</td>
-        <td>${(row.ctr * 100).toFixed(1)}%</td>
-        <td>${row.position.toFixed(1)}</td>
-      </tr>`;
-    });
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-  } else {
-    container.innerHTML = `<p style="color:var(--muted);">No hay datos de tráfico para esta URL en los últimos 28 días.</p>`;
-  }
-}
 </script>
 </body>
 </html>
