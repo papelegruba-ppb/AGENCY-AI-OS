@@ -203,6 +203,7 @@
         </div>
         
         <div class="layer" id="after-layer" style="clip-path:inset(0 50% 0 0)">
+          <iframe class="iframe-site" id="after-site" title="Vista previa de la propuesta generada" sandbox="" src="about:blank" style="display:none;"></iframe>
           <img class="shot" id="after-shot" alt="Captura de la propuesta">
           <div class="mock-wrap" id="after-mock">
             <article class="mock after">
@@ -258,6 +259,36 @@ function toast(s){const t=$("#toast");t.textContent=s;t.classList.remove("hidden
 function saved(){try{const p=JSON.parse(localStorage.getItem(PKEY)||"[]");return Array.isArray(p)?p:[]}catch(e){return []}}
 function all(){return saved().concat(imported)}
 function options(){const sel=$("#project-select"),current=sel.value;sel.innerHTML='<option value="">— Seleccionar proyecto —</option>'+all().map((p,i)=>'<option value="'+esc(p.id||"import-"+i)+'">'+esc(p.name||p.projectName||p.client||"Proyecto sin nombre")+'</option>').join("");if(current&&[...sel.options].some(o=>o.value===current))sel.value=current}
+function restoreSavedProposal(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LKEY)||"null");if(!d)return false;
+    const map={client:"client",sector:"sector",accent:"accent",offer:"offer",siteUrl:"site-url",beforeTitle:"before-title",beforeCopy:"before-copy",afterTitle:"after-title",afterCopy:"after-copy",cta:"cta",phone:"phone",note:"evidence-note"};
+    Object.entries(map).forEach(([key,id])=>{if(d[key]!==undefined&&$("#"+id))$("#"+id).value=d[key]});
+    if(typeof d.showMetrics==="boolean")$("#show-metrics").checked=d.showMetrics;
+    if(d.images){beforeImg=d.images.before||"";afterImg=d.images.after||""}
+    if(d.metrics)for(const side of ["before","after"])for(const [id] of defs){
+      const m=d.metrics[side]?.[id];if(!m)continue;
+      const prefix=side==="before"?"b-":"a-";const value=$("#"+prefix+id),status=$("#"+(side==="before"?"bs-":"as-")+id);
+      if(value&&m.value!==null&&m.value!==undefined)value.value=m.value;
+      if(status&&m.status)status.value=m.status;
+    }
+    render();return true;
+  }catch(e){return false}
+}
+function applyProject(p){
+  if(!p)return; active=p;
+  const plan=p.plan||{},copy=plan.copy||{},audit=p.websiteAudit||p.audit||null;
+  const set=(id,value)=>{const el=$("#"+id);if(el&&value!==undefined&&value!==null&&String(value).trim()!=="")el.value=String(value)};
+  set("client",p.name||p.projectName||p.client);set("sector",p.sector||audit?.sector);set("accent",p.color||audit?.themeColor);
+  set("offer",p.offer||audit?.offer);set("site-url",p.domain||audit?.url);
+  set("before-title",audit?.title||(audit?.h1||[])[0]||"Situación actual de la web");
+  set("before-copy",audit?.description||p.offer||"Mensaje actual pendiente de revisión.");
+  set("after-title",copy.headline||("Una propuesta más clara para "+(p.name||"tu negocio")));
+  set("after-copy",copy.subheadline||copy.valueProposition||p.offer);set("cta",copy.primaryCTA||"Hablemos de tu proyecto");set("phone",p.phone||"");
+  if(audit&&typeof audit.score==="number"){$("#seo-audit-results").style.display="block";$("#seo-score").textContent=audit.score+" / 100";$("#seo-text").textContent=audit.summary||audit.analysis||(audit.findings||[]).join("\n")}
+  if(p.id)localStorage.setItem("agency-ai-os.active-project-id.v1",p.id);
+  const sel=$("#project-select");if(sel&&p.id)sel.value=p.id;render();
+}
 
 function metricUI(){
   const h=$("#metric-fields");
@@ -290,6 +321,14 @@ function data(){
   return d;
 }
 
+function buildPreviewDoc(d){
+  const plan=active?.plan||{}, sections=Array.isArray(plan.copy?.sections)?plan.copy.sections.slice(0,8):[];
+  const safeSections=sections.map((section,i)=>'<section class="section"><p class="eyebrow">0'+(i+1)+' / '+esc(section.name||"Servicios")+'</p><h2>'+esc(section.headline||"Soluciones pensadas para avanzar")+'</h2><p>'+esc(section.body||d.offer)+'</p><a class="text-link" href="#contacto">'+esc(section.cta||"Conocer más")+' ↗</a></section>').join("");
+  const accent=/^#[0-9a-f]{6}$/i.test(d.accent)?d.accent:"#8B5CF6";
+  const phone=d.phone?"https://wa.me/"+d.phone+"?text="+encodeURIComponent("Hola, me gustaría recibir información sobre "+d.client):"#contacto";
+  return '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;color:#17151d;background:#f5f5f9;font-size:14px}.nav{padding:14px 6%;display:flex;justify-content:space-between;background:white;border-bottom:1px solid #e7e6ef;font-weight:700}.nav span{color:'+accent+'}.hero{padding:11% 8%;min-height:68vh;display:flex;align-items:center;background:radial-gradient(ellipse at 85% 12%,'+accent+'24,transparent 48%),#f5f5f9}.eyebrow{color:'+accent+';text-transform:uppercase;letter-spacing:.13em;font-size:10px;font-weight:700}.hero h1{font-size:clamp(30px,5vw,64px);line-height:1;letter-spacing:-.06em;max-width:760px;margin:18px 0}.hero p,.section p{line-height:1.7;color:#696777;max-width:620px}.cta{display:inline-block;margin-top:16px;background:#17151d;color:white;border-radius:99px;padding:12px 18px;text-decoration:none;font-size:12px;font-weight:700}.section{padding:8% 8%;border-top:1px solid #e7e6ef;background:white}.section h2{font-size:clamp(22px,3vw,38px);letter-spacing:-.04em;max-width:650px}.text-link{color:'+accent+';font-weight:700;text-decoration:none}.footer{padding:20px 8%;background:#17151d;color:white;font-size:11px}@media(max-width:520px){.hero{padding:16% 7%;min-height:60vh}.section{padding:13% 7%}}</style></head><body><nav class="nav"><span>'+esc(d.client)+'</span><a href="#contacto">Contacto ↗</a></nav><main><section class="hero"><div><p class="eyebrow">'+esc(d.sector||"Propuesta personalizada")+'</p><h1>'+esc(d.afterTitle)+'</h1><p>'+esc(d.afterCopy||d.offer)+'</p><a class="cta" href="'+esc(phone)+'">'+esc(d.cta)+' ↗</a></div></section>'+safeSections+'<section class="section" id="contacto"><p class="eyebrow">Siguiente paso</p><h2>Hablemos de tu proyecto</h2><p>'+esc(d.offer)+'</p><a class="cta" href="'+esc(phone)+'">'+esc(d.cta)+' ↗</a></section></main><footer class="footer">'+esc(d.client)+' · Propuesta visual preliminar</footer></body></html>';
+}
+
 function render(){
   const d=data();
   document.documentElement.style.setProperty("--accent",d.accent);
@@ -318,11 +357,14 @@ function render(){
   cta.textContent = d.cta + " ↗";
   if(d.phone){ cta.href = "https://wa.me/"+d.phone; cta.target="_blank"; } else { cta.removeAttribute("href"); cta.removeAttribute("target"); }
 
-  const shotAfter = $("#after-shot"), mockAfter = $("#after-mock");
+  const shotAfter = $("#after-shot"), mockAfter = $("#after-mock"), afterSite=$("#after-site");
   if(afterImg){
-    shotAfter.src = afterImg; shotAfter.style.display = "block"; mockAfter.style.display = "none";
+    shotAfter.src = afterImg; shotAfter.style.display = "block"; mockAfter.style.display = "none"; afterSite.style.display="none";
+  } else if(active){
+    shotAfter.style.display = "none"; mockAfter.style.display = "none"; afterSite.style.display="block";
+    afterSite.srcdoc = buildPreviewDoc(d);
   } else {
-    shotAfter.style.display = "none"; mockAfter.style.display = "grid";
+    shotAfter.style.display = "none"; afterSite.style.display="none"; mockAfter.style.display = "grid";
   }
 
   for(const side of ["before","after"]){
@@ -372,6 +414,26 @@ $$("[data-device]").forEach(b=>b.addEventListener("click",()=>{
 });
 $("#metric-fields").addEventListener("input",render);
 $("#metric-fields").addEventListener("change",render);
+$("#project-select").addEventListener("change",()=>{
+  const id=$("#project-select").value;const p=all().find(x=>String(x.id)===id);
+  if(p)applyProject(p);
+});
+$("#import-json").addEventListener("change",async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{
+    const parsed=JSON.parse(await file.text());const p=parsed.project||parsed;
+    if(!p||typeof p!=="object")throw new Error("El JSON no contiene un proyecto válido.");
+    imported=[p];options();const sel=$("#project-select");if(p.id)sel.value=p.id;applyProject(p);toast("Proyecto importado y briefing cargado.");
+  }catch(err){toast("No se pudo importar el JSON: "+err.message)}
+});
+$("#save-local").addEventListener("click",()=>{localStorage.setItem(LKEY,JSON.stringify(data()));toast("Ajustes de la propuesta guardados en este navegador.")});
+$("#export-json").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(data(),null,2)],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="propuesta-"+slug(data().client)+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+});
+window.addEventListener("storage",e=>{
+  if(e.key===PKEY||e.key==="agency-ai-os.active-project-id.v1"){options();const wanted=new URLSearchParams(location.search).get("project")||localStorage.getItem("agency-ai-os.active-project-id.v1");const p=all().find(x=>String(x.id)===String(wanted))||all()[0];if(p)applyProject(p)}
+});
 
 function readImage(file, key){
   if(!file || !file.type.startsWith("image/")) return;
@@ -502,7 +564,10 @@ function buildExportHtml(data){
 }
 
 metricUI();
-render();
+options();
+const requestedProject=new URLSearchParams(location.search).get("project")||localStorage.getItem("agency-ai-os.active-project-id.v1");
+const initialProject=all().find(p=>String(p.id)===String(requestedProject))||all()[0];
+if(initialProject)applyProject(initialProject);else if(!restoreSavedProposal())render();
 })();
 </script>
 </body>

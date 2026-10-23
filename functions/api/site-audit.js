@@ -69,6 +69,13 @@ export async function onRequestPost({ request }) {
     const metas = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => m[0]);
     const descriptionTag = metas.find(t => attr(t, "name").toLowerCase() === "description");
     const ogTag = metas.find(t => attr(t, "property").toLowerCase() === "og:description");
+    const themeTag = metas.find(t => attr(t, "name").toLowerCase() === "theme-color");
+    const themeColorRaw = themeTag ? attr(themeTag, "content") : "";
+    const preferredCssColor = html.match(/--(?:brand|primary|accent|color-primary)[\\w-]*\\s*:\\s*(#[0-9a-f]{3,8})/i)?.[1]
+      || html.match(/(?:background-color|background|color)\\s*:\\s*(#[0-9a-f]{6})/i)?.[1]
+      || "";
+    const themeColor = /^#[0-9a-f]{6}$/i.test(themeColorRaw) ? themeColorRaw
+      : /^#[0-9a-f]{6}$/i.test(preferredCssColor) ? preferredCssColor : "";
     const description = descriptionTag ? attr(descriptionTag, "content") : ogTag ? attr(ogTag, "content") : "";
     const h1 = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/gi)].map(m => textOf(m[1])).filter(Boolean);
     const h2 = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2\s*>/gi)].map(m => textOf(m[1])).filter(Boolean);
@@ -124,7 +131,7 @@ export async function onRequestPost({ request }) {
     const projectName = title.split(/[|–—-]/)[0].trim() || target.hostname;
     const result = {
       ok: true, url: target.href, fetchedAt: new Date().toISOString(), httpStatus: response.status,
-      title, titleLength: title.length, description, descriptionLength: description.length,
+      title, titleLength: title.length, description, descriptionLength: description.length, themeColor,
       h1, h2, images: { total: images.length, missingAlt: missingAlt.length, details: missingAlt.slice(0, 100) },
       links: { total: links.length, internal: internalLinks.length, outbound: outboundLinks.length, internalDetails: internalLinks.slice(0, 100), outboundDetails: outboundLinks.slice(0, 100) },
       checks: { title: Boolean(title), description: Boolean(description), singleH1: h1.length === 1, imageAlt: missingAlt.length === 0, h2: h2.length > 0, internalLinks: internalLinks.length > 0, htmlLang: /<html\b[^>]*lang\s*=/i.test(html), viewport: metas.some(t => attr(t, "name").toLowerCase() === "viewport") },
