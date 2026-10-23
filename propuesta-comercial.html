@@ -258,6 +258,20 @@ function toast(s){const t=$("#toast");t.textContent=s;t.classList.remove("hidden
 function saved(){try{const p=JSON.parse(localStorage.getItem(PKEY)||"[]");return Array.isArray(p)?p:[]}catch(e){return []}}
 function all(){return saved().concat(imported)}
 function options(){const sel=$("#project-select"),current=sel.value;sel.innerHTML='<option value="">— Seleccionar proyecto —</option>'+all().map((p,i)=>'<option value="'+esc(p.id||"import-"+i)+'">'+esc(p.name||p.projectName||p.client||"Proyecto sin nombre")+'</option>').join("");if(current&&[...sel.options].some(o=>o.value===current))sel.value=current}
+function applyProject(p){
+  if(!p)return; active=p;
+  const plan=p.plan||{},copy=plan.copy||{},audit=p.websiteAudit||p.audit||null;
+  const set=(id,value)=>{const el=$("#"+id);if(el&&value!==undefined&&value!==null&&String(value).trim()!=="")el.value=String(value)};
+  set("client",p.name||p.projectName||p.client);set("sector",p.sector||audit?.sector);set("accent",p.color||audit?.themeColor);
+  set("offer",p.offer||audit?.offer);set("site-url",p.domain||audit?.url);
+  set("before-title",audit?.title||(audit?.h1||[])[0]||"Situación actual de la web");
+  set("before-copy",audit?.description||p.offer||"Mensaje actual pendiente de revisión.");
+  set("after-title",copy.headline||("Una propuesta más clara para "+(p.name||"tu negocio")));
+  set("after-copy",copy.subheadline||copy.valueProposition||p.offer);set("cta",copy.primaryCTA||"Hablemos de tu proyecto");set("phone",p.phone||"");
+  if(audit&&typeof audit.score==="number"){$("#seo-audit-results").style.display="block";$("#seo-score").textContent=audit.score+" / 100";$("#seo-text").textContent=audit.summary||audit.analysis||(audit.findings||[]).join("\n")}
+  if(p.id)localStorage.setItem("agency-ai-os.active-project-id.v1",p.id);
+  const sel=$("#project-select");if(sel&&p.id)sel.value=p.id;render();
+}
 
 function metricUI(){
   const h=$("#metric-fields");
@@ -372,6 +386,26 @@ $$("[data-device]").forEach(b=>b.addEventListener("click",()=>{
 });
 $("#metric-fields").addEventListener("input",render);
 $("#metric-fields").addEventListener("change",render);
+$("#project-select").addEventListener("change",()=>{
+  const id=$("#project-select").value;const p=all().find(x=>String(x.id)===id);
+  if(p)applyProject(p);
+});
+$("#import-json").addEventListener("change",async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{
+    const parsed=JSON.parse(await file.text());const p=parsed.project||parsed;
+    if(!p||typeof p!=="object")throw new Error("El JSON no contiene un proyecto válido.");
+    imported=[p];options();const sel=$("#project-select");if(p.id)sel.value=p.id;applyProject(p);toast("Proyecto importado y briefing cargado.");
+  }catch(err){toast("No se pudo importar el JSON: "+err.message)}
+});
+$("#save-local").addEventListener("click",()=>{localStorage.setItem(LKEY,JSON.stringify(data()));toast("Ajustes de la propuesta guardados en este navegador.")});
+$("#export-json").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(data(),null,2)],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="propuesta-"+slug(data().client)+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+});
+window.addEventListener("storage",e=>{
+  if(e.key===PKEY||e.key==="agency-ai-os.active-project-id.v1"){options();const wanted=new URLSearchParams(location.search).get("project")||localStorage.getItem("agency-ai-os.active-project-id.v1");const p=all().find(x=>String(x.id)===String(wanted))||all()[0];if(p)applyProject(p)}
+});
 
 function readImage(file, key){
   if(!file || !file.type.startsWith("image/")) return;
@@ -502,7 +536,10 @@ function buildExportHtml(data){
 }
 
 metricUI();
-render();
+options();
+const requestedProject=new URLSearchParams(location.search).get("project")||localStorage.getItem("agency-ai-os.active-project-id.v1");
+const initialProject=all().find(p=>String(p.id)===String(requestedProject))||all()[0];
+if(initialProject)applyProject(initialProject);else render();
 })();
 </script>
 </body>
