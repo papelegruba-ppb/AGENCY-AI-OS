@@ -141,7 +141,16 @@
         <div class="settings-grid">
           <article class="panel settings-card"><div class="settings-icon">⌑</div><h2>Privacidad local</h2><p>Los proyectos se almacenan en el almacenamiento local de tu navegador. No existe cuenta, servidor ni sincronización entre dispositivos en esta versión.</p><span class="pill pill-green">Activo</span></article>
           <article class="panel settings-card"><div class="settings-icon">⇩</div><h2>Exportar datos</h2><p>Descarga una copia de todos los briefings guardados en formato JSON para hacer una copia de seguridad.</p><button id="export-all" class="button button-secondary">Exportar workspace JSON</button></article>
-          <article class="panel settings-card"><div class="settings-icon">⚙</div><h2>Integraciones futuras</h2><p>Los modelos de IA, almacenamiento en nube, formularios reales y WhatsApp Business Platform requieren configurar proveedores y credenciales.</p><span class="pill pill-muted">No conectadas</span></article>
+          <article class="panel settings-card"><div class="settings-icon">⚙</div><h2>Integraciones futuras</h2><p>Los modelos de IA, almacenamiento en nube, formularios reales y WhatsApp Business Platform requieren configurar proveedores y credenciales.</p><span class="pill pill-muted">No conectadas</span></article>          <article class="panel settings-card" style="grid-column: 1 / -1;">
+            <div class="settings-icon" style="color: #4285F4; background: #e8f0fe; border-color: #c5d9fa;">☁</div>
+            <h2>Google Drive</h2>
+            <p>Conecta tu cuenta para guardar una copia de seguridad automática y actualizada de todos tus proyectos.</p>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+              <button id="btn-link-drive" class="button button-secondary">Vincular con Google</button>
+              <button id="btn-sync-drive" class="button button-primary" disabled>Sincronizar ahora</button>
+              <span id="drive-status" style="font-size: 12px; color: var(--muted); font-weight: 600;">Estado: No vinculado</span>
+            </div>
+          </article>
           <article class="panel settings-card danger-card"><div class="settings-icon">⌫</div><h2>Borrar datos locales</h2><p>Elimina todos los proyectos de este navegador. Esta acción no se puede deshacer.</p><button id="clear-data" class="button button-danger">Borrar todos los proyectos</button></article>
         </div>
       </section>
