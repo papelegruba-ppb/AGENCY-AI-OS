@@ -134,9 +134,12 @@
       setIfEmpty("#audience", data.audience);
       setIfEmpty("#goal", data.goal);
       setIfEmpty("#requirements", data.requirements || [...(data.h1 || []), ...(data.h2 || [])].slice(0, 8).join("\n"));
-      if (data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
-        $("#color").value = data.themeColor;
-        $("#color-picker").value = data.themeColor;
+      const colorField=$("#color");
+      const colorPicker=$("#color-picker");
+      const colorWasUntouched=!colorField.value.trim()||colorField.value.toUpperCase()==="#8B5CF6";
+      if (colorWasUntouched && data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
+        colorField.value = data.themeColor;
+        colorPicker.value = data.themeColor;
       }
       statusText.textContent = "✅ Web analizada: SEO " + (data.score ?? "—") + "/100. Revisa el briefing antes de guardarlo.";
       notify("Datos públicos importados al briefing.");
