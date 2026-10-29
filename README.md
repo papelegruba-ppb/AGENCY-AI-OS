@@ -48,7 +48,7 @@ Los proveedores cambian condiciones y cuotas; comprueba los límites actuales an
 
 ## Núcleo multi-IA y protección de consumo
 
-La rama de trabajo `feat/multi-ai-cost-guard` incorpora un runtime común para DeepSeek, OpenAI API, Gemini API, Anthropic API y Perplexity API. Las llamadas quedan desactivadas por defecto y requieren `AI_ENABLED=true`, un proveedor y modelo explícitos, su clave de servidor y el binding `AGENCY_KV`. Los límites predeterminados son 20 solicitudes globales al día, 5 por IP/día y 1.200 tokens de salida. Los contadores KV son una protección operativa de mejor esfuerzo, no un tope monetario exacto; también deben configurarse límites en el proveedor. Consulta `INTEGRATIONS.md` antes de activar cualquier API.
+El núcleo multi-IA integrado en `main` incorpora un runtime común para DeepSeek, OpenAI API, Gemini API, Anthropic API y Perplexity API. Las llamadas quedan desactivadas por defecto y requieren `AI_ENABLED=true`, un proveedor y modelo explícitos, su clave de servidor y el binding `AGENCY_KV`. Los límites predeterminados son 20 solicitudes globales al día, 5 por IP/día y 1.200 tokens de salida. Los contadores KV son una protección operativa de mejor esfuerzo, no un tope monetario exacto; también deben configurarse límites en el proveedor. Consulta `INTEGRATIONS.md` antes de activar cualquier API.
 
 ## Siguiente fase para convertirlo en un producto con IA real
 
