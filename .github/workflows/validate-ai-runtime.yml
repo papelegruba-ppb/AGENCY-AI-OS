@@ -1,0 +1,32 @@
+name: Validate multi-AI runtime
+
+on:
+  pull_request:
+    paths:
+      - "functions/**"
+      - "tests/**"
+      - ".github/workflows/validate-ai-runtime.yml"
+  push:
+    branches: [main]
+    paths:
+      - "functions/**"
+      - "tests/**"
+      - ".github/workflows/validate-ai-runtime.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check Cloudflare Pages Function syntax
+        run: |
+          set -eu
+          for file in functions/_lib/ai-runtime.js functions/api/ai-status.js functions/api/agent-orchestrator.js functions/api/project-assistant.js functions/api/generate-proposal.js; do
+            echo "Checking $file"
+            node --input-type=module --check < "$file"
+          done
+      - name: Test fail-closed cost guards
+        run: node --experimental-default-type=module --test tests/ai-runtime.test.js
