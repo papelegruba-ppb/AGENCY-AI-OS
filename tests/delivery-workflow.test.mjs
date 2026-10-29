@@ -36,3 +36,9 @@ test("roadmap has mobile responsive styling", () => {
 test("publishing workflow warns against unapproved paid services", () => {
   assert.match(html, /No comprar ni activar pagos sin aprobación expresa/);
 });
+
+test("the builder preserves Spanish document metadata and mobile viewport", () => {
+  assert.match(html, /<html lang="es">/);
+  assert.match(html, /name="viewport"/);
+  assert.match(html, /<link rel="stylesheet" href="styles\.css">/);
+});
