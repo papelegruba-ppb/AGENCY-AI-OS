@@ -1,3 +1,4 @@
+import { aiStatus, runAiText } from "../_lib/ai-runtime.js";
 const MAX_TEXT = 12000;
 const AGENTS = {
   director: { name: "Director de agencia", goal: "Prioriza, coordina dependencias y resuelve conflictos entre entregables." },
@@ -24,12 +25,9 @@ function parseOutput(raw) {
   try { return JSON.parse(clean); } catch { return { summary: clean.slice(0, 5000), output: { format: "text" } }; }
 }
 export async function onRequestGet({ env }) {
-  const provider = env.DEEPSEEK_API_KEY ? "deepseek" : env.OPENAI_API_KEY ? "openai" : null;
-  return json({ ok: true, configured: Boolean(provider), provider, endpoint: "/api/agent-orchestrator", agents: Object.keys(AGENTS), note: "La clave de IA se mantiene en servidor. No se ejecutan acciones externas ni se publica sin una integración y autorización independientes." });
+  return json({ ...aiStatus(env), endpoint: "/api/agent-orchestrator", agents: Object.keys(AGENTS), note: "Las claves permanecen en servidor. Este endpoint no ejecuta acciones externas ni publica cambios." });
 }
 export async function onRequestPost({ request, env }) {
-  const provider = env.DEEPSEEK_API_KEY ? "deepseek" : env.OPENAI_API_KEY ? "openai" : null;
-  if (!provider) return json({ error: "La IA no está configurada. Añade DEEPSEEK_API_KEY o OPENAI_API_KEY como secreto en Cloudflare Pages → Settings → Environment variables. La API puede generar costes." }, 503);
   let body;
   try { body = await request.json(); } catch { return json({ error: "La petición debe ser JSON." }, 400); }
   const agentId = text(body?.agent, 40);
@@ -70,22 +68,13 @@ export async function onRequestPost({ request, env }) {
     "APROBACIONES PENDIENTES:", JSON.stringify(approvals),
     "Realiza la parte correspondiente a tu rol. Reutiliza los resultados previos, responde a peticiones de otros agentes si son relevantes y evita repetir el trabajo ya hecho."
   ].join("\n\n").slice(0, MAX_TEXT);
+  const ai = await runAiText({
+    env, request, endpoint: "/api/agent-orchestrator", system,
+    input, maxOutputTokens: 1600, jsonMode: true, temperature: 0.35
+  });
+  if (!ai.ok) return ai.response;
   try {
-    const isDeepSeek = provider === "deepseek";
-    const response = await fetch(isDeepSeek ? "https://api.deepseek.com/chat/completions" : "https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: { authorization: "Bearer " + (isDeepSeek ? env.DEEPSEEK_API_KEY : env.OPENAI_API_KEY), "content-type": "application/json" },
-      body: JSON.stringify(isDeepSeek
-        ? { model: env.DEEPSEEK_MODEL || "deepseek-chat", messages: [{ role: "system", content: system + "\\n\\nDevuelve exclusivamente JSON válido, sin bloques Markdown." }, { role: "user", content: input }], response_format: { type: "json_object" }, max_tokens: 1800, stream: false }
-        : { model: env.OPENAI_MODEL || "gpt-6-luna", instructions: system, input, max_output_tokens: 1800 }),
-      signal: AbortSignal.timeout(55000)
-    });
-    const data = await response.json().catch(() => null);
-    if (!response.ok) return json({ error: data?.error?.message || "El proveedor de IA no pudo completar la tarea.", provider, providerStatus: response.status }, response.status === 429 ? 429 : response.status >= 500 ? 502 : 400);
-    const raw = (isDeepSeek
-      ? data?.choices?.map(choice => choice?.message?.content || "").join("\\n")
-      : (data?.output || []).flatMap(item => item.content || []).filter(item => item.type === "output_text").map(item => item.text || "").join("\\n")).trim();
-    if (!raw) return json({ error: "La IA no devolvió contenido. Inténtalo de nuevo." }, 502);
+    const raw = ai.text;
     const parsed = parseOutput(raw);
     const allowed = new Set(Object.keys(AGENTS));
     const messages = Array.isArray(parsed.messages) ? parsed.messages.slice(0, 5).filter(m => allowed.has(m?.to)).map(m => ({ to: m.to, subject: text(m.subject, 120), body: text(m.body, 1200) })).filter(m => m.body) : [];
@@ -94,11 +83,11 @@ export async function onRequestPost({ request, env }) {
     const output = parsed.output && typeof parsed.output === "object" && !Array.isArray(parsed.output) ? parsed.output : { notes: text(parsed.output || "", 4000) };
     const nextAgent = allowed.has(parsed.nextAgent) && parsed.nextAgent !== agentId ? parsed.nextAgent : null;
     return json({
-      agent: agentId, provider, summary: text(parsed.summary || parsed.reply || "Resultado recibido.", 5000),
+      agent: agentId, provider: ai.provider, summary: text(parsed.summary || parsed.reply || "Resultado recibido.", 5000),
       output, messages, tasks: delegated, approvalRequests, nextAgent,
       handoff: text(parsed.handoff || "", 500)
     });
   } catch (error) {
-    return json({ error: error?.name === "TimeoutError" ? "El agente ha superado el tiempo límite. Puedes volver a ejecutar la tarea." : "No se pudo conectar con el proveedor de IA. Comprueba la configuración de Cloudflare." }, 502);
+    return json({ error: "No se pudo validar la respuesta estructurada del agente.", code: "AI_INVALID_RESPONSE" }, 502);
   }
 }

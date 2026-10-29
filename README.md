@@ -1,4 +1,4 @@
-# Agency AI OS — prototipo local sin costes
+# Agency AI OS — constructor y backend en evolución
 
 Constructor visual para organizar proyectos digitales, preparar una primera propuesta de siete agentes y exportar entregables.
 
@@ -14,7 +14,7 @@ Constructor visual para organizar proyectos digitales, preparar una primera prop
 
 ## Importante: límites de esta primera versión
 
-Esta es una **MVP frontend funcional**, no un sistema multiagente conectado a modelos. Los entregables se construyen con plantillas locales y los datos permanecen en el navegador. No existe autenticación, sincronización entre dispositivos, API, base de datos, bot conectado ni envío de formularios a un servidor. El HTML exportado muestra el formulario y valida el envío en el navegador, pero no guarda ni envía leads.
+La interfaz conserva generación local, exportación y persistencia en el navegador. El repositorio también contiene Cloudflare Pages Functions para auditoría, PageSpeed, Google Drive/Search Console y generación/asistencia mediante IA. La disponibilidad real depende de las variables y bindings configurados en Cloudflare. El HTML exportado valida el formulario en el navegador, pero no guarda ni envía leads sin un endpoint específico.
 
 No pegues información sensible en este prototipo.
 
@@ -45,6 +45,10 @@ Los proveedores cambian condiciones y cuotas; comprueba los límites actuales an
 - `bot-flow-template.json`: ejemplo de flujo conversacional.
 - `wrangler.toml`: configuración inicial opcional de Pages/Workers.
 - `DESIGN.md`, `ARCHITECTURE.md`, `INTEGRATIONS.md`, `ROADMAP.md`, `CLAUDE.md`: documentación viva del proyecto.
+
+## Núcleo multi-IA y protección de consumo
+
+La rama de trabajo `feat/multi-ai-cost-guard` incorpora un runtime común para DeepSeek, OpenAI API, Gemini API, Anthropic API y Perplexity API. Las llamadas quedan desactivadas por defecto y requieren `AI_ENABLED=true`, un proveedor y modelo explícitos, su clave de servidor y el binding `AGENCY_KV`. Los límites predeterminados son 20 solicitudes globales al día, 5 por IP/día y 1.200 tokens de salida. Los contadores KV son una protección operativa de mejor esfuerzo, no un tope monetario exacto; también deben configurarse límites en el proveedor. Consulta `INTEGRATIONS.md` antes de activar cualquier API.
 
 ## Siguiente fase para convertirlo en un producto con IA real
 

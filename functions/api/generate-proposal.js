@@ -1,5 +1,4 @@
-const API_URL = "https://api.deepseek.com/chat/completions";
-const MODEL = "deepseek-chat";
+import { runAiText } from "../_lib/ai-runtime.js";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -16,7 +15,7 @@ function text(value, max = 500) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
-function normalizePlan(raw, project) {
+function normalizePlan(raw, project, provider = "ai") {
   if (!raw || typeof raw !== "object") throw new Error("La IA no devolvió un objeto válido.");
   const fallbackHeadline = "Una forma más clara de " + text(project.goal, 120).replace(/[.!?]+$/g, "").toLowerCase();
   const sourceCopy = raw.copy && typeof raw.copy === "object" ? raw.copy : {};
@@ -55,7 +54,7 @@ function normalizePlan(raw, project) {
       typography: Array.isArray(sourceUx.typography) ? sourceUx.typography.slice(0, 5).map(x => text(x, 160)) : ["Jerarquía tipográfica clara", "Texto legible y accesible"],
       layout: Array.isArray(sourceUx.layout) ? sourceUx.layout.slice(0, 8).map(x => text(x, 160)) : ["Hero con propuesta y CTA", "Servicios", "Contacto"]
     },
-    generatedBy: "deepseek",
+    generatedBy: provider,
     generatedAt: new Date().toISOString()
   };
 }
@@ -76,7 +75,6 @@ export async function onRequestPost({ request, env }) {
   if (!name || !sector || !offer || !audience || !goal) {
     return json({ ok: false, error: "Completa nombre, sector, oferta, público y objetivo antes de generar la propuesta.", code: "PROJECT_FIELDS_REQUIRED" }, 400);
   }
-  if (!env.DEEPSEEK_API_KEY) return json({ ok: false, error: "DeepSeek no está configurado en este entorno. Se usará la propuesta local.", code: "AI_NOT_CONFIGURED" }, 503);
 
   const system = [
     "Eres estratega de marketing y diseñador UX/UI senior para negocios reales en España.",
@@ -103,37 +101,16 @@ export async function onRequestPost({ request, env }) {
     } : null
   };
 
+  const ai = await runAiText({
+    env, request, endpoint: "/api/generate-proposal", system,
+    input: JSON.stringify(user), maxOutputTokens: 1600, jsonMode: true, temperature: 0.65
+  });
+  if (!ai.ok) return json({ ok: false, error: "La IA no está disponible; se usará el generador local.", code: ai.response.status === 429 ? "AI_RATE_LIMITED" : "AI_UNAVAILABLE" }, ai.response.status);
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + env.DEEPSEEK_API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        temperature: 0.65,
-        max_tokens: 3000,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: JSON.stringify(user) }
-        ]
-      }),
-      signal: AbortSignal.timeout(35000)
-    });
-    if (!response.ok) {
-      console.error(JSON.stringify({ event: "deepseek_generation_failed", status: response.status }));
-      return json({ ok: false, error: "DeepSeek no pudo generar la propuesta. Se usará el generador local.", code: "AI_PROVIDER_ERROR" }, 502);
-    }
-    const payload = await response.json();
-    const content = payload?.choices?.[0]?.message?.content;
-    if (typeof content !== "string" || content.length > 30000) throw new Error("Respuesta de IA vacía o demasiado larga.");
-    const parsed = JSON.parse(content);
-    return json({ ok: true, plan: normalizePlan(parsed, { ...project, name, sector, offer, audience, goal, color }) });
+    const parsed = JSON.parse(ai.text);
+    return json({ ok: true, plan: normalizePlan(parsed, { ...project, name, sector, offer, audience, goal, color }, ai.provider), provider: ai.provider });
   } catch (error) {
-    const timeout = error?.name === "TimeoutError";
-    console.error(JSON.stringify({ event: "deepseek_generation_exception", code: timeout ? "AI_TIMEOUT" : "AI_INVALID_RESPONSE" }));
-    return json({ ok: false, error: timeout ? "DeepSeek ha tardado demasiado. Se usará el generador local." : "No se pudo validar la respuesta de DeepSeek. Se usará el generador local.", code: timeout ? "AI_TIMEOUT" : "AI_INVALID_RESPONSE" }, 502);
+    console.error(JSON.stringify({ event: "ai_proposal_invalid_response", provider: ai.provider }));
+    return json({ ok: false, error: "No se pudo validar la respuesta de IA. Se usará el generador local.", code: "AI_INVALID_RESPONSE" }, 502);
   }
 }
