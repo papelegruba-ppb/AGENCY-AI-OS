@@ -73,7 +73,7 @@
           <article class="panel quickstart-panel">
             <div class="panel-heading"><div><p class="eyebrow">EMPIEZA AQUÍ</p><h2>Del briefing a la web</h2></div><span class="sparkle">✳</span></div>
             <p class="body-copy">Crea un proyecto, define el negocio y genera una primera propuesta coordinada. Después podrás exportar los entregables para implementarlos en tu stack.</p>
-            <div class="quickstart-steps"><div><span>1</span><p><strong>Describe el negocio</strong><small>Sector, audiencia y objetivo</small></p></div><div><span>2</span><p><strong>Genera la estrategia</strong><small>Copy, UX y dirección creativa</small></p></div><div><span>3</span><p><strong>Exporta los entregables</strong><small>HTML, JSON y documentación</small></p></div></div>
+            <div class="quickstart-steps"><div><span>1</span><p><strong>Describe el negocio</strong><small>Sector, audiencia y objetivo</small></p></div><div><span>2</span><p><strong>Valida estrategia y diseño</strong><small>Copy, UX/UI y propuesta visual</small></p></div><div><span>3</span><p><strong>Presenta la demo</strong><small>HTML descargable y URL de prueba</small></p></div><div><span>4</span><p><strong>Obtén aprobación</strong><small>Alcance, presupuesto y funcionalidades</small></p></div><div><span>5</span><p><strong>Integra y publica</strong><small>Web actual o web nueva, dominio y hosting</small></p></div></div>
             <button class="button button-primary button-wide" data-go="builder">Crear primer proyecto <span>↗</span></button>
             <div class="safe-note"><span>⌑</span> No requiere cuenta ni claves API. Los proyectos permanecen en tu dispositivo.</div>
           </article>
@@ -89,6 +89,18 @@
 
       <section class="view" id="view-builder">
         <div class="page-heading compact-heading"><div><p class="eyebrow">NUEVO ESPACIO DE TRABAJO</p><h1>Construye algo <span class="heading-period">extraordinario.</span></h1><p class="subheading">Define el encargo una vez. Organiza todos los entregables desde un único briefing.</p></div></div>
+        <section class="panel delivery-roadmap" aria-labelledby="delivery-roadmap-title">
+          <div class="roadmap-heading"><div><p class="eyebrow">DE LA IDEA A LA PUBLICACIÓN</p><h2 id="delivery-roadmap-title">Ruta del proyecto</h2><p>Este es el proceso que seguiremos con cada cliente. Avanza por etapas y valida la propuesta antes de publicar.</p></div><span class="roadmap-tag">6 ETAPAS</span></div>
+          <ol class="roadmap-steps">
+            <li class="roadmap-step current"><span class="roadmap-number">01</span><div><strong>Briefing</strong><small>Negocio, web actual y objetivos</small></div><span class="roadmap-status">AHORA</span></li>
+            <li class="roadmap-step"><span class="roadmap-number">02</span><div><strong>Estrategia y UX/UI</strong><small>Copy, estructura y dirección visual</small></div></li>
+            <li class="roadmap-step"><span class="roadmap-number">03</span><div><strong>Demo funcional</strong><small>HTML descargable y/o URL de prueba</small></div></li>
+            <li class="roadmap-step"><span class="roadmap-number">04</span><div><strong>Aprobación del cliente</strong><small>Diseño, alcance, precio y funciones reales</small></div></li>
+            <li class="roadmap-step"><span class="roadmap-number">05</span><div><strong>Construcción e integración</strong><small>Código, formularios, SEO y servicios</small></div></li>
+            <li class="roadmap-step"><span class="roadmap-number">06</span><div><strong>Publicación y entrega</strong><small>Dominio, hosting, pruebas y accesos</small></div></li>
+          </ol>
+          <p class="roadmap-note"><span aria-hidden="true">ⓘ</span> La demo no se considera producción hasta verificar formularios, integraciones, seguridad y experiencia móvil.</p>
+        </section>
         <div class="builder-layout">
           <form id="project-form" class="panel project-form">
             <div class="form-section-title"><span class="form-step">01</span><div><h2>Briefing del negocio</h2><p>Los datos esenciales para alinear a todos los agentes.</p></div></div>
@@ -117,6 +129,16 @@
               <!-- NUEVAS CASILLAS AÑADIDAS AQUÍ -->
               <label class="option-card"><input type="checkbox" name="deliverables" value="ai" checked><span class="option-check">✓</span><span><strong>Agente IA</strong><small>Prompt ChatGPT</small></span><span class="option-icon">🤖</span></label>
               <label class="option-card"><input type="checkbox" name="deliverables" value="redes" checked><span class="option-check">✓</span><span><strong>Redes Sociales</strong><small>Estrategia</small></span><span class="option-icon">📱</span></label>
+            </div>
+            <div class="form-section-title second-form-title"><span class="form-step">03</span><div><h2>Publicación y entrega al cliente</h2><p>Define la ruta inicial. Podrás cambiarla cuando el cliente apruebe la propuesta.</p></div></div>
+            <div class="field-grid delivery-fields">
+              <label class="field"><span>Situación de la web</span><select name="webSituation" id="webSituation"><option value="new">Web nueva desde cero</option><option value="existing">Ya tiene web: integrar sin sustituir</option><option value="redesign">Rediseño o sustitución de la web actual</option><option value="subdomain">Nueva web en subdominio</option></select></label>
+              <label class="field"><span>Formato de la demo</span><select name="demoFormat" id="demoFormat"><option value="both">HTML descargable + URL de prueba</option><option value="html">Solo HTML descargable</option><option value="url">Solo URL de prueba</option></select></label>
+              <label class="field"><span>Método de construcción</span><select name="buildMethod" id="buildMethod"><option value="hybrid">Híbrido: código propio o Bolt según necesidad</option><option value="custom">Código propio como primera opción</option><option value="bolt">Bolt.new como acelerador</option><option value="lovable">Lovable como alternativa</option></select></label>
+              <label class="field"><span>Alojamiento previsto</span><select name="hostingPlan" id="hostingPlan"><option value="cloudflare">Cloudflare Pages si la web es compatible</option><option value="client-hosting">Mantener el hosting actual del cliente</option><option value="platform">Plataforma/hosting elegido con el cliente</option><option value="undecided">Pendiente de diagnóstico</option></select></label>
+              <label class="field"><span>Titularidad de dominio y cuentas</span><select name="ownership" id="ownership"><option value="client">A nombre del cliente</option><option value="agency-transfer">Agencia inicialmente, con transferencia pactada</option><option value="per-project">Definir en presupuesto por proyecto</option></select></label>
+              <label class="field"><span>Presupuesto de servicios externos</span><select name="paidApproval" id="paidApproval"><option value="approval-required">No comprar ni activar pagos sin aprobación expresa</option><option value="approved-budget">Solo dentro de un presupuesto aprobado por escrito</option></select></label>
+              <p class="delivery-disclaimer field full"><strong>Regla de seguridad:</strong> no se comprará un dominio, cambiará el DNS ni activará una API de pago desde el constructor. Primero se presenta el coste, se obtiene autorización y se comprueba quién será titular de la cuenta.</p>
             </div>
             <div class="form-actions"><span class="required-note"><b>*</b> Campos obligatorios</span><button type="submit" class="button button-primary">Generar plan del proyecto <span>↗</span></button></div>
           </form>
