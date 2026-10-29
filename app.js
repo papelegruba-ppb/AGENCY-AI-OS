@@ -90,7 +90,16 @@
       location: String(fd.get("location") || "").trim(), style: fd.get("style") || "editorial premium",
       color: /^#[0-9a-f]{6}$/i.test(fd.get("color") || "") ? fd.get("color") : "#8B5CF6",
       phone: String(fd.get("phone") || "").replace(/\D/g,""), requirements: String(fd.get("requirements") || "").trim(),
-      domain: String(fd.get("domain") || "").trim(), websiteAudit: latestWebsiteAudit, deliverables: fd.getAll("deliverables"),
+      domain: String(fd.get("domain") || "").trim(), websiteAudit: latestWebsiteAudit,
+      delivery: {
+        webSituation: String(fd.get("webSituation") || "new"),
+        demoFormat: String(fd.get("demoFormat") || "both"),
+        buildMethod: String(fd.get("buildMethod") || "hybrid"),
+        hostingPlan: String(fd.get("hostingPlan") || "cloudflare"),
+        ownership: String(fd.get("ownership") || "client"),
+        paidApproval: String(fd.get("paidApproval") || "approval-required")
+      },
+      deliverables: fd.getAll("deliverables"),
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: "briefing"
     };
   }
