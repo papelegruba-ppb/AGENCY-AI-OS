@@ -1,14 +1,43 @@
-# INTEGRATIONS.md
+# Integraciones — estado auditado
 
-| Integración | Estado | Requisito para activarla |
+## Núcleo de IA
+
+| Integración | Estado en este cambio | Activación / límite |
 |---|---|---|
-| Modelos de IA | No conectada | Proveedor elegido, backend y secreto de API |
-| GitHub | No conectado desde la app | Repositorio y autorización del usuario |
-| Cloudflare Pages | Preparada para hosting estático | Cuenta y conexión del repositorio |
-| Formulario / leads | Solo validación local en HTML exportado | Endpoint real y persistencia |
-| WhatsApp | Flujo JSON + número opcional | WhatsApp Business Platform/proveedor, consentimiento y webhook |
-| SEO / PageSpeed | Checklist, sin consulta API | Dominio público y acceso a APIs correspondientes |
-| CRM / email | No conectado | Proveedor, permisos y credenciales seguras |
-| Base de datos | No conectada | Elegir D1/Postgres y diseñar migraciones |
+| Runtime multi-proveedor | Implementado en `functions/_lib/ai-runtime.js`; pendiente de pruebas de despliegue | Requiere activación explícita |
+| DeepSeek | Adaptador implementado | `DEEPSEEK_API_KEY` + `DEEPSEEK_MODEL` |
+| OpenAI API | Adaptador implementado | `OPENAI_API_KEY` + `OPENAI_MODEL`; la suscripción ChatGPT no incluye automáticamente crédito de API |
+| Gemini API | Adaptador implementado | `GEMINI_API_KEY` + `GEMINI_MODEL` |
+| Anthropic API | Adaptador implementado | `ANTHROPIC_API_KEY` + `ANTHROPIC_MODEL` |
+| Perplexity API | Adaptador implementado | `PERPLEXITY_API_KEY` + `PERPLEXITY_MODEL` |
+| Orquestador de agentes | Adaptado al runtime común | `/api/agent-orchestrator` |
+| Asistente del proyecto | Adaptado al runtime común | `/api/project-assistant` |
+| Generador de propuestas | Adaptado al runtime común; conserva el fallback local del frontend | `/api/generate-proposal` |
+| Estado de IA | Endpoint informativo, no realiza llamadas al modelo | `GET /api/ai-status` |
 
-No asumir que una web o herramienta ofrece API solo porque tiene interfaz. Confirmar documentación, costes, límites, permisos y condiciones antes de integrar.
+### Activación segura de IA en Cloudflare
+
+Por defecto las llamadas están desactivadas. Para activar un proveedor, configurar en el entorno de Cloudflare Pages:
+
+1. `AI_ENABLED=true` (no establecerlo hasta confirmar las condiciones gratuitas y la facturación).
+2. `AI_PROVIDER=deepseek|openai|gemini|anthropic|perplexity` (un único proveedor activo por despliegue).
+3. La clave y el modelo correspondientes a ese proveedor, con nombres indicados en la tabla.
+4. Binding KV `AGENCY_KV`, que ya utiliza el proyecto para integraciones de Google.
+
+Límites predeterminados: 20 solicitudes globales/día, 5 solicitudes/día por IP y máximo 1.200 tokens de salida. Se pueden ajustar con `AI_DAILY_LIMIT`, `AI_IP_DAILY_LIMIT` y `AI_MAX_OUTPUT_TOKENS`, dentro de los rangos admitidos por el runtime. No hay reintentos ni cambio automático a un proveedor de pago.
+
+**Importante:** Cloudflare KV no ofrece incremento atómico para este contador; los límites son una barrera operativa de mejor esfuerzo, no un tope monetario garantizado. Para garantizar un tope duro frente a concurrencia se necesita un contador atómico (por ejemplo, Durable Objects) y, además, límites de gasto/cuota en el proveedor. Para mantener coste cero confirmado, deja `AI_ENABLED` desactivado hasta verificar el plan gratuito del proveedor seleccionado.
+
+## Otras integraciones existentes
+
+| Integración | Estado observado en código | Riesgo / verificación pendiente |
+|---|---|---|
+| Google Drive OAuth | Endpoints `drive-auth`, `drive-callback` y `drive-save`; usa `AGENCY_KV` y credenciales Google | Verificar redirect URI, estado OAuth/CSRF, manejo de errores y sincronización real |
+| Google Search Console | OAuth y consulta de datos en `gsc-auth`, `gsc-callback`, `gsc-data` | Requiere permisos y APIs habilitadas; comprobar cuota y vinculación real |
+| PageSpeed Insights | `/api/pagespeed` usa `PAGESPEED_API_KEY` | No se observó en el endpoint un límite diario propio; configurar cuotas de Google y monitorizar consumo |
+| Auditoría HTML | `/api/site-audit` descarga y analiza HTML público sin LLM | No es una integración LLM; revisar protección de SSRF/redirecciones y límites de peticiones |
+| GitHub | Repositorio y despliegue vinculado según configuración del proyecto | El código del repositorio no demuestra por sí solo que un despliegue concreto esté actualizado |
+| Firebase / Google Cloud | No se encontraron en esta revisión evidencias suficientes para afirmar que el runtime actual use Firebase o servicios adicionales de Google Cloud | Confirmar consola, bindings, proyecto y reglas antes de atribuirles funciones activas |
+| Claude / Flow en aplicación web | No hay integración API demostrada por tener acceso a sus aplicaciones | Usar manualmente salvo que exista una API/conector autorizado y condiciones compatibles |
+
+No se deben publicar secretos en el frontend ni en el repositorio. La existencia de una clave en Cloudflare no demuestra que el proveedor responda, que la cuota esté disponible o que el plan sea gratuito.
