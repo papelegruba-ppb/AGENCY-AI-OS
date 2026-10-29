@@ -1,0 +1,31 @@
+name: Validate client delivery workflow
+
+on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - "tests/delivery-workflow.test.mjs"
+      - ".github/workflows/validate-delivery-workflow.yml"
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - "tests/delivery-workflow.test.mjs"
+      - ".github/workflows/validate-delivery-workflow.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Run delivery workflow checks
+        run: node --test tests/delivery-workflow.test.mjs
