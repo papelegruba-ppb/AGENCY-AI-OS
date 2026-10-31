@@ -25,6 +25,7 @@ export function aiStatus(env) {
   return {
     ok: true,
     enabled: env.AI_ENABLED === "true",
+    billableEnabled: env.AI_BILLABLE_ENABLED === "true",
     configured,
     provider: spec ? provider : null,
     configuredProviders,
