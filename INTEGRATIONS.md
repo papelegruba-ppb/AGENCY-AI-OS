@@ -49,7 +49,7 @@ No se deben publicar secretos en el frontend ni en el repositorio. La existencia
 |---|---|---|---|
 | Shaders (shaders.com) | Adoptar como motor visual opcional | Módulo Creative Engine con preview CSS, exportación CSS y guía de integración. No se carga el runtime WebGPU en el constructor estático. | Motor/componentes y bindings MIT. El catálogo de presets y secciones tiene licencia separada; verificar plan antes de usar contenido Pro en trabajos de cliente. WebGPU no tiene fallback WebGL oficial: conservar CSS. |
 | ContentCore (contentcore.xyz) | Herramienta manual de producción | Enlace contextual desde Creative Engine; importación manual de imágenes/vídeos exportados. | El sitio describe exportación de imágenes/vídeos y licencia comercial mediante suscripción. No se verificó API pública ni automatización. |
-| is.graphics | No incorporar todavía | Candidato pendiente de auditoría. | El sitio no fue accesible durante la verificación; no se pudieron confirmar funciones, API ni licencia. |
+| Kittl | Acceso externo adoptado en el catálogo | Enlace desde Creative Engine para identidad visual y diseño gráfico. | No se ha verificado API pública ni edición embebida; uso externo/manual. |
 
 ### Shaders en un futuro build frontend
 
@@ -70,3 +70,15 @@ Fuentes oficiales:
 - https://github.com/shader-effects-inc/shaders
 - https://contentcore.xyz/
 - https://is.graphics/
+
+
+## AI Agent Orchestrator y generación web autónoma
+
+- La navegación principal abre ahora `ai-agent-orchestrator.html`, el chat de ejecución con un único prompt y una vista previa consolidada.
+- `functions/api/web-build.js` genera una web HTML5 autocontenida mediante el proveedor de IA habilitado en el runtime común. El prompt coordina las disciplinas de dirección, marketing/CRO, UX/UI, frontend, SEO y QA en una única ejecución para evitar multiplicar llamadas y consumo.
+- Si no hay un conector autorizado para escribir en el CMS/hosting del sitio original, el flujo genera una web nueva e independiente, con vista previa y descarga HTML. No modifica la web original, DNS ni producción.
+- La auditoría de una URL pública se intenta antes de generar, cuando existe dominio en el proyecto. Los datos auditados se tratan como contenido externo no confiable.
+- El endpoint exige `AI_ENABLED=true`, proveedor, clave, modelo y binding `AGENCY_KV`. Si la IA está desactivada o no configurada, no se inventa un resultado: se muestra el error de configuración.
+- La ejecución actual usa el proveedor API configurado en `AI_PROVIDER`; no existe todavía failover automático entre proveedores ni automatización de acciones dentro de Canva, Kittl, Flow, ContentCore, Runway o Firefly. El catálogo los presenta como herramientas externas hasta verificar conectores/API.
+- El HTML se devuelve para previsualización/descarga; no se despliega ni se guarda en el hosting del cliente.
+
