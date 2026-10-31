@@ -40,6 +40,7 @@ function isPublicWebUrl(value) {
 
 export async function onRequestGet({ request, env }) {
   const incidentId = crypto.randomUUID();
+  if (env.PAGESPEED_ENABLED !== "true") return failure(incidentId, { error: "PageSpeed está desactivado por la política de coste cero. No se ha realizado ninguna llamada a Google.", code: "INTEGRATION_DISABLED", integration: "pagespeed" }, 503);
   const incoming = new URL(request.url);
   const target = incoming.searchParams.get("url");
   const strategy = incoming.searchParams.get("strategy") || "mobile";
