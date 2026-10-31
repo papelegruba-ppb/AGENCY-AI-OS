@@ -505,7 +505,7 @@ async function readImage(file,key){
 $("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"before"));
 $("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
 function svgLines(value,maxChars=42,maxLines=3){
-  const words=String(value||"").trim().split(/\\s+/).filter(Boolean),lines=[];let line="";
+  const words=String(value||"").trim().split(/\s+/).filter(Boolean),lines=[];let line="";
   for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars&&line){lines.push(line);line=word;}else line=next;}
   if(line)lines.push(line);return lines.slice(0,maxLines);
 }
@@ -540,7 +540,7 @@ $("#capture-after").addEventListener("click",()=>{
   const button=$("#capture-after");
   button.disabled=true;button.textContent="Generando captura…";
   try{
-    // Native SVG primitives only: no foreignObject, external assets, iframe pixels or canvas export.
+    // Native SVG primitives only: no embedded HTML, external assets, iframe pixels or canvas export.
     // Keeping the capture as a self-contained SVG data URI avoids canvas tainting entirely.
     const svg=buildProposalCaptureSvg(data());
     const capture="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
