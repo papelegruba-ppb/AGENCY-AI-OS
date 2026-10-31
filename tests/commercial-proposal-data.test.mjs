@@ -42,3 +42,13 @@ test("commercial proposal inline JavaScript parses", () => {
   assert.ok(start >= 0 && end > start, "Expected an inline application script");
   assert.doesNotThrow(() => new vm.Script(proposal.slice(start + 8, end)));
 });
+
+test("client export renders distinct before and after metrics with their evidence states", () => {
+  assert.match(proposal, /metricColumn\("before"\)/);
+  assert.match(proposal, /metricColumn\("after"\)/);
+  assert.match(proposal, /Métricas · ANTES/);
+  assert.match(proposal, /Métricas · DESPUÉS/);
+  assert.match(proposal, /statusLabel\(metric\.status\)/);
+  assert.match(proposal, /Fuente y condiciones/);
+  assert.match(proposal, /No confundas objetivos con resultados/);
+});
