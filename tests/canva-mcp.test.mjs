@@ -51,3 +51,17 @@ test("OAuth provider persists state, PKCE verifier, discovery and encrypted toke
   assert.equal(raw.includes(tokens.access_token), false);
   assert.deepEqual(await provider.tokens(), tokens);
 });
+
+
+import { sanitizeCanvaDiagnosticMessage } from "../functions/_lib/canva-diagnostics.js";
+
+test("Canva OAuth diagnostics redact secrets, bearer tokens and OAuth URL parameters", () => {
+  const message = "secret=topsecret Bearer abc.def.ghi https://example.test/callback?state=secret-state&code=secret-code&scope=design";
+  const result = sanitizeCanvaDiagnosticMessage(message, { CANVA_CLIENT_SECRET: "topsecret" });
+  assert.doesNotMatch(result, /topsecret|abc\.def\.ghi|secret-state|secret-code/);
+  assert.match(result, /scope=design/);
+});
+
+test("Canva OAuth diagnostic messages are length-limited", () => {
+  assert.equal(sanitizeCanvaDiagnosticMessage("x".repeat(500)).length, 240);
+});
