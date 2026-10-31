@@ -26,6 +26,12 @@ No pegues información sensible en este prototipo.
 2. Abre `index.html` en un navegador moderno. La app no requiere build.
 3. Para probar el despliegue local por HTTP, puedes ejecutar `python -m http.server 8000` dentro de la carpeta y abrir `http://localhost:8000`.
 
+## Preview compartida desde Visual Studio Code
+
+Abre el repositorio en VS Code y ejecuta **Terminal → Run Task… → Agency AI OS: iniciar preview seguro**. Después, en la vista **Ports**, reenvía el puerto 8000. La visibilidad predeterminada es **Private**; solo cambia a **Public** para compartir una demo temporal con quien tenga la URL. El servidor integrado sirve únicamente assets web permitidos y bloquea rutas privadas del repositorio. Consulta [docs/VSCODE-PORT-FORWARDING.md](docs/VSCODE-PORT-FORWARDING.md).
+
+Comandos equivalentes: `npm run preview` y `npm run test:preview`. Requiere Node.js 22+. Esta preview es estática: no ejecuta Pages Functions ni sustituye a Wrangler/Cloudflare Pages. Nunca publiques un puerto que contenga datos reales, secretos o servicios administrativos.
+
 ## Publicar gratis en Cloudflare Pages
 
 Para esta versión estática:
