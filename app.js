@@ -547,6 +547,16 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
   $("#top-new").addEventListener("click",()=>currentView("builder"));
   $("#cloud-workspace-connect")?.addEventListener("click", connectCloudWorkspace);
+  window.addEventListener("storage", event => {
+    if (event.key !== STORE_KEY || !event.newValue) return;
+    try {
+      const next = JSON.parse(event.newValue);
+      if (!Array.isArray(next)) return;
+      projects = next;
+      renderProjects();
+      if (cloudWorkspaceConnected) syncProjectsToCloud();
+    } catch (_) { notify("No se pudo actualizar el Workspace desde el módulo abierto."); }
+  });
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
   $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
