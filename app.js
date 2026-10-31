@@ -534,6 +534,24 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     }).join("");
     card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
     grid.prepend(card);
+
+    // Canva is connected centrally from Settings; Creative Engine only consumes the connection.
+    const canvaCard = document.createElement("article");
+    canvaCard.className = "panel settings-card integration-control-card";
+    canvaCard.id = "canva-integration-card";
+    canvaCard.innerHTML = '<div class="settings-icon">✦</div><h2>Canva · Conexión de cuenta</h2><p>Autoriza Canva desde este centro. La sesión se comparte con Creative Engine y no requiere iniciar OAuth desde el módulo creativo.</p><div class="integration-status-row"><div><strong id="canva-connection-label">Comprobando conexión…</strong><small id="canva-connection-detail">Estado consultado directamente al servidor</small></div><span id="canva-connection-pill" class="pill pill-muted">Comprobando</span></div><div class="settings-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button type="button" id="canva-connect-button" class="button button-primary">Conectar Canva</button><button type="button" id="canva-refresh-button" class="button button-secondary">Comprobar conexión</button></div><p id="canva-connection-error" class="integration-footnote" role="status" aria-live="polite"></p>';
+    grid.prepend(canvaCard);
+    bindCanvaSettings();
+    const callbackState = new URLSearchParams(location.search);
+    if (callbackState.get("integration") === "canva") {
+      currentView("settings");
+      const outcome = callbackState.get("status");
+      const note = $("#canva-connection-error");
+      if (note && outcome === "error") note.textContent = "Canva no ha completado la autorización. Consulta el diagnóstico y vuelve a intentarlo desde este panel.";
+      if (note && outcome === "connected") note.textContent = "Canva ha devuelto el flujo OAuth. Comprobando que la sesión y las herramientas estén disponibles…";
+      history.replaceState({}, document.title, location.pathname + location.hash);
+    }
+    refreshCanvaStatus();
     if (!integrationFlags.googleDrive) {
       const driveStatus = $("#drive-status"), btnLink = $("#btn-link-drive"), btnSync = $("#btn-sync-drive");
       if (driveStatus) driveStatus.textContent = "Desactivado: no se realizarán llamadas a Google Drive.";
@@ -542,6 +560,62 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       localStorage.removeItem("drive_linked");
     }
   }
+  async function ensureOwnerSession() {
+    let response = await fetch("/api/canva/status", { credentials: "same-origin", cache: "no-store" });
+    if (response.status !== 401) return response;
+    const password = window.prompt("Introduce tu contraseña privada de Agency AI OS para gestionar las integraciones:");
+    if (!password) throw new Error("Inicio de sesión cancelado.");
+    const login = await fetch("/api/owner-login", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password })
+    });
+    const data = await login.json().catch(() => ({}));
+    if (!login.ok) throw new Error(data.error || "No se pudo autenticar el workspace.");
+    return fetch("/api/canva/status", { credentials: "same-origin", cache: "no-store" });
+  }
+
+  async function refreshCanvaStatus() {
+    const label = $("#canva-connection-label"), detail = $("#canva-connection-detail");
+    const pill = $("#canva-connection-pill"), error = $("#canva-connection-error");
+    const connect = $("#canva-connect-button");
+    if (!label || !pill) return;
+    try {
+      const response = await ensureOwnerSession();
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "No se pudo consultar el estado de Canva.");
+      const connected = data.connected === true;
+      label.textContent = connected ? "Cuenta Canva conectada" : (data.credentialsConfigured ? "Credenciales detectadas · autorización pendiente" : "Credenciales pendientes");
+      detail.textContent = connected ? (String(data.toolsCount || 0) + " herramientas disponibles mediante MCP") : "La autorización se inicia desde Configuración.";
+      pill.textContent = connected ? "Conectada" : "No conectada";
+      pill.className = "pill " + (connected ? "pill-green" : "pill-muted");
+      connect.textContent = connected ? "Volver a autorizar" : "Conectar Canva";
+      if (connected && error) error.textContent = "";
+    } catch (e) {
+      label.textContent = "Estado no verificado";
+      detail.textContent = "Se necesita una sesión privada para consultar la integración.";
+      pill.textContent = "Sin verificar";
+      pill.className = "pill pill-muted";
+      if (error) error.textContent = e.message;
+    }
+  }
+
+  function bindCanvaSettings() {
+    $("#canva-connect-button")?.addEventListener("click", async () => {
+      const button = $("#canva-connect-button"), error = $("#canva-connection-error");
+      button.disabled = true; button.textContent = "Preparando autorización…";
+      if (error) error.textContent = "";
+      try {
+        const auth = await ensureOwnerSession();
+        if (!auth.ok) throw new Error("No se pudo validar la sesión privada.");
+        location.href = "/api/canva/connect";
+      } catch (e) {
+        if (error) error.textContent = e.message || "No se pudo iniciar la conexión.";
+        button.disabled = false; button.textContent = "Conectar Canva";
+      }
+    });
+    $("#canva-refresh-button")?.addEventListener("click", refreshCanvaStatus);
+  }
+
   // --- LISTENERS ---
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
