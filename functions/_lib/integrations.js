@@ -7,12 +7,14 @@ const CATALOG = {
   googleCalendar: { label: "Google Calendar API", env: "GOOGLE_CALENDAR_ENABLED", cost: "La API puede no tener coste directo, pero depende de la cuenta y del uso asociado.", function: "Consultar disponibilidad y crear citas.", activation: "Configurar OAuth y autorizar acceso al calendario." },
   googleSheets: { label: "Google Sheets API", env: "GOOGLE_SHEETS_ENABLED", cost: "Sujeta a cuotas y límites de Google.", function: "Importar o sincronizar datos externos.", activation: "Autorizar el acceso y definir límites de uso." },
   browserRendering: { label: "Navegador remoto / Browser Rendering", env: "BROWSER_RENDERING_ENABLED", cost: "Puede consumir cuota o generar cargos según proveedor y plan.", function: "Renderizar JavaScript, capturar screenshots y analizar estilos calculados.", activation: "Revisar plan, cuota y proveedor antes de habilitar." },
+  flow: { label: "Google Flow", env: null, cost: "Servicio externo de Google; las generaciones consumen créditos según el plan.", function: "Estudio creativo de vídeo e imagen con Gemini Omni, Veo y herramientas visuales.", activation: "Se abre en Google Flow con la cuenta Google del usuario. No hay conexión OAuth/API pública de Flow disponible para este constructor.", externalUrl: "https://labs.google/fx/tools/flow" },
   canva: { label: "Canva Connect", env: null, cost: "La Connect API es gratuita para desarrollar e integrar. Algunas funciones requieren Canva Pro/Business/Enterprise o tienen límites de uso; los elementos premium pueden impedir exportaciones.", function: "Conectar diseños, assets, exportaciones y herramientas creativas con autorización OAuth.", activation: "No requiere activar un flag de pago. Requiere credenciales OAuth, cifrado, KV, autorización de Canva y scopes adecuados." }
 };
 
 export function integrationEnabled(env, id) {
   const item = CATALOG[id];
   if (!item) return false;
+  if (id === "flow") return false;
   if (id === "canva") return Boolean(env.CANVA_CLIENT_ID && env.CANVA_CLIENT_SECRET && String(env.CANVA_TOKEN_ENCRYPTION_KEY || "").length >= 32 && env.AGENCY_KV);
   if (id === "pagespeed") return Boolean(env.PAGESPEED_API_KEY);
   if (id === "searchConsole") return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_GSC_REDIRECT_URI && env.AGENCY_KV);
@@ -22,7 +24,8 @@ export function integrationEnabled(env, id) {
 export function integrationStatus(env) {
   return Object.entries(CATALOG).map(([id, item]) => ({
     id, label: item.label, enabled: integrationEnabled(env, id),
-    status: id === "canva" ? (integrationEnabled(env, id) ? "configured" : "needs_configuration") : (integrationEnabled(env, id) ? "enabled" : "disabled"),
+    status: id === "flow" ? "external_app" : id === "canva" ? (integrationEnabled(env, id) ? "configured" : "needs_configuration") : (integrationEnabled(env, id) ? "enabled" : "disabled"),
+    externalUrl: item.externalUrl || null,
     costNotice: item.cost, function: item.function, activation: item.activation
   }));
 }
