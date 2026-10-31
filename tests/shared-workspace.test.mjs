@@ -4,7 +4,7 @@ import { onRequestGet, onRequestPost, onRequestDelete } from "../functions/api/p
 
 const request = (url, method = "GET", body) => new Request(url, {
   method,
-  headers: { "content-type": "application/json", origin: "https://agency-ai-os.test" },
+  headers: { "content-type": "application/json", origin: "https://agency-ai-os.test", cookie: "__Host-agency_owner=" + "d".repeat(64) },
   ...(body === undefined ? {} : { body: JSON.stringify(body) })
 });
 const context = (req, env = {}) => ({ request: req, env });
