@@ -167,7 +167,7 @@
         <div class="notice">No confundas objetivos con resultados.</div>
         
         <div class="field"><label for="upload-before">Captura anterior (opcional)</label><input id="upload-before" type="file" accept="image/*"></div>
-        <div class="field"><label for="upload-after">Captura de la propuesta (opcional)</label><input id="upload-after" type="file" accept="image/*"></div>
+        <div class="field"><label for="upload-after">Captura de la propuesta (opcional)</label><input id="upload-after" type="file" accept="image/*"><button class="btn" id="capture-after" type="button">Generar captura de la propuesta</button></div>
         <label style="display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)"><input id="show-metrics" type="checkbox" checked> Mostrar tarjetas de métricas</label>
         
         <div class="actions">
@@ -203,7 +203,7 @@
         </div>
         
         <div class="layer" id="after-layer" style="clip-path:inset(0 50% 0 0)">
-          <iframe class="iframe-site" id="after-site" title="Vista previa de la propuesta generada" sandbox="" src="about:blank" style="display:none;"></iframe>
+          <iframe class="iframe-site" id="after-site" title="Vista previa de la propuesta generada" sandbox="allow-same-origin" src="about:blank" style="display:none;"></iframe>
           <img class="shot" id="after-shot" alt="Captura de la propuesta">
           <div class="mock-wrap" id="after-mock">
             <article class="mock after">
@@ -504,6 +504,32 @@ async function readImage(file,key){
 }
 $("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"before"));
 $("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
+$("#capture-after").addEventListener("click",async()=>{
+  const button=$("#capture-after"),frame=$("#after-site");
+  if(!frame||!frame.contentDocument?.documentElement){toast("Primero carga la propuesta en la vista previa.");return;}
+  button.disabled=true;button.textContent="Generando captura…";
+  try{
+    const doc=frame.contentDocument,root=doc.documentElement.cloneNode(true);
+    root.querySelectorAll("script").forEach(node=>node.remove());
+    root.setAttribute("xmlns","http://www.w3.org/1999/xhtml");
+    const markup=new XMLSerializer().serializeToString(root);
+    const width=Math.max(800,Math.min(1440,frame.clientWidth||1280)),height=Math.max(600,Math.min(1800,doc.documentElement.scrollHeight||900));
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="'+width+'" height="'+height+'"><foreignObject width="100%" height="100%">'+markup+'</foreignObject></svg>';
+    const svgBlob=new Blob([svg],{type:"image/svg+xml;charset=utf-8"}),svgUrl=URL.createObjectURL(svgBlob);
+    try{
+      const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("El navegador no pudo renderizar la captura SVG."));img.src=svgUrl;});
+      const scale=Math.min(1,1280/width,1000/height),canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+      const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      let blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.68));
+      if(blob?.size>150*1024)blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.45));
+      if(!blob||blob.size>180*1024)throw new Error("La captura supera el límite de almacenamiento del proyecto.");
+      afterImg=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
+      render();toast("Captura de la propuesta generada. Pulsa Guardar ajustes para sincronizarla.");
+    }finally{URL.revokeObjectURL(svgUrl);}
+  }catch(error){toast(error.message||"No se pudo generar la captura de la propuesta.");}
+  finally{button.disabled=false;button.textContent="Generar captura de la propuesta";}
+});
 
 $("#btn-run-seo").addEventListener("click", async () => {
   const btn = $("#btn-run-seo"), resDiv = $("#seo-audit-results"), url = $("#site-url").value.trim();
@@ -533,7 +559,16 @@ $("#btn-run-seo").addEventListener("click", async () => {
       ...(data.findings || [])
     ];
     $("#seo-text").textContent = lines.join("\n");
-    toast("Auditoría SEO completada.");
+    if(active?.id){
+      const projects=saved(),index=projects.findIndex(p=>String(p.id)===String(active.id));
+      if(index>=0){
+        projects[index]={...projects[index],websiteAudit:data,updatedAt:new Date().toISOString()};
+        localStorage.setItem(PKEY,JSON.stringify(projects));active=projects[index];
+        window.dispatchEvent(new StorageEvent("storage",{key:PKEY,newValue:JSON.stringify(projects)}));
+      }
+    }
+    activeAudit=data;
+    toast(active?.id?"Auditoría guardada en el proyecto compartido.":"Auditoría completada; selecciona un proyecto para conservarla.");
   } catch (e) {
     $("#seo-score").textContent = "Error";
     $("#seo-score").style.color = "var(--orange)";
