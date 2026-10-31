@@ -9,6 +9,7 @@
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
   let activeProjectId = localStorage.getItem(ACTIVE_PROJECT_KEY) || null;
+  let cloudWorkspaceConnected = false;
   let toastTimer;
 
   function loadProjects() {
@@ -20,12 +21,106 @@
 
   function saveProjects() {
     try { 
+      const savedAt = new Date().toISOString();
+      projects.forEach(project => { if (project && typeof project === "object") project.updatedAt = savedAt; });
       localStorage.setItem(STORE_KEY, JSON.stringify(projects)); 
       saveHistory();
       autoSyncToDrive();
+      if (cloudWorkspaceConnected) syncProjectsToCloud();
       return true; 
     }
     catch (_) { notify("No se pudo guardar. Exporta los datos y libera espacio."); return false; }
+  }
+
+  function setCloudStatus(message, connected = cloudWorkspaceConnected) {
+    const el = $("#cloud-workspace-status");
+    const button = $("#cloud-workspace-connect");
+    if (el) el.textContent = connected ? "WORKSPACE SINCRONIZADO" : message;
+    if (button) button.textContent = connected ? "Nube conectada" : "Conectar nube";
+  }
+
+  async function syncProjectsToCloud() {
+    if (!cloudWorkspaceConnected) return;
+    for (const project of projects) {
+      try {
+        const response = await fetch("/api/projects", {
+          method: "POST", credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ project })
+        });
+        if (response.status === 401 || response.status === 503) {
+          cloudWorkspaceConnected = false;
+          setCloudStatus("NUBE NO DISPONIBLE", false);
+          return;
+        }
+        if (!response.ok) throw new Error("No se pudo guardar en la nube");
+      } catch (_) {
+        setCloudStatus("ERROR DE SINCRONIZACIÓN", false);
+        return;
+      }
+    }
+    setCloudStatus("WORKSPACE SINCRONIZADO", true);
+  }
+
+  async function connectCloudWorkspace() {
+    const password = window.prompt("Introduce tu contraseña privada de Agency AI OS:");
+    if (!password) return;
+    const button = $("#cloud-workspace-connect");
+    if (button) { button.disabled = true; button.textContent = "Conectando…"; }
+    try {
+      const login = await fetch("/api/owner-login", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+      const loginData = await login.json().catch(() => ({}));
+      if (!login.ok) throw new Error(loginData.error || "No se pudo iniciar sesión.");
+      const response = await fetch("/api/projects", { credentials: "same-origin", cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || (data.code === "D1_NOT_CONFIGURED" ? "Falta configurar la base D1 AGENCY_DB en Cloudflare." : "No se pudo abrir el Workspace compartido."));
+      const remote = Array.isArray(data.projects) ? data.projects : [];
+      const merged = new Map(remote.filter(p => p && p.id).map(p => [String(p.id), p]));
+      for (const local of projects) {
+        if (!local?.id) continue;
+        const cloud = merged.get(String(local.id));
+        const localTime = Date.parse(local.updatedAt || local.createdAt || 0) || 0;
+        const cloudTime = Date.parse(cloud?.updatedAt || cloud?.createdAt || 0) || 0;
+        if (!cloud || localTime > cloudTime) merged.set(String(local.id), local);
+      }
+      projects = [...merged.values()].sort((a, b) => (Date.parse(b.updatedAt || b.createdAt || 0) || 0) - (Date.parse(a.updatedAt || a.createdAt || 0) || 0));
+      localStorage.setItem(STORE_KEY, JSON.stringify(projects));
+      cloudWorkspaceConnected = true;
+      renderProjects();
+      await syncProjectsToCloud();
+      notify("Workspace compartido conectado. Se han combinado los proyectos locales y los de la nube.");
+    } catch (error) {
+      cloudWorkspaceConnected = false;
+      setCloudStatus(error.message || "No se pudo conectar", false);
+      notify(error.message || "No se pudo conectar el Workspace.");
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function restoreCloudWorkspaceSession() {
+    try {
+      const response = await fetch("/api/projects", { credentials: "same-origin", cache: "no-store" });
+      if (response.status === 401) { setCloudStatus("SOLO ESTE DISPOSITIVO", false); return; }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) { setCloudStatus(data.code === "D1_NOT_CONFIGURED" ? "CONFIGURA D1" : "NUBE NO DISPONIBLE", false); return; }
+      const merged = new Map((data.projects || []).filter(p => p?.id).map(p => [String(p.id), p]));
+      for (const local of projects) {
+        const cloud = merged.get(String(local.id));
+        const lt = Date.parse(local.updatedAt || local.createdAt || 0) || 0;
+        const ct = Date.parse(cloud?.updatedAt || cloud?.createdAt || 0) || 0;
+        if (!cloud || lt > ct) merged.set(String(local.id), local);
+      }
+      projects = [...merged.values()];
+      localStorage.setItem(STORE_KEY, JSON.stringify(projects));
+      cloudWorkspaceConnected = true;
+      renderProjects();
+      await syncProjectsToCloud();
+    } catch (_) { setCloudStatus("SIN CONEXIÓN", false); }
   }
 
   function saveHistory() {
@@ -373,6 +468,7 @@ Responde siempre en español.`
     const p = findProject(id); if (!p) return;
     if (!confirm(`¿Eliminar el proyecto "${p.name}" de este navegador?`)) return;
     projects = projects.filter(x=>x.id!==id); saveProjects();
+    if (cloudWorkspaceConnected) fetch("/api/projects?id=" + encodeURIComponent(id), { method: "DELETE", credentials: "same-origin" }).catch(() => setCloudStatus("ERROR DE SINCRONIZACIÓN", false));
     if (activeProjectId===id) activeProjectId=projects[0]?.id || null;
     renderProjects(); renderDeliverables(); notify("Proyecto eliminado.");
   }
@@ -450,6 +546,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
   $("#top-new").addEventListener("click",()=>currentView("builder"));
+  $("#cloud-workspace-connect")?.addEventListener("click", connectCloudWorkspace);
   $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#color-picker").addEventListener("input",e=>$("#color").value=e.target.value);
   $("#color").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value))$("#color-picker").value=e.target.value;});
@@ -567,4 +664,5 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
 
   loadIntegrationStatus();
   renderProjects();
+  restoreCloudWorkspaceSession();
 })();
