@@ -1,5 +1,17 @@
 import { jsonResponse, ownerSession } from "../_lib/owner-auth.js";
+
 export async function onRequestGet({ request, env }) {
-  if (!env.OWNER_PASSWORD || !env.AGENCY_KV) return jsonResponse({ ok: true, configured: false, authenticated: false });
-  return jsonResponse({ ok: true, configured: true, authenticated: await ownerSession(request, env) });
+  const ownerPasswordConfigured = Boolean(env.OWNER_PASSWORD);
+  const agencyKvBound = Boolean(env.AGENCY_KV);
+  const configured = ownerPasswordConfigured && agencyKvBound;
+
+  return jsonResponse({
+    ok: true,
+    configured,
+    authenticated: configured ? await ownerSession(request, env) : false,
+    diagnostics: {
+      ownerPasswordConfigured,
+      agencyKvBound,
+    },
+  });
 }
