@@ -251,7 +251,7 @@
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const PKEY = "agency-ai-os.projects.v1", LKEY = "agency-ai-os.propuesta-comercial.v1";
 const defs = [["performance","Rendimiento"],["seo","SEO"],["accessibility","Accesibilidad"]];
-let imported = [], beforeImg = "", afterImg = "", active = null;
+let imported = [], beforeImg = "", afterImg = "", active = null, activeAudit = null;
 
 function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function slug(s){return String(s||"cliente").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"cliente"}
@@ -278,6 +278,7 @@ function restoreSavedProposal(){
 function applyProject(p){
   if(!p)return; active=p;
   const plan=p.plan||{},copy=plan.copy||{},audit=p.websiteAudit||p.audit||null;
+  activeAudit=audit;
   const set=(id,value)=>{const el=$("#"+id);if(el&&value!==undefined&&value!==null&&String(value).trim()!=="")el.value=String(value)};
   set("client",p.name||p.projectName||p.client);set("sector",p.sector||audit?.sector);set("accent",p.color||audit?.themeColor);
   set("offer",p.offer||audit?.offer);set("site-url",p.domain||audit?.url);
@@ -285,9 +286,41 @@ function applyProject(p){
   set("before-copy",audit?.description||p.offer||"Mensaje actual pendiente de revisión.");
   set("after-title",copy.headline||("Una propuesta más clara para "+(p.name||"tu negocio")));
   set("after-copy",copy.subheadline||copy.valueProposition||p.offer);set("cta",copy.primaryCTA||"Hablemos de tu proyecto");set("phone",p.phone||"");
-  if(audit&&typeof audit.score==="number"){$("#seo-audit-results").style.display="block";$("#seo-score").textContent=audit.score+" / 100";$("#seo-text").textContent=audit.summary||audit.analysis||(audit.findings||[]).join("\n")}
+  const proposal=p.commercialProposal;
+  if(proposal)applyProposalData(proposal);
+  const psi=audit?.pageSpeed?.mobile?.available?audit.pageSpeed.mobile:(audit?.pageSpeed?.desktop?.available?audit.pageSpeed.desktop:null);
+  const metricIds=["performance","seo","accessibility"];
+  for(const id of metricIds){
+    const value=psi?.scores?.[id];
+    const input=$("#b-"+id),state=$("#bs-"+id);
+    if(input&&Number.isFinite(value)){input.value=String(value);if(state)state.value="measured";}
+  }
+  if(audit){
+    $("#seo-audit-results").style.display="block";
+    $("#seo-score").textContent=Number.isFinite(audit.score)?audit.score+" / 100":"HTML audit";
+    const lines=[audit.summary||"Auditoría HTML completada.", "Tipo de puntuación: "+(audit.scoreType==="heuristic_html_checks_not_lighthouse"?"comprobaciones heurísticas HTML (no Lighthouse)":"verificar fuente"),"URL: "+(audit.url||p.domain||"—"),"Páginas analizadas: "+(audit.crawl?.pagesAnalyzed??"—"),"Hallazgos: "+(audit.findings?.length??0)];
+    if(psi?.scores)lines.push("PageSpeed "+(psi.strategy||"móvil")+": "+metricIds.map(id=>id.toUpperCase()+" "+(psi.scores[id]??"—")).join(" · "));
+    if(Array.isArray(audit.findings))lines.push("",...audit.findings.slice(0,12).map(x=>(x.severity||"info").toUpperCase()+" · "+(x.category||"SEO")+" · "+(x.message||"")));
+    $("#seo-text").textContent=lines.join("\n");
+  }
+  if(!beforeImg&&audit?.screenshotUrl)beforeImg=audit.screenshotUrl;
+  if(!afterImg&&p.previewScreenshot)afterImg=p.previewScreenshot;
   if(p.id)localStorage.setItem("agency-ai-os.active-project-id.v1",p.id);
   const sel=$("#project-select");if(sel&&p.id)sel.value=p.id;render();
+}
+function applyProposalData(d){
+  if(!d||typeof d!=="object")return;
+  const map={client:"client",sector:"sector",accent:"accent",offer:"offer",siteUrl:"site-url",beforeTitle:"before-title",beforeCopy:"before-copy",afterTitle:"after-title",afterCopy:"after-copy",cta:"cta",phone:"phone",note:"evidence-note"};
+  Object.entries(map).forEach(([key,id])=>{if(d[key]!==undefined&&$("#"+id))$("#"+id).value=d[key]});
+  if(typeof d.showMetrics==="boolean")$("#show-metrics").checked=d.showMetrics;
+  if(d.images){beforeImg=d.images.before||beforeImg;afterImg=d.images.after||afterImg;}
+  if(d.metrics)for(const side of ["before","after"])for(const [id] of defs){
+    const m=d.metrics[side]?.[id];if(!m)continue;
+    const prefix=side==="before"?"b-":"a-";
+    const value=$("#"+prefix+id),status=$("#"+(side==="before"?"bs-":"as-")+id);
+    if(value&&m.value!==null&&m.value!==undefined)value.value=m.value;
+    if(status&&m.status)status.value=m.status;
+  }
 }
 
 function metricUI(){
@@ -426,7 +459,23 @@ $("#import-json").addEventListener("change",async e=>{
     imported=[p];options();const sel=$("#project-select");if(p.id)sel.value=p.id;applyProject(p);toast("Proyecto importado y briefing cargado.");
   }catch(err){toast("No se pudo importar el JSON: "+err.message)}
 });
-$("#save-local").addEventListener("click",()=>{localStorage.setItem(LKEY,JSON.stringify(data()));toast("Ajustes de la propuesta guardados en este navegador.")});
+function saveProposalToProject(){
+  const proposal=data();
+  localStorage.setItem(LKEY,JSON.stringify(proposal));
+  if(active?.id){
+    const projects=saved();
+    const index=projects.findIndex(p=>String(p.id)===String(active.id));
+    if(index>=0){
+      projects[index]={...projects[index],commercialProposal:proposal,updatedAt:new Date().toISOString()};
+      localStorage.setItem(PKEY,JSON.stringify(projects));
+      active=projects[index];
+      toast("Propuesta guardada dentro del proyecto compartido. Se sincronizará con D1.");
+      return;
+    }
+  }
+  toast("Propuesta guardada localmente. Selecciona un proyecto para compartirla con D1.");
+}
+$("#save-local").addEventListener("click",saveProposalToProject);
 $("#export-json").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify(data(),null,2)],{type:"application/json;charset=utf-8"}),url=URL.createObjectURL(blob);
   const a=document.createElement("a");a.href=url;a.download="propuesta-"+slug(data().client)+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
@@ -435,16 +484,23 @@ window.addEventListener("storage",e=>{
   if(e.key===PKEY||e.key==="agency-ai-os.active-project-id.v1"){options();const wanted=new URLSearchParams(location.search).get("project")||localStorage.getItem("agency-ai-os.active-project-id.v1");const p=all().find(x=>String(x.id)===String(wanted))||all()[0];if(p)applyProject(p)}
 });
 
-function readImage(file, key){
-  if(!file || !file.type.startsWith("image/")) return;
-  if(file.size > 8*1024*1024) { toast("La imagen es demasiado grande (máx 8MB)"); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    if(key==="before") beforeImg = reader.result;
-    else afterImg = reader.result;
-    render(); toast("Captura actualizada");
-  };
-  reader.readAsDataURL(file);
+async function readImage(file,key){
+  if(!file||!file.type.startsWith("image/"))return;
+  if(file.size>8*1024*1024){toast("La imagen supera el límite de 8 MB.");return;}
+  try{
+    const source=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
+    const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=source;});
+    const scale=Math.min(1,1440/image.width,1200/image.height),canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
+    canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
+    let blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.72));
+    if(!blob)throw new Error("No se pudo procesar la imagen.");
+    if(blob.size>430*1024)blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.52));
+    if(!blob||blob.size>460*1024)throw new Error("La captura sigue siendo demasiado grande para sincronizarla con el Workspace.");
+    const compressed=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
+    if(key==="before")beforeImg=compressed;else afterImg=compressed;
+    render();toast("Captura optimizada. Pulsa Guardar ajustes para incluirla en el proyecto.");
+  }catch(error){toast(error.message||"No se pudo procesar la captura.");}
 }
 $("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"before"));
 $("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
