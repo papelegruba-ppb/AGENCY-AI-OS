@@ -78,3 +78,34 @@ test("usage-store failure fails closed", async () => {
   assert.equal(result.response.status, 503);
   assert.equal((await result.response.json()).code, "AI_USAGE_STORE_UNAVAILABLE");
 });
+
+
+test("Workers AI remains blocked unless explicitly enabled", async () => {
+  const result = await reserveAiCall({ env: { AI: { async run() { throw new Error("must not run"); } }, AGENCY_KV: makeKV(), AI_ENABLED: "true" }, request: request(), endpoint: "/test", providerOverride: "cloudflare" });
+  assert.equal(result.ok, false);
+  assert.equal((await result.response.json()).code, "WORKERS_AI_DISABLED");
+});
+
+test("Workers AI uses its own binding and bounded daily quota without external billing flags", async () => {
+  const kv = makeKV();
+  const env = { AI: { async run() {} }, AGENCY_KV: kv, AI_ENABLED: "true", AI_WORKERS_ENABLED: "true" };
+  const status = aiStatus(env);
+  assert.equal(status.workersAi.configured, true);
+  assert.equal(status.workersAi.model, "@cf/meta/llama-3.2-3b-instruct");
+  const reservation = await reserveAiCall({ env, request: request(), endpoint: "/test", providerOverride: "cloudflare" });
+  assert.equal(reservation.ok, true);
+  assert.equal(reservation.provider, "cloudflare");
+  assert.equal(reservation.maxOutputTokens, 700);
+  const day = new Date().toISOString().slice(0, 10);
+  assert.equal(kv.values.get("mini-ai:usage:global:" + day), "1");
+});
+
+test("Workers AI daily limit blocks before model execution", async () => {
+  const day = new Date().toISOString().slice(0, 10);
+  const kv = makeKV({ ["mini-ai:usage:global:" + day]: "1" });
+  const env = { AI: { async run() {} }, AGENCY_KV: kv, AI_ENABLED: "true", AI_WORKERS_ENABLED: "true", AI_WORKERS_DAILY_LIMIT: "1" };
+  const result = await reserveAiCall({ env, request: request(), endpoint: "/test", providerOverride: "cloudflare" });
+  assert.equal(result.ok, false);
+  assert.equal(result.response.status, 429);
+  assert.equal((await result.response.json()).code, "MINI_AI_DAILY_LIMIT");
+});
