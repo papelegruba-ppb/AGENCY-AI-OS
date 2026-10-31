@@ -5,5 +5,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
     "zod": "^4.2.0"
+  },
+  "scripts": {
+    "preview": "node scripts/preview-server.mjs --port 8000",
+    "test:preview": "node --test tests/preview-server.test.mjs"
   }
 }

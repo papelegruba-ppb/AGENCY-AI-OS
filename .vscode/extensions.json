@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-vscode.js-debug-nightly"
+  ],
+  "unwantedRecommendations": [
+    "ritwickdey.LiveServer"
+  ]
+}
