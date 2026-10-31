@@ -7,7 +7,7 @@ Todas las integraciones externas con consumo variable, cuotas o cargos permanece
 | Integración | Flag de servidor | Estado por defecto |
 |---|---|---|
 | IA (OpenAI, DeepSeek, Gemini, Anthropic, Perplexity) | `AI_BILLABLE_ENABLED=true` y `AI_ENABLED=true` | Desactivada |
-| PageSpeed Insights | `PAGESPEED_ENABLED=true` | Desactivada |
+| PageSpeed Insights | `PAGESPEED_API_KEY` presente | Disponible al configurar la clave; consulta sin coste directo dentro de cuota |
 | Google Drive | `GOOGLE_DRIVE_ENABLED=true` | Desactivada |
 | WhatsApp Business | `WHATSAPP_ENABLED=true` | Desactivada; integración real pendiente |
 | Google Calendar | `GOOGLE_CALENDAR_ENABLED=true` | Desactivada; integración real pendiente |
@@ -25,7 +25,7 @@ Consultar `GET /api/integrations/status`. La respuesta enumera estado, función,
 
 - WhatsApp, Calendar y Sheets se muestran como integraciones preparadas, no conectadas: aún necesitan webhooks/OAuth, persistencia, control de duplicados y pruebas.
 - El crawler actual lee HTML público servido; no ejecuta JavaScript ni captura screenshots.
-- PageSpeed solo devuelve métricas reales cuando la integración se habilite y Google responda con Lighthouse.
+- PageSpeed consulta la API oficial cuando existe `PAGESPEED_API_KEY`; no requiere `PAGESPEED_ENABLED`. Sujeto a cuotas y límites de Google.
 - Los proyectos siguen guardándose principalmente en el navegador. Esta política no convierte localStorage en almacenamiento compartido ni sincronización multi-dispositivo.
 - Las llamadas a IA están separadas de los agentes locales; los agentes no ejecutan acciones externas ni código arbitrario.
 - Canva Connect API: la integración de API es gratuita según Canva, pero algunas capacidades están restringidas a planes de pago. El estado de credenciales no equivale a OAuth conectado ni a agentes creativos plenamente integrados. Consultar `/api/canva/status` y validar las herramientas disponibles, scopes, cuotas y licencias de elementos premium.

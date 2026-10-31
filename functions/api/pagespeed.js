@@ -40,7 +40,7 @@ function isPublicWebUrl(value) {
 
 export async function onRequestGet({ request, env }) {
   const incidentId = crypto.randomUUID();
-  if (env.PAGESPEED_ENABLED !== "true") return failure(incidentId, { error: "PageSpeed está desactivado por la política de coste cero. No se ha realizado ninguna llamada a Google.", code: "INTEGRATION_DISABLED", integration: "pagespeed" }, 503);
+  if (!env.PAGESPEED_API_KEY) return failure(incidentId, { error: "Falta PAGESPEED_API_KEY en el entorno de Cloudflare. PageSpeed no se ha ejecutado.", code: "PAGESPEED_API_KEY_MISSING", integration: "pagespeed" }, 503);
   const incoming = new URL(request.url);
   const target = incoming.searchParams.get("url");
   const strategy = incoming.searchParams.get("strategy") || "mobile";
@@ -49,12 +49,6 @@ export async function onRequestGet({ request, env }) {
   }
   if (!["mobile", "desktop"].includes(strategy)) {
     return failure(incidentId, { error: "Estrategia no válida. Usa mobile o desktop.", code: "PAGESPEED_INVALID_STRATEGY" }, 400);
-  }
-  if (!env.PAGESPEED_API_KEY) {
-    return failure(incidentId, {
-      error: "El servidor no tiene configurada la clave de PageSpeed para este entorno.",
-      code: "PAGESPEED_API_KEY_MISSING"
-    }, 503, { strategy });
   }
 
   const googleUrl = new URL(API_BASE);

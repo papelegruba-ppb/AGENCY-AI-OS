@@ -3,6 +3,8 @@ import { decryptCanvaTokens } from "../../_lib/canva-mcp.js";
 
 export async function onRequestGet({ env }) {
   const integrations = integrationStatus(env);
+  const gsc = integrations.find(item => item.id === "searchConsole");
+  if (gsc) { gsc.connected = false; gsc.status = gsc.enabled ? "oauth_pending" : "needs_configuration"; if (gsc.enabled) { try { gsc.connected = Boolean(await env.AGENCY_KV.get("gsc_refresh_token")); gsc.status = gsc.connected ? "connected" : "oauth_pending"; } catch { gsc.status = "token_store_unavailable"; } } }
   const canva = integrations.find(item => item.id === "canva");
   if (canva) {
     canva.connected = false;

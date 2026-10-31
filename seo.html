@@ -122,6 +122,8 @@
   <!-- PESTAÑA SEARCH CONSOLE -->
   <div id="tab-searchconsole" class="tab-content">
     <h2>Datos de Search Console</h2>
+    <p style="color:var(--muted)">Vincula Google una vez y consulta la propiedad exacta que tengas verificada.</p>
+    <div class="formrow"><label class="urlbox"><span>GSC</span><input id="gsc-property" type="text" placeholder="https://www.ejemplo.com/ o sc-domain:ejemplo.com"></label><a class="btn" id="btn-gsc-connect" href="/api/gsc-auth">Vincular Search Console</a></div>
     <div id="gsc-data-container">
       <p style="color:var(--muted);">Haz clic en "Analizar Web" para cargar los datos de Search Console (requiere permisos).</p>
     </div>
@@ -139,11 +141,14 @@ let currentStrategy = "mobile", fullReport = null;
 function esc(v){return String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function fetchJson(url,options){const r=await fetch(url,options);const d=await r.json().catch(()=>({}));if(!r.ok||d.error||d.ok===false){const e=new Error(d.error||("La solicitud ha fallado (HTTP "+r.status+")."));e.status=r.status;throw e;}return d;}
 function showError(el,msg){el.innerHTML='<div class="gsc-error">⚠️ '+esc(msg)+'</div>';}
-$$(".tab-btn").forEach(b=>b.addEventListener("click",()=>{$$(".tab-btn").forEach(x=>x.classList.toggle("active",x===b));$$(".tab-content").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab));}));
+const gscStatus=new URLSearchParams(location.search).get("gsc");
+if(gscStatus){const msgs={success:"Search Console vinculado correctamente. Ya puedes analizar la propiedad autorizada.",error:"Google canceló o rechazó la autorización.", "config-error":"Falta configuración OAuth en Cloudflare.", "state-error":"La autorización caducó o no coincide. Vuelve a intentarlo.", "token-error":"Google no devolvió un token de renovación. Repite la vinculación y acepta el acceso.", "callback-error":"No se pudo completar la autorización. Reintenta."};showError($("#gsc-data-container"),msgs[gscStatus]||"Estado de vinculación: "+gscStatus);history.replaceState({},document.title,location.pathname);}
+$(".tab-btn").forEach(b=>b.addEventListener("click",()=>{$$(".tab-btn").forEach(x=>x.classList.toggle("active",x===b));$$(".tab-content").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab));}));
 $("#btn-mode-mobile").addEventListener("click",()=>{currentStrategy="mobile";renderPageSpeed();});
 $("#btn-mode-desktop").addEventListener("click",()=>{currentStrategy="desktop";renderPageSpeed();});
 $("#btn-analyze").addEventListener("click",async()=>{
  const raw=$("#target-url").value.trim();let u;try{u=new URL(raw);}catch{alert("Introduce una URL válida, por ejemplo https://www.ejemplo.com");return;}
+ $("#gsc-property").value=$("#gsc-property").value.trim()||u.origin+"/";
  if(!["http:","https:"].includes(u.protocol)){alert("La URL debe usar HTTP o HTTPS.");return;}
  const url=u.href,btn=$("#btn-analyze");btn.disabled=true;btn.textContent="Analizando...";$("#results-area").style.display="block";
  $("#ps-scores").innerHTML="";$("#ps-metrics").innerHTML="";$("#ps-audits").innerHTML="";
@@ -157,7 +162,7 @@ $("#btn-analyze").addEventListener("click",async()=>{
   fullReport={mobile:ps[0].status==="fulfilled"?ps[0].value:{error:ps[0].reason.message},desktop:ps[1].status==="fulfilled"?ps[1].value:{error:ps[1].reason.message}};
   if(ps.every(x=>x.status==="rejected"))showError($("#ps-scores"),"PageSpeed no ha podido analizar la web. "+ps[0].reason.message);else renderPageSpeed();
   const results=await Promise.allSettled([
-   fetchJson("/api/gsc-data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({siteUrl:url})}),
+   fetchJson("/api/gsc-data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({siteUrl:$("#gsc-property").value.trim()})}),
    fetchJson("/api/site-audit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})})
   ]);
   if(results[0].status==="fulfilled")renderSearchConsole(results[0].value);else showError($("#gsc-data-container"),results[0].reason.message+" Comprueba que la cuenta esté vinculada y tenga permisos sobre la propiedad exacta.");
