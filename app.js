@@ -130,6 +130,25 @@
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || "No se pudo completar la auditoría.");
+
+      statusText.textContent = "Rastreo completado. Midiendo rendimiento y calidad con PageSpeed Insights en móvil y escritorio…";
+      const pageSpeedResults = await Promise.all(["mobile", "desktop"].map(async strategy => {
+        try {
+          const psiResponse = await fetch("/api/pagespeed?url=" + encodeURIComponent(parsedUrl.href) + "&strategy=" + strategy, { signal: AbortSignal.timeout(55000) });
+          const psi = await psiResponse.json();
+          if (!psiResponse.ok || !psi.lighthouseResult) return { available: false, error: psi.error || "PageSpeed no disponible" };
+          const lighthouse = psi.lighthouseResult;
+          const audits = lighthouse.audits || {};
+          const metricIds = ["largest-contentful-paint", "interaction-to-next-paint", "cumulative-layout-shift", "first-contentful-paint", "speed-index", "total-blocking-time", "server-response-time"];
+          return {
+            available: true, strategy, fetchedAt: new Date().toISOString(),
+            scores: Object.fromEntries(["performance", "accessibility", "best-practices", "seo"].map(key => [key, lighthouse.categories?.[key]?.score == null ? null : Math.round(lighthouse.categories[key].score * 100)])),
+            metrics: Object.fromEntries(metricIds.filter(key => audits[key]).map(key => [key, { value: audits[key].numericValue ?? null, displayValue: audits[key].displayValue || "", score: audits[key].score ?? null }])),
+            finalUrl: lighthouse.finalDisplayedUrl || lighthouse.finalUrl || parsedUrl.href
+          };
+        } catch (error) { return { available: false, error: error.message || "PageSpeed no disponible" }; }
+      }));
+      data.pageSpeed = { mobile: pageSpeedResults[0], desktop: pageSpeedResults[1] };
       latestWebsiteAudit = data;
       const setValue = (selector, value) => {
         const field = $(selector);
@@ -151,7 +170,11 @@
           ["Hallazgos", data.findings?.length ?? 0],
           ["Imágenes sin ALT", data.images?.missingAlt ?? 0]
         ];
-        results.innerHTML = '<div class="audit-result-head"><strong>Resultado de la auditoría inicial</strong><span class="pill pill-muted">' + (data.crawl?.complete ? "RASTREO COMPLETADO" : "RASTREO PARCIAL") + '</span></div><div class="audit-result-grid">' +
+        const mobileScore = data.pageSpeed?.mobile?.scores?.performance;
+        const desktopScore = data.pageSpeed?.desktop?.scores?.performance;
+        if (mobileScore != null) metrics.push(["Rendimiento móvil", mobileScore + "/100"]);
+        if (desktopScore != null) metrics.push(["Rendimiento escritorio", desktopScore + "/100"]);
+        results.innerHTML = '<div class="audit-result-head"><strong>Resultado de la auditoría inicial</strong><span class="pill pill-muted">' + (data.crawl?.complete ? "RASTREO FINALIZADO" : "RASTREO PARCIAL") + '</span></div><div class="audit-result-grid">' +
           metrics.map(([label, value]) => '<div class="audit-result-metric"><strong>' + esc(value) + '</strong><span>' + esc(label) + '</span></div>').join("") +
           '</div><p class="audit-result-note">' + esc(data.summary || "Auditoría técnica de páginas públicas.") + ' ' + esc(data.limitations?.join(" ") || "") + '</p>';
         results.hidden = false;
