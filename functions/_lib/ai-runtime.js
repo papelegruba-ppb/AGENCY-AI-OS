@@ -21,23 +21,43 @@ export function aiStatus(env) {
   const provider = String(env.AI_PROVIDER || "").toLowerCase();
   const spec = PROVIDERS[provider];
   const configuredProviders = Object.entries(PROVIDERS).filter(([, item]) => Boolean(env[item.key] && env[item.model] && env.AGENCY_KV)).map(([id, item]) => ({ id, model: String(env[item.model]), configured: true }));
-  const configured = Boolean(env.AI_ENABLED === "true" && spec && env[spec.key] && env[spec.model] && env.AGENCY_KV);
+  const enabled = env.AI_ENABLED === "true";
+  const billableEnabled = env.AI_BILLABLE_ENABLED === "true";
+  const spendAuthorized = env.AI_SPEND_AUTHORIZED === "true";
+  const usageStoreConfigured = Boolean(env.AGENCY_KV);
+  const configured = Boolean(enabled && billableEnabled && spendAuthorized && spec && env[spec.key] && env[spec.model] && usageStoreConfigured);
+  const providers = Object.entries(PROVIDERS).map(([id, item]) => {
+    const keyConfigured = Boolean(env[item.key]);
+    const modelConfigured = Boolean(env[item.model]);
+    const credentialsReady = Boolean(keyConfigured && modelConfigured && usageStoreConfigured);
+    return {
+      id,
+      model: modelConfigured ? String(env[item.model]) : null,
+      keyConfigured,
+      modelConfigured,
+      usageStoreConfigured,
+      credentialsReady,
+      executionAuthorized: Boolean(credentialsReady && enabled && billableEnabled && spendAuthorized && provider === id)
+    };
+  });
   return {
     ok: true,
-    enabled: env.AI_ENABLED === "true",
-    billableEnabled: env.AI_BILLABLE_ENABLED === "true",
+    enabled,
+    billableEnabled,
+    spendAuthorized,
     configured,
     provider: spec ? provider : null,
     configuredProviders,
+    providers,
     modelConfigured: Boolean(spec && env[spec.model]),
     keyConfigured: Boolean(spec && env[spec.key]),
-    usageStoreConfigured: Boolean(env.AGENCY_KV),
+    usageStoreConfigured,
     limits: {
       globalDailyRequests: boundedInt(env.AI_DAILY_LIMIT, 20, 1, 100),
       perIpDailyRequests: boundedInt(env.AI_IP_DAILY_LIMIT, 5, 1, 30),
       maxOutputTokens: boundedInt(env.AI_MAX_OUTPUT_TOKENS, 1200, 128, 2000)
     },
-    safety: "El uso de IA está cerrado por defecto. Solo se activa con AI_ENABLED=true, un proveedor/modelo explícito y AGENCY_KV. Los límites diarios son un freno operativo, no un límite monetario garantizado."
+    safety: "El uso de IA está cerrado por defecto. Para ejecutar llamadas se requieren AI_ENABLED=true, AI_BILLABLE_ENABLED=true, AI_SPEND_AUTHORIZED=true, proveedor/modelo explícitos y AGENCY_KV. AI_SPEND_AUTHORIZED es una autorización adicional de gasto; los límites diarios son frenos operativos, no límites monetarios garantizados."
   };
 }
 
@@ -46,7 +66,8 @@ export async function reserveAiCall({ env, request, endpoint, providerOverride }
   const selectedProvider = String(providerOverride || status.provider || "").toLowerCase();
   const selectedSpec = PROVIDERS[selectedProvider];
   if (!status.enabled) return { ok: false, response: json({ ok: false, error: "Las llamadas de IA están desactivadas. Activa AI_ENABLED=true solo después de revisar el proveedor y su facturación.", code: "AI_DISABLED" }, 503) };
-  if (env.AI_BILLABLE_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Integración de IA desactivada por la política de coste cero. No se ha contactado con ningún proveedor. Revisa precio y cuotas y autoriza AI_BILLABLE_ENABLED=true en Cloudflare para activarla.", code: "INTEGRATION_DISABLED", integration: "ai" }, 503) };
+  if (env.AI_BILLABLE_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Integración de IA desactivada por la política de coste cero. No se ha contactado con ningún proveedor. Revisa precio y cuotas antes de autorizarla.", code: "INTEGRATION_DISABLED", integration: "ai" }, 503) };
+  if (env.AI_SPEND_AUTHORIZED !== "true") return { ok: false, response: json({ ok: false, error: "Falta la autorización explícita de gasto. No se ha contactado con ningún proveedor. AI_SPEND_AUTHORIZED debe habilitarse expresamente después de revisar el presupuesto.", code: "AI_SPEND_NOT_AUTHORIZED", integration: "ai" }, 503) };
   if (!selectedSpec || !env[selectedSpec.key] || !env[selectedSpec.model] || !env.AGENCY_KV) return { ok: false, response: json({ ok: false, error: "El proveedor seleccionado no tiene clave, modelo o almacenamiento de cuotas configurados.", code: "AI_PROVIDER_NOT_CONFIGURED", provider: selectedProvider || null }, 503) };
 
   const provider = selectedProvider;
