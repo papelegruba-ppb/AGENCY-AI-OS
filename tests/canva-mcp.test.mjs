@@ -51,3 +51,14 @@ test("OAuth provider persists state, PKCE verifier, discovery and encrypted toke
   assert.equal(raw.includes(tokens.access_token), false);
   assert.deepEqual(await provider.tokens(), tokens);
 });
+
+test("OAuth discovery state is undefined before the first discovery", async () => {
+  const data = new Map();
+  const kv = {
+    async get(key) { return data.get(key) ?? null; },
+    async put(key, value) { data.set(key, value); },
+    async delete(key) { data.delete(key); }
+  };
+  const provider = new CanvaOAuthProvider({ AGENCY_KV: kv, CANVA_TOKEN_ENCRYPTION_KEY: secret }, "https://agency-ai-os-1cm.pages.dev");
+  assert.equal(await provider.discoveryState(), undefined);
+});
