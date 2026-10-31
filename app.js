@@ -109,55 +109,62 @@
     const domainInput = $("#domain").value.trim();
     const btn = $("#import-website");
     const statusText = $("#website-import-status");
-
-    if (!domainInput || !domainInput.startsWith("http")) {
-      notify("Introduce una URL válida (ej. https://tudominio.com)");
-      return;
+    const results = $("#website-audit-results");
+    let parsedUrl;
+    try { parsedUrl = new URL(domainInput); } catch (_) {
+      notify("Introduce una URL completa, por ejemplo https://www.empresa.com");
+      $("#domain").focus(); return;
     }
-
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      notify("La URL debe comenzar por https:// o http://"); return;
+    }
     btn.disabled = true;
-    btn.textContent = "Analizando web...";
-    statusText.textContent = "Extrayendo información de la web...";
-
+    btn.textContent = "Auditando el sitio…";
+    if (results) { results.hidden = true; results.innerHTML = ""; }
+    statusText.textContent = "Conectando con la web, consultando sus reglas de rastreo y descubriendo páginas públicas…";
     try {
-      const response = await fetch('/api/site-audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: domainInput })
+      const response = await fetch("/api/site-audit", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: parsedUrl.href, maxPages: 20 }),
+        signal: AbortSignal.timeout(110000)
       });
-      
       const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.error || "Error al analizar");
-
-      // /api/site-audit devuelve projectName, sector, offer, audience, goal,
-      // requirements, h1/h2 y score; no devuelve businessName ni headings.
+      if (!response.ok || !data.ok) throw new Error(data.error || "No se pudo completar la auditoría.");
       latestWebsiteAudit = data;
-      const setIfEmpty = (selector, value) => {
+      const setValue = (selector, value) => {
         const field = $(selector);
-        if (field && value && !field.value.trim()) field.value = value;
+        if (field && value !== undefined && value !== null && String(value).trim()) field.value = String(value);
       };
-      setIfEmpty("#projectName", data.projectName || (data.title || "").split(/[|–—-]/)[0].trim() || new URL(domainInput).hostname);
-      setIfEmpty("#sector", data.sector);
-      setIfEmpty("#offer", data.offer || data.description);
-      setIfEmpty("#audience", data.audience);
-      setIfEmpty("#goal", data.goal);
-      setIfEmpty("#requirements", data.requirements || [...(data.h1 || []), ...(data.h2 || [])].slice(0, 8).join("\n"));
-      const colorField=$("#color");
-      const colorPicker=$("#color-picker");
-      const colorWasUntouched=!colorField.value.trim()||colorField.value.toUpperCase()==="#8B5CF6";
-      if (colorWasUntouched && data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
-        colorField.value = data.themeColor;
-        colorPicker.value = data.themeColor;
+      setValue("#projectName", data.projectName || data.title?.split(/[|–—-]/)[0]?.trim() || parsedUrl.hostname);
+      setValue("#sector", data.sector);
+      setValue("#offer", data.offer);
+      setValue("#audience", data.audience);
+      setValue("#goal", data.goal);
+      setValue("#requirements", data.requirements || (data.pages || []).flatMap(page => page.h1 || []).slice(0, 12).join("\n"));
+      if (data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
+        $("#color").value = data.themeColor; $("#color-picker").value = data.themeColor;
       }
-      statusText.textContent = "✅ Web analizada: SEO " + (data.score ?? "—") + "/100. Revisa el briefing antes de guardarlo.";
-      notify("Datos públicos importados al briefing.");
+      if (results) {
+        const metrics = [
+          ["Páginas analizadas", data.crawl?.pagesAnalyzed ?? data.pages?.length ?? 0],
+          ["URLs descubiertas", data.crawl?.urlsDiscovered ?? data.pages?.length ?? 0],
+          ["Hallazgos", data.findings?.length ?? 0],
+          ["Imágenes sin ALT", data.images?.missingAlt ?? 0]
+        ];
+        results.innerHTML = '<div class="audit-result-head"><strong>Resultado de la auditoría inicial</strong><span class="pill pill-muted">' + (data.crawl?.complete ? "RASTREO COMPLETADO" : "RASTREO PARCIAL") + '</span></div><div class="audit-result-grid">' +
+          metrics.map(([label, value]) => '<div class="audit-result-metric"><strong>' + esc(value) + '</strong><span>' + esc(label) + '</span></div>').join("") +
+          '</div><p class="audit-result-note">' + esc(data.summary || "Auditoría técnica de páginas públicas.") + ' ' + esc(data.limitations?.join(" ") || "") + '</p>';
+        results.hidden = false;
+      }
+      const count = data.crawl?.pagesAnalyzed ?? data.pages?.length ?? 1;
+      statusText.textContent = "Auditoría recibida: " + count + " páginas examinadas. Revisa y completa los datos que solo el cliente puede confirmar.";
+      notify("Auditoría web incorporada al briefing.");
     } catch (error) {
-      statusText.textContent = "❌ Error: " + error.message;
-      notify("No se pudo importar la web. Revisa que sea una URL pública.");
+      statusText.textContent = "No se pudo completar la auditoría: " + error.message + ". No se guardará como auditoría completa.";
+      notify("La auditoría no se ha completado.");
     } finally {
       btn.disabled = false;
-      btn.textContent = "↻ Autocompletar briefing desde la web";
+      btn.innerHTML = 'Iniciar briefing completo <span>↗</span>';
     }
   }
 
