@@ -433,8 +433,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const card = document.createElement("article");
     card.className = "panel settings-card integration-control-card";
     const rows = (data.integrations || []).map(item => {
-      const status = item.enabled ? "Habilitada en servidor" : "Desactivada";
-      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><span class="pill ' + (item.enabled ? "pill-green" : "pill-muted") + '">' + status + '</span></div>';
+      const status = item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : (item.enabled ? "Habilitada en servidor" : "Desactivada");
+      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><span class="pill ' + ((item.enabled && (item.id !== "canva" || item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span></div>';
     }).join("");
     card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
     grid.prepend(card);
