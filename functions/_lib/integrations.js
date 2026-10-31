@@ -1,6 +1,7 @@
 const CATALOG = {
   ai: { label: "Modelos de IA externos", env: "AI_BILLABLE_ENABLED", cost: "Puede generar cargos por tokens o solicitudes.", function: "Generación de copy, propuestas y coordinación de agentes.", activation: "Revisar proveedor, modelo, tarifa y límites antes de habilitar." },
-  pagespeed: { label: "Google PageSpeed Insights", env: "PAGESPEED_ENABLED", cost: "API sujeta a cuotas y límites del proveedor; revisar condiciones vigentes.", function: "Lighthouse móvil y escritorio.", activation: "Habilitar solo tras revisar cuota y condiciones de Google." },
+  pagespeed: { label: "Google PageSpeed Insights", env: null, cost: "API sin coste directo dentro de la cuota gratuita; sujeta a límites de Google.", function: "Lighthouse móvil y escritorio.", activation: "Configurar PAGESPEED_API_KEY; no requiere flag adicional." },
+  searchConsole: { label: "Google Search Console", env: null, cost: "API sin coste directo de consulta dentro de cuotas de Google.", function: "Clics, impresiones, consultas y páginas.", activation: "Configurar OAuth, AGENCY_KV y autorizar la propiedad exacta." },
   googleDrive: { label: "Google Drive", env: "GOOGLE_DRIVE_ENABLED", cost: "La API puede ser gratuita dentro de cuotas; almacenamiento y uso dependen de la cuenta.", function: "Copias de seguridad externas.", activation: "Autorizar explícitamente la sincronización externa." },
   whatsapp: { label: "WhatsApp Business Platform", env: "WHATSAPP_ENABLED", cost: "Puede generar cargos por conversaciones y proveedor.", function: "Mensajería real con clientes.", activation: "Configurar Meta Cloud API, webhook, plantillas y presupuesto." },
   googleCalendar: { label: "Google Calendar API", env: "GOOGLE_CALENDAR_ENABLED", cost: "La API puede no tener coste directo, pero depende de la cuenta y del uso asociado.", function: "Consultar disponibilidad y crear citas.", activation: "Configurar OAuth y autorizar acceso al calendario." },
@@ -13,6 +14,8 @@ export function integrationEnabled(env, id) {
   const item = CATALOG[id];
   if (!item) return false;
   if (id === "canva") return Boolean(env.CANVA_CLIENT_ID && env.CANVA_CLIENT_SECRET && String(env.CANVA_TOKEN_ENCRYPTION_KEY || "").length >= 32 && env.AGENCY_KV);
+  if (id === "pagespeed") return Boolean(env.PAGESPEED_API_KEY);
+  if (id === "searchConsole") return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_GSC_REDIRECT_URI && env.AGENCY_KV);
   return Boolean(item.env && env[item.env] === "true");
 }
 
