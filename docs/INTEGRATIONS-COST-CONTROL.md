@@ -30,6 +30,10 @@ Consultar `GET /api/integrations/status`. La respuesta enumera estado, función,
 - Las llamadas a IA están separadas de los agentes locales; los agentes no ejecutan acciones externas ni código arbitrario.
 - Canva Connect API: la integración de API es gratuita según Canva, pero algunas capacidades están restringidas a planes de pago. El estado de credenciales no equivale a OAuth conectado ni a agentes creativos plenamente integrados. Consultar `/api/canva/status` y validar las herramientas disponibles, scopes, cuotas y licencias de elementos premium.
 
+## Validación de Canva OAuth
+
+El endpoint de estado comprueba que el registro de tokens pueda descifrarse con `CANVA_TOKEN_ENCRYPTION_KEY`; la mera presencia de una clave KV no se considera una conexión. `connected_tokens_stored` confirma tokens descifrables almacenados, pero no garantiza que el access token siga vigente: la llamada a una herramienta Canva es la comprobación operativa definitiva.
+
 ## Desarrollo local sin proveedores
 
 Usar datos sintéticos y adaptadores simulados para probar el árbol de conversación, CRM/inventario, disponibilidad y propuestas. No enviar mensajes reales ni crear eventos externos en modo simulación.
