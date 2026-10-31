@@ -1,0 +1,40 @@
+name: Validate Canva MCP integration
+
+on:
+  pull_request:
+    paths:
+      - "functions/**"
+      - "tests/canva-mcp.test.mjs"
+      - "package.json"
+      - "creative-engine.html"
+      - ".github/workflows/validate-canva-mcp.yml"
+  push:
+    branches: [main]
+    paths:
+      - "functions/**"
+      - "tests/canva-mcp.test.mjs"
+      - "package.json"
+      - "creative-engine.html"
+      - ".github/workflows/validate-canva-mcp.yml"
+
+jobs:
+  validate-canva-mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install runtime dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --no-package-lock
+      - name: Check Pages Functions JavaScript syntax
+        run: |
+          set -eu
+          find functions -type f -name '*.js' -print0 | while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --input-type=module --check < "$file"
+          done
+      - name: Run Canva OAuth token and KV tests
+        run: node --test tests/canva-mcp.test.mjs
+      - name: Verify MCP SDK module imports
+        run: node --input-type=module -e "import('@modelcontextprotocol/sdk/client/index.js'); import('@modelcontextprotocol/sdk/client/streamableHttp.js');"

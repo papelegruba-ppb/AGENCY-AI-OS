@@ -66,7 +66,7 @@ export async function ownerLogin(request, env) {
     return new Response(JSON.stringify({ ok: true, expiresIn: SESSION_TTL }), {
       headers: {
         "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
-        "set-cookie": SESSION_COOKIE + "=" + token + "; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=" + SESSION_TTL
+        "set-cookie": SESSION_COOKIE + "=" + token + "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=" + SESSION_TTL
       }
     });
   } catch { return json({ ok: false, error: "No se pudo crear la sesión privada." }, 503); }
@@ -79,6 +79,6 @@ export async function ownerLogout(request, env) {
   }
   return new Response(JSON.stringify({ ok: true }), {
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
-      "set-cookie": SESSION_COOKIE + "=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0" }
+      "set-cookie": SESSION_COOKIE + "=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0" }
   });
 }
