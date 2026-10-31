@@ -102,9 +102,29 @@ export class CanvaOAuthProvider {
   async clearTokens() { await this.kv.delete(TOKEN_KEY); }
 }
 
+const CANVA_REQUEST_TIMEOUT_MS = 20_000;
+
+// The SDK accepts a custom fetch implementation. Bound each HTTP exchange so
+// a stalled Canva handshake/token request cannot hold a Pages Function open
+// until the platform gateway timeout. Preserve any SDK-provided abort signal.
+async function canvaFetchWithTimeout(input, init = {}) {
+  const timeoutSignal = AbortSignal.timeout(CANVA_REQUEST_TIMEOUT_MS);
+  const signal = init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
+  return fetch(input, { ...init, signal });
+}
+
 function makeClient(provider) {
   const client = new Client({ name: "agency-ai-os", version: "1.0.0" });
-  const transport = new StreamableHTTPClientTransport(new URL(CANVA_MCP_URL), { authProvider: provider });
+  const transport = new StreamableHTTPClientTransport(new URL(CANVA_MCP_URL), {
+    authProvider: provider,
+    fetch: canvaFetchWithTimeout,
+    reconnectionOptions: {
+      initialReconnectionDelay: 250,
+      maxReconnectionDelay: 1_000,
+      reconnectionDelayGrowFactor: 1,
+      maxRetries: 0
+    }
+  });
   return { client, transport };
 }
 async function closeClient(client) {
