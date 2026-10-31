@@ -1,4 +1,4 @@
-import { ownerSession, sameOrigin, jsonResponse } from "../../_lib/owner-auth.js";
+import { ownerSession, sameOrigin, jsonResponse } from "../_lib/owner-auth.js";
 
 const MAX_PROJECTS = 100;
 const MAX_PROJECT_BYTES = 900_000;
