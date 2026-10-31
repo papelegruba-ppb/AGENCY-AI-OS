@@ -38,7 +38,7 @@ test("visual AFTER editor persists editable page sections and provides a full pr
   assert.match(html, /afterSections\[index\]\[prop\]=value/);
   assert.match(html, /afterImg&&!afterEditMode/);
   assert.match(html, /data-edit-key="section\./);
-  assert.match(html, /afterSections\)afterSections=/);
+  assert.match(html, /if\(Array\.isArray\(d\.afterSections\)\)afterSections=/);
 });
 
 test("commercial proposal inline application script parses", () => {
