@@ -1,0 +1,14 @@
+{
+  "remote.autoForwardPorts": false,
+  "remote.autoForwardPortsSource": "output",
+  "remote.portsAttributes": {
+    "8000": {
+      "label": "Agency AI OS — preview",
+      "onAutoForward": "openBrowser",
+      "visibility": "private"
+    }
+  },
+  "files.exclude": {
+    "**/.DS_Store": true
+  }
+}
