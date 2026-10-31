@@ -530,9 +530,9 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const card = document.createElement("article");
     card.className = "panel settings-card integration-control-card";
     const rows = (data.integrations || []).map(item => {
-      const status = item.id === "flow" ? "Aplicación externa · cuenta Google" : item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : (item.enabled ? "Habilitada en servidor" : "Desactivada");
+      const status = item.id === "flow" ? "Aplicación externa · cuenta Google" : item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : item.status === "credentials_ready" ? "Credenciales listas · uso desactivado" : item.status === "ready" ? "Lista para utilizar" : item.status === "needs_configuration" && ["openai","gemini","claude","deepseek","perplexity"].includes(item.id) ? "Configurar clave y modelo" : (item.enabled ? "Habilitada en servidor" : "Desactivada");
       const action = item.id === "flow" && item.externalUrl ? '<a class="button button-secondary button-small" href="' + esc(item.externalUrl) + '" target="_blank" rel="noopener noreferrer">Abrir Google Flow ↗</a>' : "";
-      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pill ' + ((item.enabled && (item.id !== "canva" || item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span>' + action + '</div></div>';
+      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pill ' + ((item.status === "ready" || (item.enabled && item.id === "canva" && item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span>' + action + '</div></div>';
     }).join("");
     card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
     grid.prepend(card);
@@ -707,7 +707,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     try {
       const auth = await ensureOwnerSession();
       if (!auth.ok) throw new Error("No se pudo validar la sesión privada.");
-      const prior = chatHistory.slice(0, -1);
+      const prior = chatHistory.slice(0, -2);
       const project = findProject(activeProjectId);
       const response = await fetch("/api/chat", {
         method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
@@ -731,6 +731,12 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     }
   }
 
+  $("#active-project-select")?.addEventListener("change", event => {
+    activeProjectId = event.target.value || null;
+    if (activeProjectId) localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId);
+    else localStorage.removeItem(ACTIVE_PROJECT_KEY);
+    updateChatProjectContext();
+  });
   $("#chat-form")?.addEventListener("submit", submitChatMessage);
   $("#chat-input")?.addEventListener("keydown", event => {
     if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); $("#chat-form").requestSubmit(); }
