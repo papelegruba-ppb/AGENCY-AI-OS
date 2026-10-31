@@ -23,9 +23,22 @@ test("proposal capture uses self-contained SVG and never exports a tainted canva
   assert.equal(captureHandler.includes("canvas.toBlob"), false);
 });
 
-test("the generated proposal iframe is readable but scripts remain sandboxed", () => {
-  assert.match(html, /sandbox="allow-same-origin"/);
-  assert.doesNotMatch(html, /sandbox="[^"]*allow-scripts/);
+test("the AFTER proposal iframe is sandboxed and enables only its inline visual editor", () => {
+  assert.match(html, /sandbox="allow-same-origin allow-scripts"/);
+  assert.match(html, /data-edit-key="afterTitle"/);
+  assert.match(html, /data-edit-key="afterCopy"/);
+  assert.match(html, /agency-proposal-editor/);
+  assert.match(html, /event\.source!==afterSiteFrame\?\.contentWindow/);
+});
+
+test("visual AFTER editor persists editable page sections and provides a full proposal when no capture exists", () => {
+  assert.match(html, /id="toggle-after-edit"/);
+  assert.match(html, /function getAfterSections\(d\)/);
+  assert.match(html, /afterSections:getAfterSections/);
+  assert.match(html, /afterSections\[index\]\[prop\]=value/);
+  assert.match(html, /afterImg&&!afterEditMode/);
+  assert.match(html, /data-edit-key="section\./);
+  assert.match(html, /afterSections\)afterSections=/);
 });
 
 test("commercial proposal inline application script parses", () => {
