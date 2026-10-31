@@ -1,3 +1,4 @@
+// Reports decrypted OAuth token presence; remote token validity is verified on tool invocation.
 import { jsonResponse } from "../../_lib/owner-auth.js";
 import { decryptCanvaTokens } from "../../_lib/canva-mcp.js";
 
