@@ -293,7 +293,7 @@ function applyProject(p){
   for(const id of metricIds){
     const value=psi?.scores?.[id];
     const input=$("#b-"+id),state=$("#bs-"+id);
-    if(input&&Number.isFinite(value)){input.value=String(value);if(state)state.value="measured";}
+    if(input&&input.value.trim()===""&&Number.isFinite(value)){input.value=String(value);if(state)state.value="measured";}
   }
   if(audit){
     $("#seo-audit-results").style.display="block";
@@ -369,13 +369,13 @@ function render(){
   const iframe = $("#before-site"), mockBefore = $("#before-mock"), shotBefore = $("#before-shot"), status = $("#status");
   if(d.siteUrl && !beforeImg){
     iframe.src = d.siteUrl; iframe.style.display = "block"; mockBefore.style.display = "none"; shotBefore.style.display = "none";
-    status.textContent = "Cargando web desde " + d.siteUrl + "...";
+    status.textContent = "Vista de la web original mediante iframe. Algunos sitios bloquean la incrustación; para una captura fija utiliza «Captura anterior». Esto no es una captura de pantalla.";
   } else if (beforeImg) {
     iframe.style.display = "none"; shotBefore.src = beforeImg; shotBefore.style.display = "block"; mockBefore.style.display = "none";
-    status.textContent = "Captura anterior cargada.";
+    status.textContent = "Captura anterior cargada. Guarda los ajustes para conservarla en el proyecto compartido.";
   } else {
     iframe.style.display = "none"; shotBefore.style.display = "none"; mockBefore.style.display = "grid";
-    status.textContent = "Sin web ni captura anterior. Mockup por defecto.";
+    status.textContent = "No hay captura real de la web original. Se muestra un mockup orientativo, no una imagen capturada.";
   }
 
   $("#preview-title").textContent=d.client+" · Antes / Después";
