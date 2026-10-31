@@ -30,12 +30,30 @@ test("AI status never reports configured when the usage store is missing", () =>
   assert.equal(status.usageStoreConfigured, false);
 });
 
+
+test("billable providers remain blocked without explicit spend authorization", async () => {
+  let reads = 0;
+  const kv = { async get() { reads += 1; return null; }, async put() {} };
+  const result = await reserveAiCall({
+    env: {
+      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_PROVIDER: "deepseek",
+      DEEPSEEK_API_KEY: "not-a-real-key", DEEPSEEK_MODEL: "test-model",
+      AGENCY_KV: kv
+    },
+    request: request(), endpoint: "/test"
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.response.status, 503);
+  assert.equal((await result.response.json()).code, "AI_SPEND_NOT_AUTHORIZED");
+  assert.equal(reads, 0);
+});
+
 test("global daily limit blocks requests before provider fetch", async () => {
   const day = new Date().toISOString().slice(0, 10);
   const kv = makeKV({ ["ai-usage:global:" + day]: "1" });
   const result = await reserveAiCall({
     env: {
-      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_PROVIDER: "deepseek",
+      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_SPEND_AUTHORIZED: "true", AI_PROVIDER: "deepseek",
       DEEPSEEK_API_KEY: "not-a-real-key", DEEPSEEK_MODEL: "test-model",
       AI_DAILY_LIMIT: "1", AGENCY_KV: kv
     },
@@ -50,7 +68,7 @@ test("usage-store failure fails closed", async () => {
   const kv = { async get() { throw new Error("KV unavailable"); }, async put() {} };
   const result = await reserveAiCall({
     env: {
-      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_PROVIDER: "deepseek",
+      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_SPEND_AUTHORIZED: "true", AI_PROVIDER: "deepseek",
       DEEPSEEK_API_KEY: "not-a-real-key", DEEPSEEK_MODEL: "test-model",
       AGENCY_KV: kv
     },
