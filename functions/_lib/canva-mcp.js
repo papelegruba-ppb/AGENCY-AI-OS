@@ -103,7 +103,7 @@ function makeClient(provider) {
   return { client, transport };
 }
 export async function connectCanva(env, origin) {
-  if (!env.CANVA_CLIENT_ID || !env.CANVA_CLIENT_SECRET || !env.AGENCY_KV) throw new Error("Faltan CANVA_CLIENT_ID, CANVA_CLIENT_SECRET o AGENCY_KV.");
+  if (!env.CANVA_CLIENT_ID || !env.CANVA_CLIENT_SECRET || !env.CANVA_TOKEN_ENCRYPTION_KEY || String(env.CANVA_TOKEN_ENCRYPTION_KEY).length < 32 || !env.AGENCY_KV) throw new Error("Configura CANVA_CLIENT_ID, CANVA_CLIENT_SECRET, CANVA_TOKEN_ENCRYPTION_KEY (32+ caracteres) y AGENCY_KV.");
   const provider = new CanvaOAuthProvider(env, origin);
   const { client, transport } = makeClient(provider);
   try {
