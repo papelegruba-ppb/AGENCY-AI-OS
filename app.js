@@ -580,7 +580,14 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const connect = $("#canva-connect-button");
     if (!label || !pill) return;
     try {
-      const response = await ensureOwnerSession();
+      const response = await fetch("/api/canva/status", { credentials: "same-origin", cache: "no-store" });
+      if (response.status === 401) {
+        label.textContent = "Inicia sesión para consultar el estado";
+        detail.textContent = "La conexión se gestiona con tu sesión privada de Agency AI OS.";
+        pill.textContent = "Autenticación requerida";
+        pill.className = "pill pill-muted";
+        return;
+      }
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "No se pudo consultar el estado de Canva.");
       const connected = data.connected === true;
