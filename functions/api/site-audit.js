@@ -120,7 +120,7 @@ export async function onRequestPost({request}){
   const checks=[pages.every(p=>!!p.title),pages.every(p=>!!p.description),pages.every(p=>p.h1.length===1),allImages.every(i=>!!i.alt.trim()),pages.every(p=>!!p.canonical),pages.every(p=>!!p.lang)],score=Math.round(checks.filter(Boolean).length/checks.length*100);
   const projectName=(root.title||initial.hostname).split(/[|–—-]/)[0].trim();
   const limitations=["El rastreo respeta robots.txt cuando está disponible y analiza HTML público. No ejecuta JavaScript ni reproduce interacciones de navegador.","Lighthouse y Core Web Vitals no se simulan: deben medirse por separado mediante PageSpeed Insights.","La identidad visual extraída se limita a colores y tipografías declarados en el HTML; CSS externo y estilos calculados requieren navegador de renderizado.","Los datos comerciales no visibles públicamente quedan pendientes de confirmación."];
-  const complete=queue.length===0&&pages.length<maxPages&&errors.length===0;
+  const complete=queue.length===0&&errors.length===0;
   return json({
     ok:true,url:initial.href,fetchedAt:new Date().toISOString(),httpStatus:root.status,title:root.title,description:root.description,themeColor:root.themeColor,projectName,
     sector:sectors.join(", ")||"Pendiente de confirmar",offer:root.description||"Pendiente de confirmar con el cliente.",
