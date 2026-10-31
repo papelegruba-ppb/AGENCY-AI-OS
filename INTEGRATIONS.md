@@ -82,3 +82,8 @@ Fuentes oficiales:
 - La ejecución actual usa el proveedor API configurado en `AI_PROVIDER`; no existe todavía failover automático entre proveedores ni automatización de acciones dentro de Canva, Kittl, Flow, ContentCore, Runway o Firefly. El catálogo los presenta como herramientas externas hasta verificar conectores/API.
 - El HTML se devuelve para previsualización/descarga; no se despliega ni se guarda en el hosting del cliente.
 
+
+
+## Panel de diagnóstico IA en Configuración
+
+La vista Configuración consulta `GET /api/ai-status` sin caché y presenta el estado de los tres interruptores de seguridad, el binding AGENCY_KV y la preparación individual de cada proveedor. Es un panel estrictamente informativo: no muestra claves, no permite activar variables ni realiza llamadas a modelos. El botón de actualización solo repite la consulta de estado.
