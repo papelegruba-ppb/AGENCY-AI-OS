@@ -41,3 +41,32 @@ Límites predeterminados: 20 solicitudes globales/día, 5 solicitudes/día por I
 | Claude / Flow en aplicación web | No hay integración API demostrada por tener acceso a sus aplicaciones | Usar manualmente salvo que exista una API/conector autorizado y condiciones compatibles |
 
 No se deben publicar secretos en el frontend ni en el repositorio. La existencia de una clave en Cloudflare no demuestra que el proveedor responda, que la cuota esté disponible o que el plan sea gratuito.
+
+
+## Creative Engine — herramientas visuales evaluadas (31-10-2026)
+
+| Herramienta | Decisión | Integración actual | Condiciones |
+|---|---|---|---|
+| Shaders (shaders.com) | Adoptar como motor visual opcional | Módulo Creative Engine con preview CSS, exportación CSS y guía de integración. No se carga el runtime WebGPU en el constructor estático. | Motor/componentes y bindings MIT. El catálogo de presets y secciones tiene licencia separada; verificar plan antes de usar contenido Pro en trabajos de cliente. WebGPU no tiene fallback WebGL oficial: conservar CSS. |
+| ContentCore (contentcore.xyz) | Herramienta manual de producción | Enlace contextual desde Creative Engine; importación manual de imágenes/vídeos exportados. | El sitio describe exportación de imágenes/vídeos y licencia comercial mediante suscripción. No se verificó API pública ni automatización. |
+| is.graphics | No incorporar todavía | Candidato pendiente de auditoría. | El sitio no fue accesible durante la verificación; no se pudieron confirmar funciones, API ni licencia. |
+
+### Shaders en un futuro build frontend
+
+El repositorio actual se ejecuta como HTML/CSS/JS estático sin bundler. No se añade el paquete como dependencia ni una importación CDN no soportada. Cuando se adopte un build cliente compatible:
+- Instalar el paquete oficial shaders y usar el binding del framework correspondiente.
+- Renderizar efectos solo en componentes cliente; comprobar WebGPU y conservar un fondo CSS alternativo.
+- Respetar prefers-reduced-motion y limitar área/cantidad de canvas.
+- Desactivar telemetría si el producto lo requiere mediante la opción documentada.
+- No redistribuir presets/sections Pro como biblioteca propia; revisar la licencia de cada asset.
+
+### Flujo de assets ContentCore
+
+La primera versión es manual: crear/exportar el asset, descargarlo, revisar licencia y consentimiento, optimizarlo (AVIF/WebP para imágenes; MP4/WebM para vídeo) e incorporarlo a assets/ o al gestor de medios del proyecto. No guardar credenciales de ContentCore en Agency AI OS.
+
+Fuentes oficiales:
+- https://shaders.com/docs/guide
+- https://shaders.com/license
+- https://github.com/shader-effects-inc/shaders
+- https://contentcore.xyz/
+- https://is.graphics/
