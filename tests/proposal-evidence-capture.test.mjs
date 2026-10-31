@@ -10,11 +10,13 @@ test("SEO audit is persisted to the selected project and triggers Workspace sync
   assert.match(html, /window\.dispatchEvent\(new StorageEvent\("storage"/);
 });
 
-test("proposal preview capture is generated locally without an external paid service", () => {
+test("proposal capture uses self-contained SVG and never exports a tainted canvas", () => {
   assert.match(html, /id="capture-after"/);
-  assert.match(html, /new XMLSerializer\(\)\.serializeToString\(root\)/);
-  assert.match(html, /foreignObject/);
-  assert.match(html, /afterImg=await new Promise/);
+  assert.match(html, /function buildProposalCaptureSvg\(d\)/);
+  assert.match(html, /data:image\/svg\+xml;charset=utf-8,/);
+  assert.match(html, /Native SVG primitives only/);
+  assert.doesNotMatch(html, /foreignObject/);
+  assert.doesNotMatch(html, /canvas\.toBlob/);
 });
 
 test("the generated proposal iframe is readable but scripts remain sandboxed", () => {
