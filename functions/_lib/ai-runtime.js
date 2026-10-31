@@ -6,6 +6,8 @@ const PROVIDERS = {
   perplexity: { key: "PERPLEXITY_API_KEY", model: "PERPLEXITY_MODEL" }
 };
 
+const WORKERS_AI_DEFAULT_MODEL = "@cf/meta/llama-3.2-3b-instruct";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -25,7 +27,12 @@ export function aiStatus(env) {
   const billableEnabled = env.AI_BILLABLE_ENABLED === "true";
   const spendAuthorized = env.AI_SPEND_AUTHORIZED === "true";
   const usageStoreConfigured = Boolean(env.AGENCY_KV);
-  const configured = Boolean(enabled && billableEnabled && spendAuthorized && spec && env[spec.key] && env[spec.model] && usageStoreConfigured);
+  const workersAiEnabled = env.AI_WORKERS_ENABLED === "true";
+  const workersAiBindingConfigured = Boolean(env.AI && typeof env.AI.run === "function");
+  const workersAiModel = String(env.AI_WORKERS_MODEL || WORKERS_AI_DEFAULT_MODEL);
+  const workersAiDailyLimit = boundedInt(env.AI_WORKERS_DAILY_LIMIT, 5, 1, 10);
+  const workersAiConfigured = Boolean(enabled && workersAiEnabled && workersAiBindingConfigured && usageStoreConfigured);
+  const configured = Boolean(workersAiConfigured || (enabled && billableEnabled && spendAuthorized && spec && env[spec.key] && env[spec.model] && usageStoreConfigured));
   const providers = Object.entries(PROVIDERS).map(([id, item]) => {
     const keyConfigured = Boolean(env[item.key]);
     const modelConfigured = Boolean(env[item.model]);
@@ -40,13 +47,15 @@ export function aiStatus(env) {
       executionAuthorized: Boolean(credentialsReady && enabled && billableEnabled && spendAuthorized && provider === id)
     };
   });
+  if (workersAiBindingConfigured) configuredProviders.unshift({ id: "cloudflare", model: workersAiModel, configured: workersAiConfigured });
   return {
     ok: true,
     enabled,
     billableEnabled,
     spendAuthorized,
     configured,
-    provider: spec ? provider : null,
+    provider: workersAiBindingConfigured ? "cloudflare" : (spec ? provider : null),
+    workersAi: { bindingConfigured: workersAiBindingConfigured, enabled: workersAiEnabled, configured: workersAiConfigured, executionAuthorized: workersAiConfigured, model: workersAiModel, dailyRequestLimit: workersAiDailyLimit, requiresAiEnabled: true },
     configuredProviders,
     providers,
     modelConfigured: Boolean(spec && env[spec.model]),
@@ -57,7 +66,7 @@ export function aiStatus(env) {
       perIpDailyRequests: boundedInt(env.AI_IP_DAILY_LIMIT, 5, 1, 30),
       maxOutputTokens: boundedInt(env.AI_MAX_OUTPUT_TOKENS, 1200, 128, 2000)
     },
-    safety: "El uso de IA está cerrado por defecto. Para ejecutar llamadas se requieren AI_ENABLED=true, AI_BILLABLE_ENABLED=true, AI_SPEND_AUTHORIZED=true, proveedor/modelo explícitos y AGENCY_KV. AI_SPEND_AUTHORIZED es una autorización adicional de gasto; los límites diarios son frenos operativos, no límites monetarios garantizados."
+    safety: "Workers AI requiere AI_ENABLED=true, AI_WORKERS_ENABLED=true, binding AI y AGENCY_KV. Tiene un límite diario de solicitudes. Los proveedores externos requieren además AI_BILLABLE_ENABLED=true y AI_SPEND_AUTHORIZED=true. La cuota gratuita de Cloudflare no equivale a coste cero garantizado en planes de pago."
   };
 }
 
@@ -65,6 +74,27 @@ export async function reserveAiCall({ env, request, endpoint, providerOverride }
   const status = aiStatus(env);
   const selectedProvider = String(providerOverride || status.provider || "").toLowerCase();
   const selectedSpec = PROVIDERS[selectedProvider];
+  if (selectedProvider === "cloudflare") {
+    if (!status.enabled || env.AI_WORKERS_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Agency Mini AI está desactivada. Se requieren AI_ENABLED=true y AI_WORKERS_ENABLED=true; no se ha ejecutado ningún modelo.", code: "WORKERS_AI_DISABLED" }, 503) };
+    if (!status.workersAi.bindingConfigured || !env.AGENCY_KV) return { ok: false, response: json({ ok: false, error: "Falta el binding Workers AI llamado AI o el almacenamiento AGENCY_KV.", code: "WORKERS_AI_NOT_CONFIGURED" }, 503) };
+    const day = new Date().toISOString().slice(0, 10);
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    const ipHash = await digest(ip);
+    const globalKey = "mini-ai:usage:global:" + day;
+    const ipKey = "mini-ai:usage:ip:" + day + ":" + ipHash;
+    try {
+      const [globalRaw, ipRaw] = await Promise.all([env.AGENCY_KV.get(globalKey), env.AGENCY_KV.get(ipKey)]);
+      const globalCount = Number.parseInt(globalRaw || "0", 10) || 0;
+      const ipCount = Number.parseInt(ipRaw || "0", 10) || 0;
+      const ipLimit = boundedInt(env.AI_WORKERS_IP_DAILY_LIMIT, 3, 1, 5);
+      if (globalCount >= status.workersAi.dailyRequestLimit) return { ok: false, response: json({ ok: false, error: "Se ha alcanzado el límite diario de Agency Mini AI. No se ha enviado la solicitud a Cloudflare AI.", code: "MINI_AI_DAILY_LIMIT" }, 429) };
+      if (ipCount >= ipLimit) return { ok: false, response: json({ ok: false, error: "Has alcanzado el límite diario de Agency Mini AI desde esta conexión.", code: "MINI_AI_IP_LIMIT" }, 429) };
+      await Promise.all([env.AGENCY_KV.put(globalKey, String(globalCount + 1), { expirationTtl: 172800 }), env.AGENCY_KV.put(ipKey, String(ipCount + 1), { expirationTtl: 172800 })]);
+    } catch {
+      return { ok: false, response: json({ ok: false, error: "No se pudo validar la cuota de Agency Mini AI. La solicitud se ha bloqueado por seguridad.", code: "MINI_AI_USAGE_STORE_UNAVAILABLE" }, 503) };
+    }
+    return { ok: true, provider: "cloudflare", model: status.workersAi.model, maxOutputTokens: boundedInt(env.AI_WORKERS_MAX_OUTPUT_TOKENS, 700, 128, 900), endpoint };
+  }
   if (!status.enabled) return { ok: false, response: json({ ok: false, error: "Las llamadas de IA están desactivadas. Activa AI_ENABLED=true solo después de revisar el proveedor y su facturación.", code: "AI_DISABLED" }, 503) };
   if (env.AI_BILLABLE_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Integración de IA desactivada por la política de coste cero. No se ha contactado con ningún proveedor. Revisa precio y cuotas antes de autorizarla.", code: "INTEGRATION_DISABLED", integration: "ai" }, 503) };
   if (env.AI_SPEND_AUTHORIZED !== "true") return { ok: false, response: json({ ok: false, error: "Falta la autorización explícita de gasto. No se ha contactado con ningún proveedor. AI_SPEND_AUTHORIZED debe habilitarse expresamente después de revisar el presupuesto.", code: "AI_SPEND_NOT_AUTHORIZED", integration: "ai" }, 503) };
@@ -124,6 +154,19 @@ export async function runAiText({ env, request, endpoint, system, input, provide
   const apiKey = reserved.apiKey;
   const outputLimit = Math.min(reserved.maxOutputTokens, boundedInt(maxOutputTokens, reserved.maxOutputTokens, 128, 2000));
   let url, headers = { "content-type": "application/json" }, body;
+
+  if (provider === "cloudflare") {
+    try {
+      const messages = [{ role: "system", content: system }, { role: "user", content: input }];
+      const result = await env.AI.run(model, { messages, max_tokens: outputLimit, temperature, ...(jsonMode ? { response_format: { type: "json_object" } } : {}) });
+      const output = typeof result === "string" ? result : (result?.response || result?.text || result?.result || "");
+      if (!output || String(output).length > 40000) return { ok: false, response: json({ ok: false, error: "Workers AI devolvió una respuesta vacía o demasiado larga.", code: "AI_INVALID_RESPONSE", provider }, 502) };
+      return { ok: true, provider, model, text: String(output) };
+    } catch (error) {
+      console.error(JSON.stringify({ event: "workers_ai_exception", endpoint, code: error?.name || "WORKERS_AI_ERROR" }));
+      return { ok: false, response: json({ ok: false, error: "Cloudflare Workers AI no pudo completar la solicitud. Comprueba la cuota y el binding AI.", code: "WORKERS_AI_ERROR", provider }, 502) };
+    }
+  }
 
   if (provider === "deepseek" || provider === "perplexity") {
     url = provider === "deepseek" ? "https://api.deepseek.com/chat/completions" : "https://api.perplexity.ai/chat/completions";

@@ -12,7 +12,7 @@ export async function onRequestPost({ request, env }) {
   if (!message) return jsonResponse({ ok: false, error: "Escribe un mensaje para continuar." }, 400);
   const status = aiStatus(env);
   const provider = clean(body?.provider || status.provider, 32).toLowerCase();
-  const allowed = new Set(["deepseek", "openai", "gemini", "anthropic", "perplexity"]);
+  const allowed = new Set(["cloudflare", "deepseek", "openai", "gemini", "anthropic", "perplexity"]);
   if (!allowed.has(provider)) return jsonResponse({ ok: false, error: "Proveedor no admitido.", code: "AI_PROVIDER_UNSUPPORTED" }, 400);
 
   const history = Array.isArray(body?.history) ? body.history.slice(-10).map(item => ({

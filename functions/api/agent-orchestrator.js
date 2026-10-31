@@ -1,4 +1,5 @@
 import { aiStatus, runAiText } from "../_lib/ai-runtime.js";
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
 const MAX_TEXT = 12000;
 const AGENTS = {
   director: { name: "Director de agencia", goal: "Prioriza, coordina dependencias y resuelve conflictos entre entregables." },
@@ -28,6 +29,8 @@ export async function onRequestGet({ env }) {
   return json({ ...aiStatus(env), endpoint: "/api/agent-orchestrator", agents: Object.keys(AGENTS), note: "Las claves permanecen en servidor. Este endpoint no ejecuta acciones externas ni publica cambios." });
 }
 export async function onRequestPost({ request, env }) {
+  if (!sameOrigin(request)) return json({ error: "Origen de solicitud no válido." }, 403);
+  if (!(await ownerSession(request, env))) return json({ error: "Inicia sesión en el workspace para utilizar el orquestador.", code: "OWNER_AUTH_REQUIRED" }, 401);
   let body;
   try { body = await request.json(); } catch { return json({ error: "La petición debe ser JSON." }, 400); }
   const agentId = text(body?.agent, 40);
