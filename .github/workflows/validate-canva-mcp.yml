@@ -7,6 +7,10 @@ on:
       - "tests/canva-mcp.test.mjs"
       - "package.json"
       - "creative-engine.html"
+      - "scripts/**"
+      - "tests/preview-server.test.mjs"
+      - ".vscode/**"
+      - "README.md"
       - ".github/workflows/validate-canva-mcp.yml"
   push:
     branches: [main]
@@ -36,5 +40,7 @@ jobs:
           done
       - name: Run Canva OAuth token and KV tests
         run: node --test tests/canva-mcp.test.mjs
+      - name: Test secure VS Code preview server
+        run: node --test tests/preview-server.test.mjs
       - name: Verify MCP SDK module imports
         run: node --input-type=module -e "import('@modelcontextprotocol/sdk/client/index.js'); import('@modelcontextprotocol/sdk/client/streamableHttp.js');"
