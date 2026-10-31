@@ -34,5 +34,12 @@
 - [ ] CRM y notificaciones
 - [ ] Historial y analítica
 
+## Fase 5 — Creative Engine y producción visual
+- [x] Módulo Creative Engine con preview CSS y exportación de estilos
+- [x] Evaluación técnica y de licencia de Shaders
+- [x] Flujo manual de assets ContentCore documentado
+- [ ] Integrar el paquete Shaders en un build cliente compatible y probar WebGPU/fallback
+- [ ] Revalidar is.graphics (acceso, API y licencia) antes de adoptarlo
+
 ## Definición de terminado
 Una tarea solo se marca completa cuando está implementada y se han ejecutado las pruebas pertinentes. La presencia de un diseño o documento no demuestra una integración funcional.
