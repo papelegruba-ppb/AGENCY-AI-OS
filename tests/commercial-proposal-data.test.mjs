@@ -36,8 +36,9 @@ test("proposal labels distinguish a live embedded site from an actual screenshot
 });
 
 test("commercial proposal inline JavaScript parses", () => {
-  const start = proposal.lastIndexOf("<script>");
-  const end = proposal.indexOf("</script>", start);
+  const marker = '<script>\n(()=>{"use strict";';
+  const start = proposal.indexOf(marker);
+  const end = proposal.lastIndexOf("\n</script>");
   assert.ok(start >= 0 && end > start, "Expected an inline application script");
   assert.doesNotThrow(() => new vm.Script(proposal.slice(start + 8, end)));
 });
