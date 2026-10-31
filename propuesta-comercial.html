@@ -504,29 +504,49 @@ async function readImage(file,key){
 }
 $("#upload-before").addEventListener("change",e=>readImage(e.target.files[0],"before"));
 $("#upload-after").addEventListener("change",e=>readImage(e.target.files[0],"after"));
-$("#capture-after").addEventListener("click",async()=>{
-  const button=$("#capture-after"),frame=$("#after-site");
-  if(!frame||!frame.contentDocument?.documentElement){toast("Primero carga la propuesta en la vista previa.");return;}
+function svgLines(value,maxChars=42,maxLines=3){
+  const words=String(value||"").trim().split(/\\s+/).filter(Boolean),lines=[];let line="";
+  for(const word of words){const next=line?line+" "+word:word;if(next.length>maxChars&&line){lines.push(line);line=word;}else line=next;}
+  if(line)lines.push(line);return lines.slice(0,maxLines);
+}
+function svgText(lines,x,y,size,lineHeight,fill,weight=400){
+  return lines.map((line,index)=>'<text x="'+x+'" y="'+(y+index*lineHeight)+'" font-family="Arial,sans-serif" font-size="'+size+'" font-weight="'+weight+'" fill="'+fill+'">'+esc(line)+'</text>').join("");
+}
+function buildProposalCaptureSvg(d){
+  const accent=/^#[0-9a-f]{6}$/i.test(d.accent)?d.accent:"#7542E8";
+  const plan=active?.plan||{},sections=Array.isArray(plan.copy?.sections)?plan.copy.sections.slice(0,3):[];
+  const title=svgLines(d.afterTitle||"Propuesta digital",34,3),copy=svgLines(d.afterCopy||d.offer||"Una experiencia digital diseñada para el negocio.",72,3);
+  const blocks=sections.map((section,index)=>{
+    const y=770+index*125;
+    return '<rect x="86" y="'+y+'" width="1108" height="96" rx="18" fill="#ffffff" stroke="#e8e3ef"/>'+
+      '<text x="116" y="'+(y+31)+'" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="'+accent+'">'+esc(section.name||("SERVICIO 0"+(index+1)))+'</text>'+
+      svgText(svgLines(section.headline||"Soluciones pensadas para avanzar",54,1),116,y+59,21,25,"#17151d",700)+
+      svgText(svgLines(section.body||d.offer||"",100,1),116,y+82,12,16,"#696777",400);
+  }).join("");
+  const height=sections.length?770+sections.length*125+90:1050;
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="'+height+'" viewBox="0 0 1280 '+height+'">'+
+    '<defs><linearGradient id="wash" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+accent+'" stop-opacity=".18"/><stop offset="1" stop-color="#ff914d" stop-opacity=".12"/></linearGradient></defs>'+
+    '<rect width="1280" height="'+height+'" fill="#f5f5f9"/><rect x="0" y="0" width="1280" height="82" fill="#ffffff"/><rect x="0" y="81" width="1280" height="1" fill="#e8e3ef"/>'+
+    '<text x="86" y="50" font-family="Arial,sans-serif" font-size="22" font-weight="800" fill="#17151d">'+esc(d.client||"Cliente")+'</text><text x="1194" y="50" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#696777">PROPUESTA DIGITAL</text>'+
+    '<rect x="64" y="120" width="1152" height="600" rx="30" fill="url(#wash)"/>'+
+    '<text x="112" y="190" font-family="Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="3" fill="'+accent+'">'+esc((d.sector||"PROPUESTA PERSONALIZADA").toUpperCase())+'</text>'+
+    svgText(title,112,285,58,68,"#17151d",800)+svgText(copy,116,520,20,31,"#5f5b69",400)+
+    '<rect x="112" y="635" width="260" height="58" rx="29" fill="#17151d"/><text x="242" y="671" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#ffffff">'+esc(d.cta||"Hablemos de tu proyecto")+'</text>'+
+    (sections.length?blocks:'<text x="86" y="790" font-family="Arial,sans-serif" font-size="15" fill="#696777">Diseño conceptual · Contenido y estructura sujetos a validación</text>')+
+    '<text x="86" y="'+(height-30)+'" font-family="Arial,sans-serif" font-size="11" fill="#77717f">'+esc(d.client||"Cliente")+' · Propuesta visual preliminar</text></svg>';
+  return svg;
+}
+$("#capture-after").addEventListener("click",()=>{
+  const button=$("#capture-after");
   button.disabled=true;button.textContent="Generando captura…";
   try{
-    const doc=frame.contentDocument,root=doc.documentElement.cloneNode(true);
-    root.querySelectorAll("script").forEach(node=>node.remove());
-    root.setAttribute("xmlns","http://www.w3.org/1999/xhtml");
-    const markup=new XMLSerializer().serializeToString(root);
-    const width=Math.max(800,Math.min(1440,frame.clientWidth||1280)),height=Math.max(600,Math.min(1800,doc.documentElement.scrollHeight||900));
-    const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="'+width+'" height="'+height+'"><foreignObject width="100%" height="100%">'+markup+'</foreignObject></svg>';
-    const svgBlob=new Blob([svg],{type:"image/svg+xml;charset=utf-8"}),svgUrl=URL.createObjectURL(svgBlob);
-    try{
-      const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error("El navegador no pudo renderizar la captura SVG."));img.src=svgUrl;});
-      const scale=Math.min(1,1280/width,1000/height),canvas=document.createElement("canvas");
-      canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
-      const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
-      let blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.68));
-      if(blob?.size>150*1024)blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.45));
-      if(!blob||blob.size>180*1024)throw new Error("La captura supera el límite de almacenamiento del proyecto.");
-      afterImg=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
-      render();toast("Captura de la propuesta generada. Pulsa Guardar ajustes para sincronizarla.");
-    }finally{URL.revokeObjectURL(svgUrl);}
+    // Native SVG primitives only: no foreignObject, external assets, iframe pixels or canvas export.
+    // Keeping the capture as a self-contained SVG data URI avoids canvas tainting entirely.
+    const svg=buildProposalCaptureSvg(data());
+    const capture="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+    if(capture.length>180*1024)throw new Error("La captura supera el límite de almacenamiento del proyecto.");
+    afterImg=capture;render();
+    toast("Captura vectorial de la propuesta generada. Pulsa Guardar ajustes para sincronizarla.");
   }catch(error){toast(error.message||"No se pudo generar la captura de la propuesta.");}
   finally{button.disabled=false;button.textContent="Generar captura de la propuesta";}
 });
@@ -593,11 +613,16 @@ function buildExportHtml(data){
   if(afterSrc) afterPane = '<img src="'+afterSrc+'" style="width:100%;height:100%;object-fit:cover">';
   else afterPane = '<div style="display:grid;place-items:center;height:100%;background:#f9f5ff;color:#666;padding:2rem;text-align:center">Vista «Propuesta» — captura del diseño propuesto.</div>';
 
-  const metricCards = defs.map(([key,label])=>{
-    const m = c.metrics["before"][key] || {value:null,status:"pending"};
-    const m2 = c.metrics["after"][key] || {value:null,status:"pending"};
-    return '<div class="metric"><span>'+label+'</span><strong>'+(m.value===null?"—":m.value)+' → '+(m2.value===null?"—":m2.value)+'</strong></div>';
+  const statusLabel = status => ({pending:"Pendiente",measured:"Medición real",estimate:"Estimación",target:"Objetivo"}[status] || "Pendiente");
+  const metricColumn = side => defs.map(([key,label])=>{
+    const metric = c.metrics?.[side]?.[key] || {value:null,status:"pending"};
+    const value = metric.value===null || metric.value===undefined || metric.value==="" ? "—" : String(metric.value);
+    return '<div class="metric"><span>'+label+'</span><strong>'+esc(value)+'</strong><small class="metric-status status-'+esc(metric.status||"pending")+'">'+statusLabel(metric.status)+'</small></div>';
   }).join("");
+  const beforeMetricCards = metricColumn("before");
+  const afterMetricCards = metricColumn("after");
+  const evidenceNote = c.note ? esc(c.note) : "No se ha indicado una fuente ni condiciones de medición.";
+
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Propuesta para ${esc(c.client)}</title>
   <style>
@@ -617,7 +642,7 @@ function buildExportHtml(data){
     .handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid var(--accent);z-index:7;cursor:ew-resize;display:grid;place-items:center;box-shadow:0 10px 20px #0003}
     .handle::before{content:"↔";font-weight:bold;color:var(--accent)}
     .metrics{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:40px 0;padding:20px;background:#fff;border-radius:20px;border:1px solid #ddd}
-    .metric{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid #eee}
+    .metric-column{min-width:0}.metric-column h2{font-size:15px;margin:0 0 12px}.metric{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:13px;padding:10px 0;border-bottom:1px solid #eee}.metric strong{font-size:14px;font-variant-numeric:tabular-nums}.metric-status{grid-column:1/-1;width:max-content;padding:3px 7px;border-radius:99px;background:#f0eef5;color:#696477;font-size:10px;font-weight:700}.status-measured{background:#e7f6ed;color:#187447}.status-estimate{background:#fff0e3;color:#a4541b}.status-target{background:#f0eaff;color:#7045c4}.evidence-note{margin-top:14px;padding:13px 15px;border:1px solid #eadff9;border-radius:12px;background:#faf7ff;color:#5f5670;font-size:12px;line-height:1.6}.evidence-note strong{display:block;margin-bottom:4px;color:#272132}
     footer{text-align:center;padding:30px 0;color:#888;font-size:12px;border-top:1px solid #ddd;margin-top:40px}
     @media(max-width:600px){.metrics{grid-template-columns:1fr}}
   </style></head><body>
@@ -634,10 +659,11 @@ function buildExportHtml(data){
       <div class="divider" id="divider"></div>
       <div class="handle" id="handle"></div>
     </div>
-    <div class="metrics">
-      <div><strong>Métricas ANTES</strong>${metricCards}</div>
-      <div><strong>Métricas DESPUÉS</strong>${metricCards}</div>
-    </div>
+    <section class="metrics" aria-label="Comparativa de métricas">
+      <div class="metric-column"><h2>Métricas · ANTES</h2>${beforeMetricCards}</div>
+      <div class="metric-column"><h2>Métricas · DESPUÉS</h2>${afterMetricCards}</div>
+      <div class="evidence-note" style="grid-column:1/-1"><strong>Fuente y condiciones</strong>${evidenceNote}<br><span>No confundas objetivos con resultados. Las estimaciones y objetivos no representan mediciones reales.</span></div>
+    </section>
     <footer>AGENCY / STUDIO · Propuesta conceptual personalizable · Diseño claro. Datos honestos.</footer>
   </div>
   <script>
