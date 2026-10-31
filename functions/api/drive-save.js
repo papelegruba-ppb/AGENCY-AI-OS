@@ -1,4 +1,6 @@
 export async function onRequestPost({ request, env }) {
+  if (env.GOOGLE_DRIVE_ENABLED !== "true") return new Response(JSON.stringify({ ok: false, code: "INTEGRATION_DISABLED", integration: "googleDrive", error: "Google Drive está desactivado por la política de coste cero. No se ha realizado ninguna llamada externa." }), { status: 503, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+
   // 1. Recuperamos el token guardado
   const refreshToken = await env.AGENCY_KV.get("google_refresh_token");
   if (!refreshToken) return new Response(JSON.stringify({ error: "Drive no vinculado" }), { status: 401 });
