@@ -104,9 +104,7 @@ export class CanvaOAuthProvider {
 
 const CANVA_REQUEST_TIMEOUT_MS = 20_000;
 
-// The SDK accepts a custom fetch implementation. Bound each HTTP exchange so
-// a stalled Canva handshake/token request cannot hold a Pages Function open
-// until the platform gateway timeout. Preserve any SDK-provided abort signal.
+// Bound each HTTP exchange while preserving the SDK's abort signal.
 async function canvaFetchWithTimeout(input, init = {}) {
   const timeoutSignal = AbortSignal.timeout(CANVA_REQUEST_TIMEOUT_MS);
   const signal = init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal;
@@ -131,22 +129,39 @@ async function closeClient(client) {
   if (!client) return;
   try { await client.close(); } catch { /* Cleanup must not mask the original MCP error. */ }
 }
+
+function phaseError(phase, error) {
+  const wrapped = new Error(error?.message || String(error), { cause: error });
+  wrapped.name = error?.name || "Error";
+  wrapped.canvaPhase = phase;
+  if (Number.isFinite(error?.code)) wrapped.code = error.code;
+  if (Number.isFinite(error?.status)) wrapped.status = error.status;
+  return wrapped;
+}
+
 export async function connectCanva(env, origin) {
-  assertCanvaRuntime(env);
-  const provider = new CanvaOAuthProvider(env, origin);
+  let phase = "runtime_validation";
+  let provider;
   let client;
   try {
+    assertCanvaRuntime(env);
+    phase = "oauth_provider_initialization";
+    provider = new CanvaOAuthProvider(env, origin);
+    phase = "mcp_client_initialization";
     const connection = makeClient(provider);
     client = connection.client;
+    phase = "mcp_connect_and_oauth_discovery";
     await client.connect(connection.transport);
+    phase = "mcp_list_tools";
     const result = await client.listTools();
     const tools = Array.isArray(result?.tools) ? result.tools : [];
+    phase = "persist_tools_and_connection";
     await env.AGENCY_KV.put(PREFIX + "tools", JSON.stringify(tools));
     await env.AGENCY_KV.put("canva_connection_status", "connected");
     return { connected: true, tools };
   } catch (error) {
-    if (provider.authorizationUrl) return { authorizationUrl: provider.authorizationUrl };
-    throw error;
+    if (provider?.authorizationUrl) return { authorizationUrl: provider.authorizationUrl };
+    throw phaseError(phase, error);
   } finally {
     await closeClient(client);
   }
