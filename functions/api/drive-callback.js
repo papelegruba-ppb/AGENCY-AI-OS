@@ -1,4 +1,5 @@
 export async function onRequestGet({ request, env }) {
+  if (env.GOOGLE_DRIVE_ENABLED !== "true") return new Response("Google Drive está desactivado. No se intercambiarán tokens ni se contactará con Google.", { status: 503, headers: { "cache-control": "no-store" } });
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   if (!code) return new Response("No se recibió código de Google.", { status: 400 });
