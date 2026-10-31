@@ -25,8 +25,8 @@ test("proposal edits persist inside the selected shared project", () => {
 });
 
 test("uploaded screenshots are compressed for safe shared-project storage", () => {
-  assert.match(proposal, /1440\/image\.width/);
-  assert.match(proposal, /460\*1024/);
+  assert.match(proposal, /1280\/image\.width/);
+  assert.match(proposal, /180\*1024/);
   assert.match(proposal, /Pulsa Guardar ajustes para incluirla en el proyecto/);
 });
 
