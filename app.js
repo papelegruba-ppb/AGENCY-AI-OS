@@ -511,13 +511,14 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     notify("Landing HTML exportada. El formulario de demostración requiere conectar un endpoint para recibir leads.");
   }
 
-  const AI_PROVIDER_LABELS = { deepseek: "DeepSeek", openai: "OpenAI", gemini: "Google Gemini", anthropic: "Anthropic", perplexity: "Perplexity" };
+  const AI_PROVIDER_LABELS = { cloudflare: "Cloudflare Workers AI · Agency Mini AI", deepseek: "DeepSeek", openai: "OpenAI", gemini: "Google Gemini", anthropic: "Anthropic", perplexity: "Perplexity" };
 
   function renderAiRuntimeStatus(data) {
     const summary = $("#ai-runtime-summary"), providersHost = $("#ai-runtime-providers"), updated = $("#ai-runtime-updated");
     if (!summary || !providersHost) return;
     const flags = [
       ["AI_ENABLED", data.enabled],
+      ["AI_WORKERS_ENABLED", data.workersAi?.enabled],
       ["AI_BILLABLE_ENABLED", data.billableEnabled],
       ["AI_SPEND_AUTHORIZED", data.spendAuthorized]
     ];
@@ -525,7 +526,9 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       '<span class="ai-flag"><strong>' + esc(label) + '</strong><span class="pill ' + (active ? "pill-green" : "pill-muted") + '">' + (active ? "ACTIVADO" : "DESACTIVADO") + '</span></span>'
     ).join("") + '</div><div class="ai-runtime-state"><span class="pill ' + (data.configured ? "pill-green" : "pill-muted") + '">' + (data.configured ? "Runtime preparado" : "Ejecución bloqueada") + '</span><span class="ai-kv-state">' + (data.usageStoreConfigured ? "AGENCY_KV conectado" : "AGENCY_KV no disponible") + '</span></div>';
     const providers = Array.isArray(data.providers) ? data.providers : [];
-    providersHost.innerHTML = providers.map(provider => {
+    const workers = data.workersAi ? [{ id: "cloudflare", model: data.workersAi.model, bindingConfigured: data.workersAi.bindingConfigured, executionAuthorized: data.workersAi.executionAuthorized }] : [];
+    const workersHtml = workers.map(provider => '<article class="ai-provider-row"><div class="ai-provider-title"><strong>Agency Mini AI · Cloudflare Workers AI</strong><span class="pill ' + (provider.executionAuthorized ? "pill-green" : "pill-muted") + '">' + (provider.executionAuthorized ? "Disponible" : "Pendiente de activar/configurar") + '</span></div><div class="ai-provider-checks"><span class="ai-provider-check"><i class="' + (provider.bindingConfigured ? "is-ready" : "") + '">' + (provider.bindingConfigured ? "✓" : "—") + '</i>Binding AI</span><span class="ai-provider-check"><i class="' + (data.usageStoreConfigured ? "is-ready" : "") + '">' + (data.usageStoreConfigured ? "✓" : "—") + '</i>AGENCY_KV</span><span class="ai-provider-check"><i class="' + (data.enabled ? "is-ready" : "") + '">' + (data.enabled ? "✓" : "—") + '</i>AI_ENABLED</span></div><small class="ai-provider-model">Modelo: ' + esc(provider.model || "Llama 3.2 3B Instruct") + ' · Máximo ' + esc(data.workersAi.dailyRequestLimit) + ' solicitudes/día</small></article>').join("");
+    providersHost.innerHTML = workersHtml + providers.map(provider => {
       const name = AI_PROVIDER_LABELS[provider.id] || provider.id;
       const state = provider.executionAuthorized ? ["Autorizado", "pill-green"] : provider.credentialsReady ? ["Credenciales listas · ejecución bloqueada", "pill-muted"] : ["Configuración incompleta · bloqueado", "pill-muted"];
       const checks = [
@@ -712,17 +715,17 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error("No se pudo consultar la configuración de IA.");
       chatProviders = Array.isArray(data.configuredProviders) ? data.configuredProviders : [];
-      chatCanSend = Boolean(data.enabled && data.billableEnabled && chatProviders.length);
+      chatCanSend = Boolean((data.workersAi?.executionAuthorized) || (data.enabled && data.billableEnabled && data.spendAuthorized && chatProviders.some(p => p.id !== "cloudflare")));
       select.innerHTML = chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(({deepseek:"DeepSeek",openai:"OpenAI",gemini:"Google Gemini",anthropic:"Claude",perplexity:"Perplexity"}[p.id] || p.id) + " · " + p.model) + '</option>').join("");
       if (!chatProviders.length || !chatCanSend) {
-        select.innerHTML = chatProviders.length ? chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(p.id) + '</option>').join("") : '<option value="">Sin proveedor configurado</option>';
-        status.textContent = chatProviders.length ? "Proveedores configurados, pero uso desactivado." : "Falta configurar un proveedor y modelo en Cloudflare.";
-        note.textContent = "El chat no enviará solicitudes hasta que AI_ENABLED y AI_BILLABLE_ENABLED estén autorizados.";
+        select.innerHTML = chatProviders.length ? chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(AI_PROVIDER_LABELS[p.id] || p.id) + '</option>').join("") : '<option value="">Sin motor configurado</option>';
+        status.textContent = data.workersAi?.bindingConfigured ? "Workers AI conectado, pendiente de activar con AI_ENABLED y AI_WORKERS_ENABLED." : "Falta el binding Workers AI llamado AI en Cloudflare.";
+        note.textContent = "Agency Mini AI permanece bloqueada hasta que se configure y autorice expresamente. No se activan proveedores externos.";
         return;
       }
       if (data.provider && chatProviders.some(p => p.id === data.provider)) select.value = data.provider;
-      status.textContent = "Proveedores configurados: " + chatProviders.length + ". La llamada respeta los límites y permisos del servidor.";
-      note.textContent = data.enabled ? (data.configured ? "IA habilitada · uso sujeto a AI_BILLABLE_ENABLED y límites." : "Completa AI_PROVIDER y los permisos de uso en Cloudflare.") : "IA desactivada en servidor. No se enviarán mensajes al proveedor.";
+      status.textContent = data.workersAi?.executionAuthorized ? "Agency Mini AI activa · " + data.workersAi.model : "Proveedor configurado · sujeto a autorización y límites.";
+      note.textContent = data.workersAi?.executionAuthorized ? "Cloudflare Workers AI · límite de " + data.workersAi.dailyRequestLimit + " solicitudes/día. No hay fallback externo." : "Las llamadas siguen bloqueadas hasta completar la configuración y autorización.";
     } catch (error) {
       select.innerHTML = '<option value="">Estado no disponible</option>';
       status.textContent = error.message;
@@ -746,8 +749,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const input = $("#chat-input"), button = $("#chat-send"), message = input.value.trim();
     if (!message) return;
     const provider = $("#chat-provider")?.value;
-    if (!provider) { notify("Configura primero un proveedor de IA en Cloudflare."); return; }
-    if (!chatCanSend) { notify("El uso de IA está desactivado. Revisa AI_ENABLED y AI_BILLABLE_ENABLED en Cloudflare."); return; }
+    if (!provider) { notify("Configura primero el binding Workers AI en Cloudflare."); return; }
+    if (!chatCanSend) { notify("Agency Mini AI sigue bloqueada. Revisa el binding AI y los flags AI_ENABLED / AI_WORKERS_ENABLED."); return; }
     chatBusy = true; button.disabled = true; button.textContent = "Pensando…";
     chatHistory.push({ role: "user", content: message });
     renderChatMessages(); input.value = "";
