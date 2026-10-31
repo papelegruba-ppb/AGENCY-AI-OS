@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Agency AI OS: iniciar preview seguro",
+      "type": "process",
+      "command": "node",
+      "args": [
+        "scripts/preview-server.mjs",
+        "--port",
+        "8000"
+      ],
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": "^.*$"
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^Agency AI OS preview listening on",
+            "endsPattern": "^Agency AI OS preview listening on"
+          }
+        }
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    }
+  ]
+}
