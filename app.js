@@ -163,11 +163,12 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","creative-engine":"Creative Engine"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",chat:"Chat IA",settings:"Configuración","creative-engine":"Creative Engine"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
     if (view === "deliverables") renderDeliverables();
+    if (view === "chat") updateChatProjectContext();
     if (view === "propuesta-comercial") {
       const frame = $("#frame-propuesta-comercial");
       const selected = activeProjectId || projects[0]?.id || "";
@@ -529,11 +530,30 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const card = document.createElement("article");
     card.className = "panel settings-card integration-control-card";
     const rows = (data.integrations || []).map(item => {
-      const status = item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : (item.enabled ? "Habilitada en servidor" : "Desactivada");
-      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><span class="pill ' + ((item.enabled && (item.id !== "canva" || item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span></div>';
+      const status = item.id === "flow" ? "Sin API pública para integración directa" : item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : item.status === "credentials_ready" ? "Credenciales listas · uso desactivado" : item.status === "ready" ? "Lista para utilizar" : item.status === "needs_configuration" && ["openai","gemini","claude","deepseek","perplexity"].includes(item.id) ? "Configurar clave y modelo" : (item.enabled ? "Habilitada en servidor" : "Desactivada");
+      const action = "";
+      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pill ' + ((item.status === "ready" || (item.enabled && item.id === "canva" && item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span>' + action + '</div></div>';
     }).join("");
     card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
     grid.prepend(card);
+
+    // Canva is connected centrally from Settings; Creative Engine only consumes the connection.
+    const canvaCard = document.createElement("article");
+    canvaCard.className = "panel settings-card integration-control-card";
+    canvaCard.id = "canva-integration-card";
+    canvaCard.innerHTML = '<div class="settings-icon">✦</div><h2>Canva · Conexión de cuenta</h2><p>Autoriza Canva desde este centro. La sesión se comparte con Creative Engine y no requiere iniciar OAuth desde el módulo creativo.</p><div class="integration-status-row"><div><strong id="canva-connection-label">Comprobando conexión…</strong><small id="canva-connection-detail">Estado consultado directamente al servidor</small></div><span id="canva-connection-pill" class="pill pill-muted">Comprobando</span></div><div class="settings-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button type="button" id="canva-connect-button" class="button button-primary">Conectar Canva</button><button type="button" id="canva-refresh-button" class="button button-secondary">Comprobar conexión</button></div><p id="canva-connection-error" class="integration-footnote" role="status" aria-live="polite"></p>';
+    grid.prepend(canvaCard);
+    bindCanvaSettings();
+    const callbackState = new URLSearchParams(location.search);
+    if (callbackState.get("integration") === "canva") {
+      currentView("settings");
+      const outcome = callbackState.get("status");
+      const note = $("#canva-connection-error");
+      if (note && outcome === "error") note.textContent = "Canva no ha completado la autorización. Consulta el diagnóstico y vuelve a intentarlo desde este panel.";
+      if (note && outcome === "connected") note.textContent = "Canva ha devuelto el flujo OAuth. Comprobando que la sesión y las herramientas estén disponibles…";
+      history.replaceState({}, document.title, location.pathname + location.hash);
+    }
+    refreshCanvaStatus();
     if (!integrationFlags.googleDrive) {
       const driveStatus = $("#drive-status"), btnLink = $("#btn-link-drive"), btnSync = $("#btn-sync-drive");
       if (driveStatus) driveStatus.textContent = "Desactivado: no se realizarán llamadas a Google Drive.";
@@ -542,6 +562,192 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       localStorage.removeItem("drive_linked");
     }
   }
+  async function ensureOwnerSession() {
+    let response = await fetch("/api/canva/status", { credentials: "same-origin", cache: "no-store" });
+    if (response.status !== 401) return response;
+    const password = window.prompt("Introduce tu contraseña privada de Agency AI OS para gestionar las integraciones:");
+    if (!password) throw new Error("Inicio de sesión cancelado.");
+    const login = await fetch("/api/owner-login", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password })
+    });
+    const data = await login.json().catch(() => ({}));
+    if (!login.ok) throw new Error(data.error || "No se pudo autenticar el workspace.");
+    return fetch("/api/canva/status", { credentials: "same-origin", cache: "no-store" });
+  }
+
+  async function refreshCanvaStatus() {
+    const label = $("#canva-connection-label"), detail = $("#canva-connection-detail");
+    const pill = $("#canva-connection-pill"), error = $("#canva-connection-error");
+    const connect = $("#canva-connect-button");
+    if (!label || !pill) return;
+    try {
+      const response = await fetch("/api/canva/status", { credentials: "same-origin", cache: "no-store" });
+      if (response.status === 401) {
+        label.textContent = "Inicia sesión para consultar el estado";
+        detail.textContent = "La conexión se gestiona con tu sesión privada de Agency AI OS.";
+        pill.textContent = "Autenticación requerida";
+        pill.className = "pill pill-muted";
+        return;
+      }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "No se pudo consultar el estado de Canva.");
+      const connected = data.connected === true;
+      label.textContent = connected ? "Cuenta Canva conectada" : (data.credentialsConfigured ? "Credenciales detectadas · autorización pendiente" : "Credenciales pendientes");
+      detail.textContent = connected ? (String(data.toolsCount || 0) + " herramientas disponibles mediante MCP") : "La autorización se inicia desde Configuración.";
+      pill.textContent = connected ? "Conectada" : "No conectada";
+      pill.className = "pill " + (connected ? "pill-green" : "pill-muted");
+      connect.textContent = connected ? "Volver a autorizar" : "Conectar Canva";
+      if (connected && error) error.textContent = "";
+    } catch (e) {
+      label.textContent = "Estado no verificado";
+      detail.textContent = "Se necesita una sesión privada para consultar la integración.";
+      pill.textContent = "Sin verificar";
+      pill.className = "pill pill-muted";
+      if (error) error.textContent = e.message;
+    }
+  }
+
+  function bindCanvaSettings() {
+    $("#canva-connect-button")?.addEventListener("click", async () => {
+      const button = $("#canva-connect-button"), error = $("#canva-connection-error");
+      button.disabled = true; button.textContent = "Preparando autorización…";
+      if (error) error.textContent = "";
+      try {
+        const auth = await ensureOwnerSession();
+        if (!auth.ok) throw new Error("No se pudo validar la sesión privada.");
+        location.href = "/api/canva/connect";
+      } catch (e) {
+        if (error) error.textContent = e.message || "No se pudo iniciar la conexión.";
+        button.disabled = false; button.textContent = "Conectar Canva";
+      }
+    });
+    $("#canva-refresh-button")?.addEventListener("click", refreshCanvaStatus);
+  }
+
+  const CHAT_STORAGE_KEY = "agency-ai-os.chat.v1";
+  let chatHistory = [];
+  let chatProviders = [];
+  let chatBusy = false;
+  let chatCanSend = false;
+
+  function getChatHistory() {
+    try {
+      const all = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "{}");
+      return Array.isArray(all[activeProjectId || "general"]) ? all[activeProjectId || "general"] : [];
+    } catch (_) { return []; }
+  }
+
+  function saveChatHistory() {
+    try {
+      const all = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "{}");
+      all[activeProjectId || "general"] = chatHistory.slice(-30);
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(all));
+    } catch (_) {}
+  }
+
+  function updateChatProjectContext() {
+    const p = findProject(activeProjectId);
+    const el = $("#chat-project-context");
+    if (el) el.textContent = p ? "Contexto activo: " + p.name + " · " + (p.sector || "Sector sin definir") : "Sin proyecto activo · El chat responderá con contexto general.";
+    const nextKey = activeProjectId || "general";
+    if (updateChatProjectContext.lastKey !== nextKey) {
+      updateChatProjectContext.lastKey = nextKey;
+      chatHistory = getChatHistory();
+      renderChatMessages();
+    }
+  }
+
+  async function loadChatProviders() {
+    const select = $("#chat-provider"), status = $("#chat-provider-status"), note = $("#chat-usage-note");
+    if (!select) return;
+    try {
+      const response = await fetch("/api/ai-status", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error("No se pudo consultar la configuración de IA.");
+      chatProviders = Array.isArray(data.configuredProviders) ? data.configuredProviders : [];
+      chatCanSend = Boolean(data.enabled && data.billableEnabled && chatProviders.length);
+      select.innerHTML = chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(({deepseek:"DeepSeek",openai:"OpenAI",gemini:"Google Gemini",anthropic:"Claude",perplexity:"Perplexity"}[p.id] || p.id) + " · " + p.model) + '</option>').join("");
+      if (!chatProviders.length || !chatCanSend) {
+        select.innerHTML = chatProviders.length ? chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(p.id) + '</option>').join("") : '<option value="">Sin proveedor configurado</option>';
+        status.textContent = chatProviders.length ? "Proveedores configurados, pero uso desactivado." : "Falta configurar un proveedor y modelo en Cloudflare.";
+        note.textContent = "El chat no enviará solicitudes hasta que AI_ENABLED y AI_BILLABLE_ENABLED estén autorizados.";
+        return;
+      }
+      if (data.provider && chatProviders.some(p => p.id === data.provider)) select.value = data.provider;
+      status.textContent = "Proveedores configurados: " + chatProviders.length + ". La llamada respeta los límites y permisos del servidor.";
+      note.textContent = data.enabled ? (data.configured ? "IA habilitada · uso sujeto a AI_BILLABLE_ENABLED y límites." : "Completa AI_PROVIDER y los permisos de uso en Cloudflare.") : "IA desactivada en servidor. No se enviarán mensajes al proveedor.";
+    } catch (error) {
+      select.innerHTML = '<option value="">Estado no disponible</option>';
+      status.textContent = error.message;
+    }
+  }
+
+  function renderChatMessages() {
+    const host = $("#chat-messages");
+    if (!host) return;
+    if (!chatHistory.length) {
+      host.innerHTML = '<div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div>';
+      return;
+    }
+    host.innerHTML = chatHistory.map(item => '<div class="chat-message ' + (item.role === "assistant" ? "assistant" : "user") + '">' + esc(item.content) + '</div>').join("");
+    host.scrollTop = host.scrollHeight;
+  }
+
+  async function submitChatMessage(event) {
+    event.preventDefault();
+    if (chatBusy) return;
+    const input = $("#chat-input"), button = $("#chat-send"), message = input.value.trim();
+    if (!message) return;
+    const provider = $("#chat-provider")?.value;
+    if (!provider) { notify("Configura primero un proveedor de IA en Cloudflare."); return; }
+    if (!chatCanSend) { notify("El uso de IA está desactivado. Revisa AI_ENABLED y AI_BILLABLE_ENABLED en Cloudflare."); return; }
+    chatBusy = true; button.disabled = true; button.textContent = "Pensando…";
+    chatHistory.push({ role: "user", content: message });
+    renderChatMessages(); input.value = "";
+    const pending = { role: "assistant", content: "Preparando respuesta…" };
+    chatHistory.push(pending); renderChatMessages();
+    try {
+      const auth = await ensureOwnerSession();
+      if (!auth.ok) throw new Error("No se pudo validar la sesión privada.");
+      const prior = chatHistory.slice(0, -2);
+      const project = findProject(activeProjectId);
+      const response = await fetch("/api/chat", {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, message, history: prior.slice(-10), project })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || "El chat no pudo completar la solicitud.");
+      pending.content = data.reply;
+      pending.provider = data.provider;
+      pending.model = data.model;
+      const status = $("#chat-provider-status");
+      if (status) status.textContent = "Respuesta de " + data.provider + " · " + data.model;
+    } catch (error) {
+      pending.content = error.message || "Error al conectar con el asistente.";
+      pending.error = true;
+    } finally {
+      chatHistory = chatHistory.filter(item => item !== pending || item.content !== "Preparando respuesta…");
+      saveChatHistory(); renderChatMessages();
+      chatBusy = false; button.disabled = false; button.textContent = "Enviar ↗";
+      input.focus();
+    }
+  }
+
+  $("#active-project-select")?.addEventListener("change", event => {
+    activeProjectId = event.target.value || null;
+    if (activeProjectId) localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId);
+    else localStorage.removeItem(ACTIVE_PROJECT_KEY);
+    updateChatProjectContext();
+  });
+  $("#chat-form")?.addEventListener("submit", submitChatMessage);
+  $("#chat-input")?.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); $("#chat-form").requestSubmit(); }
+  });
+  $("#chat-clear")?.addEventListener("click", () => { chatHistory = []; saveChatHistory(); renderChatMessages(); });
+  loadChatProviders();
+  updateChatProjectContext();
+
   // --- LISTENERS ---
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });

@@ -20,12 +20,15 @@ const boundedInt = (value, fallback, min, max) => {
 export function aiStatus(env) {
   const provider = String(env.AI_PROVIDER || "").toLowerCase();
   const spec = PROVIDERS[provider];
+  const configuredProviders = Object.entries(PROVIDERS).filter(([, item]) => Boolean(env[item.key] && env[item.model] && env.AGENCY_KV)).map(([id, item]) => ({ id, model: String(env[item.model]), configured: true }));
   const configured = Boolean(env.AI_ENABLED === "true" && spec && env[spec.key] && env[spec.model] && env.AGENCY_KV);
   return {
     ok: true,
     enabled: env.AI_ENABLED === "true",
+    billableEnabled: env.AI_BILLABLE_ENABLED === "true",
     configured,
     provider: spec ? provider : null,
+    configuredProviders,
     modelConfigured: Boolean(spec && env[spec.model]),
     keyConfigured: Boolean(spec && env[spec.key]),
     usageStoreConfigured: Boolean(env.AGENCY_KV),
@@ -38,14 +41,16 @@ export function aiStatus(env) {
   };
 }
 
-export async function reserveAiCall({ env, request, endpoint }) {
+export async function reserveAiCall({ env, request, endpoint, providerOverride }) {
   const status = aiStatus(env);
+  const selectedProvider = String(providerOverride || status.provider || "").toLowerCase();
+  const selectedSpec = PROVIDERS[selectedProvider];
   if (!status.enabled) return { ok: false, response: json({ ok: false, error: "Las llamadas de IA están desactivadas. Activa AI_ENABLED=true solo después de revisar el proveedor y su facturación.", code: "AI_DISABLED" }, 503) };
   if (env.AI_BILLABLE_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Integración de IA desactivada por la política de coste cero. No se ha contactado con ningún proveedor. Revisa precio y cuotas y autoriza AI_BILLABLE_ENABLED=true en Cloudflare para activarla.", code: "INTEGRATION_DISABLED", integration: "ai" }, 503) };
-  if (!status.configured) return { ok: false, response: json({ ok: false, error: "Configuración de IA incompleta. Revisa AI_PROVIDER, la clave y modelo correspondientes y el binding AGENCY_KV.", code: "AI_CONFIGURATION_INCOMPLETE" }, 503) };
+  if (!selectedSpec || !env[selectedSpec.key] || !env[selectedSpec.model] || !env.AGENCY_KV) return { ok: false, response: json({ ok: false, error: "El proveedor seleccionado no tiene clave, modelo o almacenamiento de cuotas configurados.", code: "AI_PROVIDER_NOT_CONFIGURED", provider: selectedProvider || null }, 503) };
 
-  const provider = status.provider;
-  const spec = PROVIDERS[provider];
+  const provider = selectedProvider;
+  const spec = selectedSpec;
   const now = new Date();
   const day = now.toISOString().slice(0, 10);
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -89,8 +94,8 @@ async function digest(value) {
   return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 24);
 }
 
-export async function runAiText({ env, request, endpoint, system, input, maxOutputTokens = 1200, jsonMode = false, temperature = 0.4 }) {
-  const reserved = await reserveAiCall({ env, request, endpoint });
+export async function runAiText({ env, request, endpoint, system, input, provider: providerOverride, maxOutputTokens = 1200, jsonMode = false, temperature = 0.4 }) {
+  const reserved = await reserveAiCall({ env, request, endpoint, providerOverride });
   if (!reserved.ok) return reserved;
 
   const provider = reserved.provider;
