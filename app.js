@@ -21,6 +21,8 @@
 
   function saveProjects() {
     try { 
+      const savedAt = new Date().toISOString();
+      projects.forEach(project => { if (project && typeof project === "object") project.updatedAt = savedAt; });
       localStorage.setItem(STORE_KEY, JSON.stringify(projects)); 
       saveHistory();
       autoSyncToDrive();
@@ -466,6 +468,7 @@ Responde siempre en español.`
     const p = findProject(id); if (!p) return;
     if (!confirm(`¿Eliminar el proyecto "${p.name}" de este navegador?`)) return;
     projects = projects.filter(x=>x.id!==id); saveProjects();
+    if (cloudWorkspaceConnected) fetch("/api/projects?id=" + encodeURIComponent(id), { method: "DELETE", credentials: "same-origin" }).catch(() => setCloudStatus("ERROR DE SINCRONIZACIÓN", false));
     if (activeProjectId===id) activeProjectId=projects[0]?.id || null;
     renderProjects(); renderDeliverables(); notify("Proyecto eliminado.");
   }
