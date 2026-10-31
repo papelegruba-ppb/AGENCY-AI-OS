@@ -6,18 +6,20 @@ const CATALOG = {
   googleCalendar: { label: "Google Calendar API", env: "GOOGLE_CALENDAR_ENABLED", cost: "La API puede no tener coste directo, pero depende de la cuenta y del uso asociado.", function: "Consultar disponibilidad y crear citas.", activation: "Configurar OAuth y autorizar acceso al calendario." },
   googleSheets: { label: "Google Sheets API", env: "GOOGLE_SHEETS_ENABLED", cost: "Sujeta a cuotas y límites de Google.", function: "Importar o sincronizar datos externos.", activation: "Autorizar el acceso y definir límites de uso." },
   browserRendering: { label: "Navegador remoto / Browser Rendering", env: "BROWSER_RENDERING_ENABLED", cost: "Puede consumir cuota o generar cargos según proveedor y plan.", function: "Renderizar JavaScript, capturar screenshots y analizar estilos calculados.", activation: "Revisar plan, cuota y proveedor antes de habilitar." },
-  canva: { label: "Canva Connect", env: "CANVA_ENABLED", cost: "Depende del plan y de los límites de Canva.", function: "Diseños y gestión de assets.", activation: "La conexión OAuth existente no habilita por sí sola generación automática; revisar scopes y permisos." }
+  canva: { label: "Canva Connect", env: null, cost: "La Connect API es gratuita para desarrollar e integrar. Algunas funciones requieren Canva Pro/Business/Enterprise o tienen límites de uso; los elementos premium pueden impedir exportaciones.", function: "Conectar diseños, assets, exportaciones y herramientas creativas con autorización OAuth.", activation: "No requiere activar un flag de pago. Requiere credenciales OAuth, cifrado, KV, autorización de Canva y scopes adecuados." }
 };
 
 export function integrationEnabled(env, id) {
   const item = CATALOG[id];
-  return Boolean(item && env[item.env] === "true");
+  if (!item) return false;
+  if (id === "canva") return Boolean(env.CANVA_CLIENT_ID && env.CANVA_CLIENT_SECRET && String(env.CANVA_TOKEN_ENCRYPTION_KEY || "").length >= 32 && env.AGENCY_KV);
+  return Boolean(item.env && env[item.env] === "true");
 }
 
 export function integrationStatus(env) {
   return Object.entries(CATALOG).map(([id, item]) => ({
     id, label: item.label, enabled: integrationEnabled(env, id),
-    status: integrationEnabled(env, id) ? "enabled" : "disabled",
+    status: id === "canva" ? (integrationEnabled(env, id) ? "configured" : "needs_configuration") : (integrationEnabled(env, id) ? "enabled" : "disabled"),
     costNotice: item.cost, function: item.function, activation: item.activation
   }));
 }
