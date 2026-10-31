@@ -13,9 +13,9 @@ Todas las integraciones externas con consumo variable, cuotas o cargos permanece
 | Google Calendar | `GOOGLE_CALENDAR_ENABLED=true` | Desactivada; integración real pendiente |
 | Google Sheets | `GOOGLE_SHEETS_ENABLED=true` | Desactivada; integración real pendiente |
 | Browser Rendering | `BROWSER_RENDERING_ENABLED=true` | Desactivada; runtime real pendiente |
-| Canva Connect | `CANVA_ENABLED=true` | Desactivada en este control; verificar antes la conexión OAuth ya configurada |
+| Canva Connect | No requiere flag de pago | Disponible si OAuth, cifrado y KV están configurados; conexión OAuth se verifica por separado |
 
-No habilitar flags desde el navegador. La activación se realiza únicamente en el entorno de servidor, después de autorización expresa y revisión de precios, cuotas, privacidad y permisos. Las cuotas gratuitas no garantizan coste cero si se exceden.
+No habilitar flags desde el navegador. Las integraciones que puedan generar cargos se activan únicamente en el entorno de servidor, después de autorización expresa y revisión de precios, cuotas, privacidad y permisos. Las cuotas gratuitas no garantizan coste cero si se exceden. Canva Connect es una excepción: Canva indica que desarrollar y utilizar Connect API no tiene coste de API. No se debe bloquear por el flag genérico de servicios de pago; sí se deben respetar límites, scopes y requisitos de plan de cada endpoint.
 
 ## Estado
 
@@ -28,7 +28,7 @@ Consultar `GET /api/integrations/status`. La respuesta enumera estado, función,
 - PageSpeed solo devuelve métricas reales cuando la integración se habilite y Google responda con Lighthouse.
 - Los proyectos siguen guardándose principalmente en el navegador. Esta política no convierte localStorage en almacenamiento compartido ni sincronización multi-dispositivo.
 - Las llamadas a IA están separadas de los agentes locales; los agentes no ejecutan acciones externas ni código arbitrario.
-- Canva OAuth/MCP preexistente debe verificarse de extremo a extremo antes de declarar generación automática disponible.
+- Canva Connect API: la integración de API es gratuita según Canva, pero algunas capacidades están restringidas a planes de pago. El estado de credenciales no equivale a OAuth conectado ni a agentes creativos plenamente integrados. Consultar `/api/canva/status` y validar las herramientas disponibles, scopes, cuotas y licencias de elementos premium.
 
 ## Desarrollo local sin proveedores
 
