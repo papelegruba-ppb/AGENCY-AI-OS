@@ -22,13 +22,13 @@ async function tokenCryptoKey(env) {
   const material = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
   return crypto.subtle.importKey("raw", material, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
 }
-async function encryptTokens(env, tokens) {
+export async function encryptCanvaTokens(env, tokens) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await tokenCryptoKey(env);
   const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(tokens)));
   return JSON.stringify({ version: 1, iv: toBase64(iv), ciphertext: toBase64(ciphertext) });
 }
-async function decryptTokens(env, raw) {
+export async function decryptCanvaTokens(env, raw) {
   if (!raw) return undefined;
   const record = parse(raw);
   if (!record || record.version !== 1 || !record.iv || !record.ciphertext) throw new Error("Stored Canva token record is invalid.");
@@ -65,8 +65,8 @@ export class CanvaOAuthProvider {
     };
   }
   async saveClientInformation() { /* Developer Portal credentials remain in Cloudflare Secrets only. */ }
-  async tokens() { return decryptTokens(this.env, await this.kv.get(TOKEN_KEY)); }
-  async saveTokens(tokens) { await this.kv.put(TOKEN_KEY, await encryptTokens(this.env, tokens)); }
+  async tokens() { return decryptCanvaTokens(this.env, await this.kv.get(TOKEN_KEY)); }
+  async saveTokens(tokens) { await this.kv.put(TOKEN_KEY, await encryptCanvaTokens(this.env, tokens)); }
   async state() {
     const value = randomId();
     await this.kv.put(STATE_KEY, value, { expirationTtl: 900 });
