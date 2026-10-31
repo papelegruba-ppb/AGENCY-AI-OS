@@ -163,11 +163,12 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",settings:"Configuración","creative-engine":"Creative Engine"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",chat:"Chat IA",settings:"Configuración","creative-engine":"Creative Engine"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
     if (view === "deliverables") renderDeliverables();
+    if (view === "chat") updateChatProjectContext();
     if (view === "propuesta-comercial") {
       const frame = $("#frame-propuesta-comercial");
       const selected = activeProjectId || projects[0]?.id || "";
@@ -529,8 +530,9 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const card = document.createElement("article");
     card.className = "panel settings-card integration-control-card";
     const rows = (data.integrations || []).map(item => {
-      const status = item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : (item.enabled ? "Habilitada en servidor" : "Desactivada");
-      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><span class="pill ' + ((item.enabled && (item.id !== "canva" || item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span></div>';
+      const status = item.id === "flow" ? "Aplicación externa · cuenta Google" : item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : (item.enabled ? "Habilitada en servidor" : "Desactivada");
+      const action = item.id === "flow" && item.externalUrl ? '<a class="button button-secondary button-small" href="' + esc(item.externalUrl) + '" target="_blank" rel="noopener noreferrer">Abrir Google Flow ↗</a>' : "";
+      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pill ' + ((item.enabled && (item.id !== "canva" || item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span>' + action + '</div></div>';
     }).join("");
     card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
     grid.prepend(card);
@@ -622,6 +624,120 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     });
     $("#canva-refresh-button")?.addEventListener("click", refreshCanvaStatus);
   }
+
+  const CHAT_STORAGE_KEY = "agency-ai-os.chat.v1";
+  let chatHistory = [];
+  let chatProviders = [];
+  let chatBusy = false;
+
+  function getChatHistory() {
+    try {
+      const all = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "{}");
+      return Array.isArray(all[activeProjectId || "general"]) ? all[activeProjectId || "general"] : [];
+    } catch (_) { return []; }
+  }
+
+  function saveChatHistory() {
+    try {
+      const all = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "{}");
+      all[activeProjectId || "general"] = chatHistory.slice(-30);
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(all));
+    } catch (_) {}
+  }
+
+  function updateChatProjectContext() {
+    const p = findProject(activeProjectId);
+    const el = $("#chat-project-context");
+    if (el) el.textContent = p ? "Contexto activo: " + p.name + " · " + (p.sector || "Sector sin definir") : "Sin proyecto activo · El chat responderá con contexto general.";
+    const nextKey = activeProjectId || "general";
+    if (updateChatProjectContext.lastKey !== nextKey) {
+      updateChatProjectContext.lastKey = nextKey;
+      chatHistory = getChatHistory();
+      renderChatMessages();
+    }
+  }
+
+  async function loadChatProviders() {
+    const select = $("#chat-provider"), status = $("#chat-provider-status"), note = $("#chat-usage-note");
+    if (!select) return;
+    try {
+      const response = await fetch("/api/ai-status", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error("No se pudo consultar la configuración de IA.");
+      chatProviders = Array.isArray(data.configuredProviders) ? data.configuredProviders : [];
+      select.innerHTML = chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(({deepseek:"DeepSeek",openai:"OpenAI",gemini:"Google Gemini",anthropic:"Claude",perplexity:"Perplexity"}[p.id] || p.id) + " · " + p.model) + '</option>').join("");
+      if (!chatProviders.length) {
+        select.innerHTML = '<option value="">Sin proveedor configurado</option>';
+        status.textContent = "Falta configurar un proveedor y modelo en Cloudflare.";
+        note.textContent = "El chat no hará llamadas hasta que exista proveedor, cuota y autorización.";
+        return;
+      }
+      if (data.provider && chatProviders.some(p => p.id === data.provider)) select.value = data.provider;
+      status.textContent = "Proveedores configurados: " + chatProviders.length + ". La llamada respeta los límites y permisos del servidor.";
+      note.textContent = data.enabled ? (data.configured ? "IA habilitada · uso sujeto a AI_BILLABLE_ENABLED y límites." : "Completa AI_PROVIDER y los permisos de uso en Cloudflare.") : "IA desactivada en servidor. No se enviarán mensajes al proveedor.";
+    } catch (error) {
+      select.innerHTML = '<option value="">Estado no disponible</option>';
+      status.textContent = error.message;
+    }
+  }
+
+  function renderChatMessages() {
+    const host = $("#chat-messages");
+    if (!host) return;
+    if (!chatHistory.length) {
+      host.innerHTML = '<div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div>';
+      return;
+    }
+    host.innerHTML = chatHistory.map(item => '<div class="chat-message ' + (item.role === "assistant" ? "assistant" : "user") + '">' + esc(item.content) + '</div>').join("");
+    host.scrollTop = host.scrollHeight;
+  }
+
+  async function submitChatMessage(event) {
+    event.preventDefault();
+    if (chatBusy) return;
+    const input = $("#chat-input"), button = $("#chat-send"), message = input.value.trim();
+    if (!message) return;
+    const provider = $("#chat-provider")?.value;
+    if (!provider) { notify("Configura primero un proveedor de IA en Cloudflare."); return; }
+    chatBusy = true; button.disabled = true; button.textContent = "Pensando…";
+    chatHistory.push({ role: "user", content: message });
+    renderChatMessages(); input.value = "";
+    const pending = { role: "assistant", content: "Preparando respuesta…" };
+    chatHistory.push(pending); renderChatMessages();
+    try {
+      const auth = await ensureOwnerSession();
+      if (!auth.ok) throw new Error("No se pudo validar la sesión privada.");
+      const prior = chatHistory.slice(0, -1);
+      const project = findProject(activeProjectId);
+      const response = await fetch("/api/chat", {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, message, history: prior.slice(-10), project })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error(data.error || "El chat no pudo completar la solicitud.");
+      pending.content = data.reply;
+      pending.provider = data.provider;
+      pending.model = data.model;
+      const status = $("#chat-provider-status");
+      if (status) status.textContent = "Respuesta de " + data.provider + " · " + data.model;
+    } catch (error) {
+      pending.content = error.message || "Error al conectar con el asistente.";
+      pending.error = true;
+    } finally {
+      chatHistory = chatHistory.filter(item => item !== pending || item.content !== "Preparando respuesta…");
+      saveChatHistory(); renderChatMessages();
+      chatBusy = false; button.disabled = false; button.textContent = "Enviar ↗";
+      input.focus();
+    }
+  }
+
+  $("#chat-form")?.addEventListener("submit", submitChatMessage);
+  $("#chat-input")?.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); $("#chat-form").requestSubmit(); }
+  });
+  $("#chat-clear")?.addEventListener("click", () => { chatHistory = []; saveChatHistory(); renderChatMessages(); });
+  loadChatProviders();
+  updateChatProjectContext();
 
   // --- LISTENERS ---
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
