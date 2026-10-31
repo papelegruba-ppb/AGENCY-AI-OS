@@ -4,6 +4,7 @@
   const HISTORY_KEY = "agency-ai-os.history.v1";
   const ACTIVE_PROJECT_KEY = "agency-ai-os.active-project-id.v1";
   let latestWebsiteAudit = null;
+  let integrationFlags = {};
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
@@ -39,7 +40,7 @@
   }
 
   function autoSyncToDrive() {
-    if (!localStorage.getItem("drive_linked")) return;
+    if (!integrationFlags.googleDrive || !localStorage.getItem("drive_linked")) return;
     fetch("/api/drive-save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -413,6 +414,38 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     notify("Landing HTML exportada. El formulario de demostración requiere conectar un endpoint para recibir leads.");
   }
 
+  async function loadIntegrationStatus() {
+    const grid = $("#view-settings .settings-grid");
+    if (!grid) return;
+    let data;
+    try {
+      const response = await fetch("/api/integrations/status", { cache: "no-store" });
+      if (!response.ok) throw new Error("Estado no disponible");
+      data = await response.json();
+    } catch (_) {
+      const fallback = document.createElement("article");
+      fallback.className = "panel settings-card";
+      fallback.textContent = "No se pudo consultar el estado de las integraciones. Por seguridad, las conexiones externas permanecen desactivadas.";
+      grid.prepend(fallback);
+      return;
+    }
+    integrationFlags = Object.fromEntries((data.integrations || []).map(item => [item.id, item.enabled]));
+    const card = document.createElement("article");
+    card.className = "panel settings-card integration-control-card";
+    const rows = (data.integrations || []).map(item => {
+      const status = item.enabled ? "Habilitada en servidor" : "Desactivada";
+      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><span class="pill ' + (item.enabled ? "pill-green" : "pill-muted") + '">' + status + '</span></div>';
+    }).join("");
+    card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
+    grid.prepend(card);
+    if (!integrationFlags.googleDrive) {
+      const driveStatus = $("#drive-status"), btnLink = $("#btn-link-drive"), btnSync = $("#btn-sync-drive");
+      if (driveStatus) driveStatus.textContent = "Desactivado: no se realizarán llamadas a Google Drive.";
+      if (btnLink) { btnLink.disabled = true; btnLink.title = "Integración desactivada en el servidor."; }
+      if (btnSync) { btnSync.disabled = true; btnSync.title = "Integración desactivada en el servidor."; }
+      localStorage.removeItem("drive_linked");
+    }
+  }
   // --- LISTENERS ---
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
@@ -458,7 +491,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       renderProjects();
       $("#dialog-title").textContent=p.name;
       $("#dialog-description").textContent=usedLocalFallback
-        ? "Proyecto guardado. DeepSeek no respondió en este intento; se ha preparado una propuesta local que puedes editar."
+        ? "Proyecto guardado. Se ha preparado una propuesta local que puedes editar."
         : "Proyecto guardado y propuesta inicial generada con DeepSeek para "+p.sector+".";
       const dialog=$("#project-dialog");
       if(typeof dialog.showModal==="function")dialog.showModal();
@@ -532,5 +565,6 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     });
   }
 
+  loadIntegrationStatus();
   renderProjects();
 })();
