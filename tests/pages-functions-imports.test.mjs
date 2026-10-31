@@ -22,7 +22,7 @@ test("all relative imports in Pages Functions resolve to existing files", async 
   const missing = [];
   for (const file of files) {
     const source = await readFile(file, "utf8");
-    const imports = /\\bfrom\\s*["']([^"']+)["']|\\bimport\\s*["']([^"']+)["']/g;
+    const imports = /\bfrom\s*["']([^"']+)["']|\bimport\s*["']([^"']+)["']/g;
     for (const match of source.matchAll(imports)) {
       const specifier = match[1] || match[2];
       if (!specifier.startsWith(".")) continue;
@@ -31,5 +31,5 @@ test("all relative imports in Pages Functions resolve to existing files", async 
       catch { missing.push(`${path.relative(process.cwd(), file)} -> ${specifier}`); }
     }
   }
-  assert.deepEqual(missing, [], `Unresolved Pages Functions imports:\\n${missing.join("\\n")}`);
+  assert.deepEqual(missing, [], `Unresolved Pages Functions imports:\n${missing.join("\n")}`);
 });
