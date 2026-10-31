@@ -10,6 +10,7 @@ Constructor visual para organizar proyectos digitales, preparar una primera prop
 - Vista de proyectos y entregables.
 - Exportación de planes en JSON y de una landing HTML demostrativa.
 - Generación de propuesta de copy, guía visual, plan de motion, requisitos frontend/backend, SEO, flujo conversacional y estado QA.
+- Módulo Creative Engine para previsualizar y exportar fondos CSS, con integración guiada de Shaders y flujo manual de assets.
 - Sin dependencias de build ni claves API.
 
 ## Importante: límites de esta primera versión
@@ -44,6 +45,7 @@ Los proveedores cambian condiciones y cuotas; comprueba los límites actuales an
 - `app.js`: navegación, estado local, plantillas, exportaciones.
 - `bot-flow-template.json`: ejemplo de flujo conversacional.
 - `wrangler.toml`: configuración inicial opcional de Pages/Workers.
+- `creative-engine.html`: laboratorio visual y exportador CSS.
 - `DESIGN.md`, `ARCHITECTURE.md`, `INTEGRATIONS.md`, `ROADMAP.md`, `CLAUDE.md`: documentación viva del proyecto.
 
 ## Núcleo multi-IA y protección de consumo
@@ -59,3 +61,8 @@ El núcleo multi-IA integrado en `main` incorpora un runtime común para DeepSee
 5. Conectar el formulario a una API real.
 6. Integrar WhatsApp Business Platform mediante un proveedor autorizado y configurar webhooks.
 7. Ejecutar pruebas automatizadas y comprobaciones de seguridad.
+
+
+## Creative Engine
+
+El módulo Creative Engine añade previsualización CSS, controles de color/intensidad/movimiento y exportación de fondos CSS. Incluye una guía para adoptar Shaders en un futuro build cliente. No carga WebGPU ni dependencias externas en el constructor estático. ContentCore queda como flujo manual de assets; is.graphics sigue pendiente de verificar. Consulta INTEGRATIONS.md para licencias y límites.
