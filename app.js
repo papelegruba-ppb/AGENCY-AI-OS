@@ -530,8 +530,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     const card = document.createElement("article");
     card.className = "panel settings-card integration-control-card";
     const rows = (data.integrations || []).map(item => {
-      const status = item.id === "flow" ? "Aplicación externa · cuenta Google" : item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : item.status === "credentials_ready" ? "Credenciales listas · uso desactivado" : item.status === "ready" ? "Lista para utilizar" : item.status === "needs_configuration" && ["openai","gemini","claude","deepseek","perplexity"].includes(item.id) ? "Configurar clave y modelo" : (item.enabled ? "Habilitada en servidor" : "Desactivada");
-      const action = item.id === "flow" && item.externalUrl ? '<a class="button button-secondary button-small" href="' + esc(item.externalUrl) + '" target="_blank" rel="noopener noreferrer">Abrir Google Flow ↗</a>' : "";
+      const status = item.id === "flow" ? "Sin API pública para integración directa" : item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : item.status === "credentials_ready" ? "Credenciales listas · uso desactivado" : item.status === "ready" ? "Lista para utilizar" : item.status === "needs_configuration" && ["openai","gemini","claude","deepseek","perplexity"].includes(item.id) ? "Configurar clave y modelo" : (item.enabled ? "Habilitada en servidor" : "Desactivada");
+      const action = "";
       return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="pill ' + ((item.status === "ready" || (item.enabled && item.id === "canva" && item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span>' + action + '</div></div>';
     }).join("");
     card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
@@ -629,6 +629,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
   let chatHistory = [];
   let chatProviders = [];
   let chatBusy = false;
+  let chatCanSend = false;
 
   function getChatHistory() {
     try {
@@ -665,11 +666,12 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error("No se pudo consultar la configuración de IA.");
       chatProviders = Array.isArray(data.configuredProviders) ? data.configuredProviders : [];
+      chatCanSend = Boolean(data.enabled && data.billableEnabled && chatProviders.length);
       select.innerHTML = chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(({deepseek:"DeepSeek",openai:"OpenAI",gemini:"Google Gemini",anthropic:"Claude",perplexity:"Perplexity"}[p.id] || p.id) + " · " + p.model) + '</option>').join("");
-      if (!chatProviders.length) {
-        select.innerHTML = '<option value="">Sin proveedor configurado</option>';
-        status.textContent = "Falta configurar un proveedor y modelo en Cloudflare.";
-        note.textContent = "El chat no hará llamadas hasta que exista proveedor, cuota y autorización.";
+      if (!chatProviders.length || !chatCanSend) {
+        select.innerHTML = chatProviders.length ? chatProviders.map(p => '<option value="' + esc(p.id) + '">' + esc(p.id) + '</option>').join("") : '<option value="">Sin proveedor configurado</option>';
+        status.textContent = chatProviders.length ? "Proveedores configurados, pero uso desactivado." : "Falta configurar un proveedor y modelo en Cloudflare.";
+        note.textContent = "El chat no enviará solicitudes hasta que AI_ENABLED y AI_BILLABLE_ENABLED estén autorizados.";
         return;
       }
       if (data.provider && chatProviders.some(p => p.id === data.provider)) select.value = data.provider;
@@ -699,6 +701,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     if (!message) return;
     const provider = $("#chat-provider")?.value;
     if (!provider) { notify("Configura primero un proveedor de IA en Cloudflare."); return; }
+    if (!chatCanSend) { notify("El uso de IA está desactivado. Revisa AI_ENABLED y AI_BILLABLE_ENABLED en Cloudflare."); return; }
     chatBusy = true; button.disabled = true; button.textContent = "Pensando…";
     chatHistory.push({ role: "user", content: message });
     renderChatMessages(); input.value = "";
