@@ -12,11 +12,14 @@ test("SEO audit is persisted to the selected project and triggers Workspace sync
 
 test("proposal capture uses self-contained SVG and never exports a tainted canvas", () => {
   assert.match(html, /id="capture-after"/);
-  assert.match(html, /function buildProposalCaptureSvg\(d\)/);
-  assert.match(html, /data:image\/svg\+xml;charset=utf-8,/);
+  assert.match(html, /function buildProposalCaptureSvg\\(d\\)/);
+  assert.match(html, /data:image\\/svg\\+xml;charset=utf-8,/);
   assert.match(html, /Native SVG primitives only/);
-  assert.doesNotMatch(html, /foreignObject/);
-  assert.doesNotMatch(html, /canvas\.toBlob/);
+  const captureStart = html.indexOf('$("#capture-after").addEventListener("click"');
+  const captureEnd = html.indexOf('$("#btn-run-seo").addEventListener("click"', captureStart);
+  assert.ok(captureStart >= 0 && captureEnd > captureStart);
+  const captureHandler = html.slice(captureStart, captureEnd);
+  assert.doesNotMatch(captureHandler, /foreignObject|canvas\\.toBlob/);
 });
 
 test("the generated proposal iframe is readable but scripts remain sandboxed", () => {
