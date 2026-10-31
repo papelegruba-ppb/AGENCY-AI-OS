@@ -372,3 +372,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .delivery-disclaimer strong { color:#533714; }
 @media (max-width: 1000px) { .roadmap-steps { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width: 620px) { .delivery-roadmap { padding:16px; } .roadmap-heading { flex-direction:column; } .roadmap-steps { grid-template-columns:1fr; } .roadmap-step { padding:12px; } }
+
+/* BRIEFING: URL como entrada prioritaria de la auditoría integral */
+.briefing-entry { margin:0 0 20px; padding:25px; border:1px solid #d9c8f7; background:radial-gradient(circle at 92% 0%,#f4eaff 0,transparent 34%),linear-gradient(135deg,#fff 0%,#fcfaff 100%); }
+.briefing-entry-copy h2 { margin:5px 0 7px; font:700 clamp(21px,2.4vw,28px)/1.2 var(--display); letter-spacing:-.045em; color:var(--text); }
+.briefing-entry-copy > p:last-child { margin:0; max-width:760px; color:var(--muted); font-size:12px; line-height:1.7; }
+.briefing-url-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:end; margin-top:20px; }
+.briefing-url-field { display:grid; gap:7px; min-width:0; }
+.briefing-url-field > span { color:var(--text); font-size:11px; font-weight:750; }
+.briefing-url-field input { width:100%; min-width:0; border:1px solid #d9cce9; border-radius:11px; background:#fff; color:var(--text); padding:14px 15px; font-size:14px; box-shadow:inset 0 1px 2px #21142e08; }
+.briefing-url-field input:focus { outline:3px solid #9b75ed35; border-color:#9367e7; }
+.briefing-audit-button { min-height:45px; white-space:nowrap; }
+.briefing-audit-status { margin:12px 0 0; color:var(--muted); font-size:11px; line-height:1.6; }
+.briefing-audit-results { margin-top:15px; padding:15px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+.briefing-audit-results[hidden] { display:none; }
+.audit-result-head { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px; }
+.audit-result-head strong { color:var(--text); font-size:12px; }
+.audit-result-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.audit-result-metric { padding:10px; border:1px solid var(--line); border-radius:9px; background:#faf9fc; }
+.audit-result-metric strong { display:block; color:var(--text); font-size:18px; }
+.audit-result-metric span { color:var(--muted); font-size:9px; }
+.audit-result-note { margin:12px 0 0; color:var(--muted); font-size:10px; line-height:1.6; }
+@media(max-width:650px) { .briefing-entry{padding:17px}.briefing-url-row{grid-template-columns:1fr}.briefing-audit-button{width:100%}.audit-result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.audit-result-head{align-items:flex-start;flex-direction:column} }
