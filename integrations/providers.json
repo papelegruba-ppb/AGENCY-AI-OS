@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "orchestration": {
+    "defaultMode": "automatic",
+    "webEditPolicy": "only-with-authorized-connector",
+    "fallback": "generate-standalone-html",
+    "publishRequiresApproval": true
+  },
+  "apiProviders": [
+    {
+      "id": "openai",
+      "label": "ChatGPT / OpenAI API",
+      "runtimeAdapter": true,
+      "requires": [
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL"
+      ]
+    },
+    {
+      "id": "gemini",
+      "label": "Gemini API",
+      "runtimeAdapter": true,
+      "requires": [
+        "GEMINI_API_KEY",
+        "GEMINI_MODEL"
+      ]
+    },
+    {
+      "id": "anthropic",
+      "label": "Claude API",
+      "runtimeAdapter": true,
+      "requires": [
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_MODEL"
+      ]
+    },
+    {
+      "id": "deepseek",
+      "label": "DeepSeek API",
+      "runtimeAdapter": true,
+      "requires": [
+        "DEEPSEEK_API_KEY",
+        "DEEPSEEK_MODEL"
+      ]
+    },
+    {
+      "id": "perplexity",
+      "label": "Perplexity API",
+      "runtimeAdapter": true,
+      "requires": [
+        "PERPLEXITY_API_KEY",
+        "PERPLEXITY_MODEL"
+      ]
+    }
+  ],
+  "creativeTools": [
+    {
+      "id": "canva",
+      "category": "design",
+      "mode": "external",
+      "capabilities": [
+        "graphic-design",
+        "websites",
+        "apps",
+        "presentations",
+        "docs"
+      ],
+      "url": "https://www.canva.com/"
+    },
+    {
+      "id": "kittl",
+      "category": "design",
+      "mode": "external",
+      "capabilities": [
+        "branding",
+        "logos",
+        "typography"
+      ],
+      "url": "https://www.kittl.com/"
+    },
+    {
+      "id": "adobe-firefly",
+      "category": "design",
+      "mode": "external-api-review",
+      "capabilities": [
+        "image-generation",
+        "image-editing"
+      ],
+      "url": "https://firefly.adobe.com/"
+    },
+    {
+      "id": "contentcore",
+      "category": "assets",
+      "mode": "manual",
+      "capabilities": [
+        "image-assets",
+        "video-assets"
+      ],
+      "url": "https://contentcore.xyz/"
+    },
+    {
+      "id": "google-flow",
+      "category": "video",
+      "mode": "external",
+      "capabilities": [
+        "video-generation"
+      ],
+      "url": "https://labs.google/fx/tools/flow"
+    },
+    {
+      "id": "runway",
+      "category": "video",
+      "mode": "external-api-review",
+      "capabilities": [
+        "video-generation",
+        "video-editing"
+      ],
+      "url": "https://runwayml.com/"
+    },
+    {
+      "id": "shaders",
+      "category": "web-visuals",
+      "mode": "code-integration",
+      "capabilities": [
+        "webgpu-effects"
+      ],
+      "url": "https://shaders.com/"
+    },
+    {
+      "id": "threejs",
+      "category": "web-3d",
+      "mode": "code-integration",
+      "capabilities": [
+        "3d-web-experiences"
+      ],
+      "url": "https://threejs.org/"
+    },
+    {
+      "id": "codex",
+      "category": "engineering",
+      "mode": "external-tool",
+      "capabilities": [
+        "repository-engineering"
+      ],
+      "url": "https://openai.com/codex/"
+    },
+    {
+      "id": "claude-code",
+      "category": "engineering",
+      "mode": "external-tool",
+      "capabilities": [
+        "repository-engineering"
+      ],
+      "url": "https://docs.anthropic.com/en/docs/claude-code/overview"
+    }
+  ]
+}
