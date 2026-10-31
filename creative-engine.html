@@ -41,4 +41,5 @@ $("canva-run").addEventListener("click",async()=>{result.textContent="Ejecutando
 $("canva-disconnect").addEventListener("click",async()=>{if(!confirm("¿Desconectar Canva de Agency AI OS?"))return;try{await request("/api/canva/disconnect",{method:"POST"});select.innerHTML="<option value=''>Conecta Canva para cargar herramientas</option>";toolsBox.innerHTML="";result.textContent="";state.textContent="Canva desconectada. Los tokens locales se han eliminado."}catch(e){state.textContent=e.message}});
 if(new URLSearchParams(location.search).get("canva")==="connected")state.textContent="Autorización completada. Cargando herramientas…";status();
 })();
-</script>\n</body></html>
+</script>
+</body></html>
