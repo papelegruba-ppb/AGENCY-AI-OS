@@ -39,6 +39,8 @@ test("OAuth provider persists state, PKCE verifier, discovery and encrypted toke
   };
   const env = { AGENCY_KV: kv, CANVA_TOKEN_ENCRYPTION_KEY: secret };
   const provider = new CanvaOAuthProvider(env, "https://agency-ai-os-1cm.pages.dev");
+  // A fresh flow has no discovery cache; the SDK must be allowed to discover.
+  assert.equal(await provider.discoveryState(), undefined);
   const state = await provider.state();
   assert.equal(await kv.get("canva-oauth:state"), state);
   await provider.saveCodeVerifier("pkce-verifier");

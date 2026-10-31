@@ -85,9 +85,9 @@ export class CanvaOAuthProvider {
   }
   async saveDiscoveryState(value) { await this.kv.put(DISCOVERY_KEY, JSON.stringify(value), { expirationTtl: 900 }); }
   async discoveryState() {
-    const value = parse(await this.kv.get(DISCOVERY_KEY));
-    if (!value) throw new Error("OAuth discovery state missing or expired");
-    return value;
+    // The MCP SDK calls this before the first discovery. No cached state is
+    // expected on a fresh OAuth flow, so return undefined and let discovery run.
+    return parse(await this.kv.get(DISCOVERY_KEY));
   }
   redirectToAuthorization(url) { this.authorizationUrl = url.toString(); }
   async validateResourceURL(serverUrl, resource) {
