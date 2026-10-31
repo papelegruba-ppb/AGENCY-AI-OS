@@ -93,8 +93,8 @@ async function digest(value) {
   return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 24);
 }
 
-export async function runAiText({ env, request, endpoint, system, input, provider, maxOutputTokens = 1200, jsonMode = false, temperature = 0.4 }) {
-  const reserved = await reserveAiCall({ env, request, endpoint, providerOverride: provider });
+export async function runAiText({ env, request, endpoint, system, input, provider: providerOverride, maxOutputTokens = 1200, jsonMode = false, temperature = 0.4 }) {
+  const reserved = await reserveAiCall({ env, request, endpoint, providerOverride });
   if (!reserved.ok) return reserved;
 
   const provider = reserved.provider;
