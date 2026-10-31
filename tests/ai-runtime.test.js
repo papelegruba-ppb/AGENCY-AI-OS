@@ -35,7 +35,7 @@ test("global daily limit blocks requests before provider fetch", async () => {
   const kv = makeKV({ ["ai-usage:global:" + day]: "1" });
   const result = await reserveAiCall({
     env: {
-      AI_ENABLED: "true", AI_PROVIDER: "deepseek",
+      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_PROVIDER: "deepseek",
       DEEPSEEK_API_KEY: "not-a-real-key", DEEPSEEK_MODEL: "test-model",
       AI_DAILY_LIMIT: "1", AGENCY_KV: kv
     },
@@ -50,7 +50,7 @@ test("usage-store failure fails closed", async () => {
   const kv = { async get() { throw new Error("KV unavailable"); }, async put() {} };
   const result = await reserveAiCall({
     env: {
-      AI_ENABLED: "true", AI_PROVIDER: "deepseek",
+      AI_ENABLED: "true", AI_BILLABLE_ENABLED: "true", AI_PROVIDER: "deepseek",
       DEEPSEEK_API_KEY: "not-a-real-key", DEEPSEEK_MODEL: "test-model",
       AGENCY_KV: kv
     },

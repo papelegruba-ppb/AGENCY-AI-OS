@@ -80,6 +80,7 @@ export async function onRequestPost({ request, env }) {
     "Eres estratega de marketing y diseñador UX/UI senior para negocios reales en España.",
     "Responde exclusivamente con un objeto JSON válido, sin markdown ni HTML.",
     "No inventes cifras, certificaciones, reseñas, clientes ni resultados.",
+    "Usa el rastreo y PageSpeed del briefing como evidencia; distingue datos medidos, comprobaciones HTML y elementos pendientes. No llames Lighthouse a puntuaciones heurísticas.",
     "Todo el contenido de cara al cliente debe estar en español natural, específico y no genérico.",
     "El copy debe explicar la oferta, hablar al público objetivo y proponer CTA concretas.",
     "Devuelve este esquema: {copy:{valueProposition:string,headline:string,subheadline:string,primaryCTA:string,sections:[{name:string,headline:string,body:string,cta:string}]},ux:{concept:string,palette:[{name:string,hex:string}],typography:string[],layout:string[]}}.",
@@ -97,7 +98,37 @@ export async function onRequestPost({ request, env }) {
       h1: Array.isArray(project.websiteAudit.h1) ? project.websiteAudit.h1.slice(0, 5).map(x => text(x, 120)) : [],
       h2: Array.isArray(project.websiteAudit.h2) ? project.websiteAudit.h2.slice(0, 10).map(x => text(x, 120)) : [],
       score: Number.isFinite(project.websiteAudit.score) ? project.websiteAudit.score : null,
-      findings: Array.isArray(project.websiteAudit.findings) ? project.websiteAudit.findings.slice(0, 10).map(x => text(x, 200)) : []
+      findings: Array.isArray(project.websiteAudit.findings) ? project.websiteAudit.findings.slice(0, 30).map(x => ({
+        url: text(x?.url, 300), category: text(x?.category, 60), severity: text(x?.severity, 20), message: text(x?.message ?? x, 240)
+      })) : [],
+      crawl: project.websiteAudit.crawl && typeof project.websiteAudit.crawl === "object" ? {
+        pagesAnalyzed: Number(project.websiteAudit.crawl.pagesAnalyzed) || 0,
+        urlsDiscovered: Number(project.websiteAudit.crawl.urlsDiscovered) || 0,
+        complete: Boolean(project.websiteAudit.crawl.complete),
+        robotsStatus: text(project.websiteAudit.crawl.robotsStatus, 40)
+      } : null,
+      pageSpeed: project.websiteAudit.pageSpeed && typeof project.websiteAudit.pageSpeed === "object" ? Object.fromEntries(["mobile", "desktop"].map(device => {
+        const result = project.websiteAudit.pageSpeed[device];
+        return [device, result?.available ? {
+          scores: result.scores || {},
+          metrics: result.metrics || {}
+        } : { available: false }];
+      })) : null,
+      links: project.websiteAudit.links && typeof project.websiteAudit.links === "object" ? {
+        total: Number(project.websiteAudit.links.total) || 0,
+        internal: Number(project.websiteAudit.links.internal) || 0,
+        outbound: Number(project.websiteAudit.links.outbound) || 0
+      } : null,
+      images: project.websiteAudit.images && typeof project.websiteAudit.images === "object" ? {
+        total: Number(project.websiteAudit.images.total) || 0,
+        missingAlt: Number(project.websiteAudit.images.missingAlt) || 0
+      } : null,
+      pages: Array.isArray(project.websiteAudit.pages) ? project.websiteAudit.pages.slice(0, 20).map(page => ({
+        url: text(page?.url, 300), title: text(page?.title, 160), description: text(page?.description, 300),
+        canonical: text(page?.canonical, 300), h1: Array.isArray(page?.h1) ? page.h1.slice(0, 3).map(x => text(x, 120)) : [],
+        h2: Array.isArray(page?.h2) ? page.h2.slice(0, 8).map(x => text(x, 120)) : [],
+        forms: Array.isArray(page?.forms) ? page.forms.slice(0, 5) : []
+      })) : []
     } : null
   };
 

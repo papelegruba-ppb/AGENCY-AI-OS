@@ -4,6 +4,7 @@
   const HISTORY_KEY = "agency-ai-os.history.v1";
   const ACTIVE_PROJECT_KEY = "agency-ai-os.active-project-id.v1";
   let latestWebsiteAudit = null;
+  let integrationFlags = {};
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   let projects = loadProjects();
@@ -39,7 +40,7 @@
   }
 
   function autoSyncToDrive() {
-    if (!localStorage.getItem("drive_linked")) return;
+    if (!integrationFlags.googleDrive || !localStorage.getItem("drive_linked")) return;
     fetch("/api/drive-save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -109,55 +110,85 @@
     const domainInput = $("#domain").value.trim();
     const btn = $("#import-website");
     const statusText = $("#website-import-status");
-
-    if (!domainInput || !domainInput.startsWith("http")) {
-      notify("Introduce una URL válida (ej. https://tudominio.com)");
-      return;
+    const results = $("#website-audit-results");
+    let parsedUrl;
+    try { parsedUrl = new URL(domainInput); } catch (_) {
+      notify("Introduce una URL completa, por ejemplo https://www.empresa.com");
+      $("#domain").focus(); return;
     }
-
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      notify("La URL debe comenzar por https:// o http://"); return;
+    }
     btn.disabled = true;
-    btn.textContent = "Analizando web...";
-    statusText.textContent = "Extrayendo información de la web...";
-
+    btn.textContent = "Auditando el sitio…";
+    if (results) { results.hidden = true; results.innerHTML = ""; }
+    statusText.textContent = "Conectando con la web, consultando sus reglas de rastreo y descubriendo páginas públicas…";
     try {
-      const response = await fetch('/api/site-audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: domainInput })
+      const response = await fetch("/api/site-audit", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: parsedUrl.href, maxPages: 20 }),
+        signal: AbortSignal.timeout(110000)
       });
-      
       const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.error || "Error al analizar");
+      if (!response.ok || !data.ok) throw new Error(data.error || "No se pudo completar la auditoría.");
 
-      // /api/site-audit devuelve projectName, sector, offer, audience, goal,
-      // requirements, h1/h2 y score; no devuelve businessName ni headings.
+      statusText.textContent = "Rastreo completado. Midiendo rendimiento y calidad con PageSpeed Insights en móvil y escritorio…";
+      const pageSpeedResults = await Promise.all(["mobile", "desktop"].map(async strategy => {
+        try {
+          const psiResponse = await fetch("/api/pagespeed?url=" + encodeURIComponent(parsedUrl.href) + "&strategy=" + strategy, { signal: AbortSignal.timeout(55000) });
+          const psi = await psiResponse.json();
+          if (!psiResponse.ok || !psi.lighthouseResult) return { available: false, error: psi.error || "PageSpeed no disponible" };
+          const lighthouse = psi.lighthouseResult;
+          const audits = lighthouse.audits || {};
+          const metricIds = ["largest-contentful-paint", "interaction-to-next-paint", "cumulative-layout-shift", "first-contentful-paint", "speed-index", "total-blocking-time", "server-response-time"];
+          return {
+            available: true, strategy, fetchedAt: new Date().toISOString(),
+            scores: Object.fromEntries(["performance", "accessibility", "best-practices", "seo"].map(key => [key, lighthouse.categories?.[key]?.score == null ? null : Math.round(lighthouse.categories[key].score * 100)])),
+            metrics: Object.fromEntries(metricIds.filter(key => audits[key]).map(key => [key, { value: audits[key].numericValue ?? null, displayValue: audits[key].displayValue || "", score: audits[key].score ?? null }])),
+            finalUrl: lighthouse.finalDisplayedUrl || lighthouse.finalUrl || parsedUrl.href
+          };
+        } catch (error) { return { available: false, error: error.message || "PageSpeed no disponible" }; }
+      }));
+      data.pageSpeed = { mobile: pageSpeedResults[0], desktop: pageSpeedResults[1] };
       latestWebsiteAudit = data;
-      const setIfEmpty = (selector, value) => {
+      const setValue = (selector, value) => {
         const field = $(selector);
-        if (field && value && !field.value.trim()) field.value = value;
+        if (field && value !== undefined && value !== null && String(value).trim()) field.value = String(value);
       };
-      setIfEmpty("#projectName", data.projectName || (data.title || "").split(/[|–—-]/)[0].trim() || new URL(domainInput).hostname);
-      setIfEmpty("#sector", data.sector);
-      setIfEmpty("#offer", data.offer || data.description);
-      setIfEmpty("#audience", data.audience);
-      setIfEmpty("#goal", data.goal);
-      setIfEmpty("#requirements", data.requirements || [...(data.h1 || []), ...(data.h2 || [])].slice(0, 8).join("\n"));
-      const colorField=$("#color");
-      const colorPicker=$("#color-picker");
-      const colorWasUntouched=!colorField.value.trim()||colorField.value.toUpperCase()==="#8B5CF6";
-      if (colorWasUntouched && data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
-        colorField.value = data.themeColor;
-        colorPicker.value = data.themeColor;
+      setValue("#projectName", data.projectName || data.title?.split(/[|–—-]/)[0]?.trim() || parsedUrl.hostname);
+      setValue("#sector", data.sector);
+      setValue("#offer", data.offer);
+      setValue("#audience", data.audience);
+      setValue("#goal", data.goal);
+      setValue("#requirements", data.requirements || (data.pages || []).flatMap(page => page.h1 || []).slice(0, 12).join("\n"));
+      if (data.themeColor && /^#[0-9a-f]{6}$/i.test(data.themeColor)) {
+        $("#color").value = data.themeColor; $("#color-picker").value = data.themeColor;
       }
-      statusText.textContent = "✅ Web analizada: SEO " + (data.score ?? "—") + "/100. Revisa el briefing antes de guardarlo.";
-      notify("Datos públicos importados al briefing.");
+      if (results) {
+        const metrics = [
+          ["Páginas analizadas", data.crawl?.pagesAnalyzed ?? data.pages?.length ?? 0],
+          ["URLs descubiertas", data.crawl?.urlsDiscovered ?? data.pages?.length ?? 0],
+          ["Hallazgos", data.findings?.length ?? 0],
+          ["Imágenes sin ALT", data.images?.missingAlt ?? 0]
+        ];
+        const mobileScore = data.pageSpeed?.mobile?.scores?.performance;
+        const desktopScore = data.pageSpeed?.desktop?.scores?.performance;
+        if (mobileScore != null) metrics.push(["Rendimiento móvil", mobileScore + "/100"]);
+        if (desktopScore != null) metrics.push(["Rendimiento escritorio", desktopScore + "/100"]);
+        results.innerHTML = '<div class="audit-result-head"><strong>Resultado de la auditoría inicial</strong><span class="pill pill-muted">' + (data.crawl?.complete ? "RASTREO FINALIZADO" : "RASTREO PARCIAL") + '</span></div><div class="audit-result-grid">' +
+          metrics.map(([label, value]) => '<div class="audit-result-metric"><strong>' + esc(value) + '</strong><span>' + esc(label) + '</span></div>').join("") +
+          '</div><p class="audit-result-note">' + esc(data.summary || "Auditoría técnica de páginas públicas.") + ' ' + esc(data.limitations?.join(" ") || "") + '</p>';
+        results.hidden = false;
+      }
+      const count = data.crawl?.pagesAnalyzed ?? data.pages?.length ?? 1;
+      statusText.textContent = "Auditoría recibida: " + count + " páginas examinadas. Revisa y completa los datos que solo el cliente puede confirmar.";
+      notify("Auditoría web incorporada al briefing.");
     } catch (error) {
-      statusText.textContent = "❌ Error: " + error.message;
-      notify("No se pudo importar la web. Revisa que sea una URL pública.");
+      statusText.textContent = "No se pudo completar la auditoría: " + error.message + ". No se guardará como auditoría completa.";
+      notify("La auditoría no se ha completado.");
     } finally {
       btn.disabled = false;
-      btn.textContent = "↻ Autocompletar briefing desde la web";
+      btn.innerHTML = 'Iniciar briefing completo <span>↗</span>';
     }
   }
 
@@ -383,6 +414,38 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     notify("Landing HTML exportada. El formulario de demostración requiere conectar un endpoint para recibir leads.");
   }
 
+  async function loadIntegrationStatus() {
+    const grid = $("#view-settings .settings-grid");
+    if (!grid) return;
+    let data;
+    try {
+      const response = await fetch("/api/integrations/status", { cache: "no-store" });
+      if (!response.ok) throw new Error("Estado no disponible");
+      data = await response.json();
+    } catch (_) {
+      const fallback = document.createElement("article");
+      fallback.className = "panel settings-card";
+      fallback.textContent = "No se pudo consultar el estado de las integraciones. Por seguridad, las conexiones externas permanecen desactivadas.";
+      grid.prepend(fallback);
+      return;
+    }
+    integrationFlags = Object.fromEntries((data.integrations || []).map(item => [item.id, item.enabled]));
+    const card = document.createElement("article");
+    card.className = "panel settings-card integration-control-card";
+    const rows = (data.integrations || []).map(item => {
+      const status = item.id === "canva" ? (item.connected ? "Conectada · sin coste de API" : (item.enabled ? "Credenciales listas · OAuth pendiente" : "Configurar credenciales")) : (item.enabled ? "Habilitada en servidor" : "Desactivada");
+      return '<div class="integration-status-row"><div><strong>' + esc(item.label) + '</strong><small>' + esc(item.function) + '</small><small class="integration-cost">' + esc(item.costNotice) + '</small></div><span class="pill ' + ((item.enabled && (item.id !== "canva" || item.connected)) ? "pill-green" : "pill-muted") + '">' + status + '</span></div>';
+    }).join("");
+    card.innerHTML = '<div class="settings-icon">⚙</div><h2>Integraciones y control de costes</h2><p>' + esc(data.message || "Coste cero por defecto.") + '</p><div class="integration-status-list">' + rows + '</div><p class="integration-footnote">La activación se realiza únicamente en Cloudflare, después de revisar tarifas, cuotas y permisos. Este panel no activa servicios ni realiza compras.</p>';
+    grid.prepend(card);
+    if (!integrationFlags.googleDrive) {
+      const driveStatus = $("#drive-status"), btnLink = $("#btn-link-drive"), btnSync = $("#btn-sync-drive");
+      if (driveStatus) driveStatus.textContent = "Desactivado: no se realizarán llamadas a Google Drive.";
+      if (btnLink) { btnLink.disabled = true; btnLink.title = "Integración desactivada en el servidor."; }
+      if (btnSync) { btnSync.disabled = true; btnSync.title = "Integración desactivada en el servidor."; }
+      localStorage.removeItem("drive_linked");
+    }
+  }
   // --- LISTENERS ---
   $$(".nav-item[data-view]").forEach(btn=>btn.addEventListener("click",()=>currentView(btn.dataset.view)));
   document.addEventListener("click", e => { const go = e.target.closest("[data-go]"); if (go) currentView(go.dataset.go); });
@@ -428,7 +491,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       renderProjects();
       $("#dialog-title").textContent=p.name;
       $("#dialog-description").textContent=usedLocalFallback
-        ? "Proyecto guardado. DeepSeek no respondió en este intento; se ha preparado una propuesta local que puedes editar."
+        ? "Proyecto guardado. Se ha preparado una propuesta local que puedes editar."
         : "Proyecto guardado y propuesta inicial generada con DeepSeek para "+p.sector+".";
       const dialog=$("#project-dialog");
       if(typeof dialog.showModal==="function")dialog.showModal();
@@ -502,5 +565,6 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     });
   }
 
+  loadIntegrationStatus();
   renderProjects();
 })();

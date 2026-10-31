@@ -92,6 +92,19 @@
 
       <section class="view" id="view-builder">
         <div class="page-heading compact-heading"><div><p class="eyebrow">NUEVO ESPACIO DE TRABAJO</p><h1>Construye algo <span class="heading-period">extraordinario.</span></h1><p class="subheading">Define el encargo una vez. Organiza todos los entregables desde un único briefing.</p></div></div>
+        <section class="panel briefing-entry" aria-labelledby="briefing-entry-title">
+          <div class="briefing-entry-copy">
+            <p class="eyebrow">PUNTO DE PARTIDA · AUDITORÍA DEL CLIENTE</p>
+            <h2 id="briefing-entry-title">Empieza por la URL de su web<span class="heading-period">.</span></h2>
+            <p>La web es la fuente inicial del briefing. Agency AI OS rastreará las páginas públicas accesibles y consolidará el diagnóstico para todos los agentes.</p>
+          </div>
+          <div class="briefing-url-row">
+            <label class="briefing-url-field" for="domain"><span>URL del sitio web</span><input name="domain" id="domain" form="project-form" type="url" inputmode="url" placeholder="https://www.empresa.com" autocomplete="url" required></label>
+            <button type="button" id="import-website" class="button button-primary briefing-audit-button">Iniciar briefing completo <span>↗</span></button>
+          </div>
+          <p id="website-import-status" class="briefing-audit-status" role="status" aria-live="polite">Introduce la URL y ejecuta la auditoría antes de completar el resto del expediente.</p>
+          <div id="website-audit-results" class="briefing-audit-results" hidden aria-live="polite"></div>
+        </section>
         <section class="panel delivery-roadmap" aria-labelledby="delivery-roadmap-title">
           <div class="roadmap-heading"><div><p class="eyebrow">DE LA IDEA A LA PUBLICACIÓN</p><h2 id="delivery-roadmap-title">Ruta del proyecto</h2><p>Este es el proceso que seguiremos con cada cliente. Avanza por etapas y valida la propuesta antes de publicar.</p></div><span class="roadmap-tag">6 ETAPAS</span></div>
           <ol class="roadmap-steps">
@@ -106,9 +119,8 @@
         </section>
         <div class="builder-layout">
           <form id="project-form" class="panel project-form">
-            <div class="form-section-title"><span class="form-step">01</span><div><h2>Briefing del negocio</h2><p>Los datos esenciales para alinear a todos los agentes.</p></div></div>
+            <div class="form-section-title"><span class="form-step">01</span><div><h2>Contexto y validación del negocio</h2><p>Completa o corrige únicamente la información que la auditoría no pueda confirmar en la web.</p></div></div>
             <div class="field-grid">
-              <label class="field full"><span>Dominio o web actual</span><input name="domain" id="domain" placeholder="https://tudominio.com"><small>Si ya existe una web, importa sus datos públicos para preparar el briefing.</small><button type="button" id="import-website" class="button button-secondary">↻ Autocompletar briefing desde la web</button><small id="website-import-status" role="status">Se importan datos visibles de la web; tendrás que revisar y completar lo que no esté publicado.</small></label>
               <label class="field full"><span>Nombre del proyecto <b>*</b></span><input name="projectName" id="projectName" required maxlength="90" placeholder="Ej. Nébula Studio"><small>Nombre interno para identificar el proyecto.</small></label>
               <label class="field"><span>Sector <b>*</b></span><input name="sector" id="sector" required placeholder="Ej. diseño web y automatización"></label>
               <label class="field"><span>Tipo de proyecto</span><select name="projectType" id="projectType"><option value="landing">Landing page</option><option value="corporate">Web corporativa</option><option value="ecommerce">Tienda online</option><option value="webapp">Aplicación web</option><option value="automation">Agente o automatización</option></select></label>
