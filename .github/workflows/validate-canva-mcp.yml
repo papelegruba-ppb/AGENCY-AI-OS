@@ -18,6 +18,7 @@ on:
     paths:
       - "functions/**"
       - "tests/canva-mcp.test.mjs"
+      - "tests/pages-functions-imports.test.mjs"
       - "package.json"
       - "creative-engine.html"
       - ".github/workflows/validate-canva-mcp.yml"
