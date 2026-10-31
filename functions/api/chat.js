@@ -1,9 +1,10 @@
 import { runAiText, aiStatus } from "../_lib/ai-runtime.js";
-import { ownerSession, jsonResponse } from "../_lib/owner-auth.js";
+import { ownerSession, jsonResponse, sameOrigin } from "../_lib/owner-auth.js";
 
 const clean = (value, max = 3000) => String(value ?? "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ").trim().slice(0, max);
 
 export async function onRequestPost({ request, env }) {
+  if (!sameOrigin(request)) return jsonResponse({ ok: false, error: "Origen de solicitud no válido." }, 403);
   if (!(await ownerSession(request, env))) return jsonResponse({ ok: false, error: "Inicia sesión en el workspace para utilizar el chat.", code: "OWNER_AUTH_REQUIRED" }, 401);
   let body;
   try { body = await request.json(); } catch { return jsonResponse({ ok: false, error: "El cuerpo debe ser JSON válido." }, 400); }
