@@ -10,7 +10,8 @@ Constructor visual para organizar proyectos digitales, preparar una primera prop
 - Vista de proyectos y entregables.
 - Exportación de planes en JSON y de una landing HTML demostrativa.
 - Generación de propuesta de copy, guía visual, plan de motion, requisitos frontend/backend, SEO, flujo conversacional y estado QA.
-- Módulo Creative Engine para previsualizar y exportar fondos CSS, con integración guiada de Shaders y flujo manual de assets.
+- AI Agent Orchestrator: chat de prompt único, auditoría opcional de la web de referencia, generación coordinada de una nueva web HTML, vista previa y descarga.
+- Creative Engine: catálogo de IA, diseño, vídeo, web y 3D; Canva Websites/Apps, Kittl, Shaders y proveedores externos con su estado de integración visible.
 - Sin dependencias de build ni claves API.
 
 ## Importante: límites de esta primera versión
@@ -66,3 +67,10 @@ El núcleo multi-IA integrado en `main` incorpora un runtime común para DeepSee
 ## Creative Engine
 
 El módulo Creative Engine añade previsualización CSS, controles de color/intensidad/movimiento y exportación de fondos CSS. Incluye una guía para adoptar Shaders en un futuro build cliente. No carga WebGPU ni dependencias externas en el constructor estático. ContentCore queda como flujo manual de assets; is.graphics sigue pendiente de verificar. Consulta INTEGRATIONS.md para licencias y límites.
+
+
+## AI Agent Orchestrator
+
+Abre **AI Agent Orchestrator** desde la navegación. Describe en un único prompt el cambio deseado; el sistema comparte el briefing, intenta auditar la web pública y genera una versión web integrada para previsualizar y descargar. Si no existe integración autorizada para modificar el CMS o hosting original, genera una web nueva independiente. No publica ni modifica DNS/producción.
+
+Endpoint: `POST /api/web-build`. Requiere el runtime multi-IA activo y configurado en Cloudflare. La ejecución actual utiliza el proveedor seleccionado en `AI_PROVIDER`; no realiza failover automático ni opera automáticamente editores externos sin API/conector autorizado.
