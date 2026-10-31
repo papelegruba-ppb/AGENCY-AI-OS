@@ -16,8 +16,13 @@ function randomId(bytes = 32) {
 function parse(raw) { try { return raw ? JSON.parse(raw) : undefined; } catch { return undefined; } }
 function toBase64(bytes) { return btoa(String.fromCharCode(...new Uint8Array(bytes))); }
 function fromBase64(value) { return Uint8Array.from(atob(value), c => c.charCodeAt(0)); }
+function assertCanvaRuntime(env) {
+  if (!env?.AGENCY_KV) throw new Error("Falta el binding AGENCY_KV.");
+  if (!env.CANVA_CLIENT_ID || !env.CANVA_CLIENT_SECRET) throw new Error("Faltan CANVA_CLIENT_ID o CANVA_CLIENT_SECRET.");
+  if (String(env.CANVA_TOKEN_ENCRYPTION_KEY || "").length < 32) throw new Error("CANVA_TOKEN_ENCRYPTION_KEY debe tener al menos 32 caracteres.");
+}
 async function tokenCryptoKey(env) {
-  const secret = String(env[ENCRYPTION_SECRET_KEY] || "");
+  const secret = String(env?.[ENCRYPTION_SECRET_KEY] || "");
   if (secret.length < 32) throw new Error("CANVA_TOKEN_ENCRYPTION_KEY must be configured as a 32+ character Cloudflare Secret.");
   const material = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
   return crypto.subtle.importKey("raw", material, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
@@ -102,61 +107,76 @@ function makeClient(provider) {
   const transport = new StreamableHTTPClientTransport(new URL(CANVA_MCP_URL), { authProvider: provider });
   return { client, transport };
 }
+async function closeClient(client) {
+  if (!client) return;
+  try { await client.close(); } catch { /* Cleanup must not mask the original MCP error. */ }
+}
 export async function connectCanva(env, origin) {
-  if (!env.CANVA_CLIENT_ID || !env.CANVA_CLIENT_SECRET || !env.CANVA_TOKEN_ENCRYPTION_KEY || String(env.CANVA_TOKEN_ENCRYPTION_KEY).length < 32 || !env.AGENCY_KV) throw new Error("Configura CANVA_CLIENT_ID, CANVA_CLIENT_SECRET, CANVA_TOKEN_ENCRYPTION_KEY (32+ caracteres) y AGENCY_KV.");
+  assertCanvaRuntime(env);
   const provider = new CanvaOAuthProvider(env, origin);
-  const { client, transport } = makeClient(provider);
+  let client;
   try {
-    await client.connect(transport);
+    const connection = makeClient(provider);
+    client = connection.client;
+    await client.connect(connection.transport);
     const result = await client.listTools();
-    await env.AGENCY_KV.put(PREFIX + "tools", JSON.stringify(result.tools || []));
+    const tools = Array.isArray(result?.tools) ? result.tools : [];
+    await env.AGENCY_KV.put(PREFIX + "tools", JSON.stringify(tools));
     await env.AGENCY_KV.put("canva_connection_status", "connected");
-    return { connected: true, tools: result.tools || [] };
+    return { connected: true, tools };
   } catch (error) {
-    if (provider.authorizationUrl) {
-      return { authorizationUrl: provider.authorizationUrl };
-    }
+    if (provider.authorizationUrl) return { authorizationUrl: provider.authorizationUrl };
     throw error;
   } finally {
-    try { await client.close(); } catch {}
+    await closeClient(client);
   }
 }
 export async function finishCanvaOAuth(env, origin, params) {
+  assertCanvaRuntime(env);
   const expectedState = await env.AGENCY_KV.get(STATE_KEY);
   if (!expectedState || params.get("state") !== expectedState) throw new Error("OAuth state no válido o caducado.");
   if (params.has("error")) throw new Error("Canva no ha autorizado la conexión. Reinicia el proceso desde Agency AI OS.");
   const provider = new CanvaOAuthProvider(env, origin);
-  const first = makeClient(provider);
+  let firstClient;
   try {
+    const first = makeClient(provider);
+    firstClient = first.client;
     await first.transport.finishAuth(params);
   } finally {
-    try { await first.client.close(); } catch {}
+    await closeClient(firstClient);
   }
   await provider.clearPending();
-  const fresh = makeClient(provider);
+  let client;
   try {
-    await fresh.client.connect(fresh.transport);
-    const result = await fresh.client.listTools();
-    await env.AGENCY_KV.put(PREFIX + "tools", JSON.stringify(result.tools || []));
+    const fresh = makeClient(provider);
+    client = fresh.client;
+    await client.connect(fresh.transport);
+    const result = await client.listTools();
+    const tools = Array.isArray(result?.tools) ? result.tools : [];
+    await env.AGENCY_KV.put(PREFIX + "tools", JSON.stringify(tools));
     await env.AGENCY_KV.put("canva_connection_status", "connected");
-    return { connected: true, tools: result.tools || [] };
+    return { connected: true, tools };
   } finally {
-    try { await fresh.client.close(); } catch {}
+    await closeClient(client);
   }
 }
 export async function withCanvaClient(env, origin, action) {
+  assertCanvaRuntime(env);
   const provider = new CanvaOAuthProvider(env, origin);
   const tokens = await provider.tokens();
   if (!tokens?.access_token) throw new Error("Canva no está autorizada. Pulsa Conectar Canva.");
-  const { client, transport } = makeClient(provider);
+  let client;
   try {
-    await client.connect(transport);
+    const connection = makeClient(provider);
+    client = connection.client;
+    await client.connect(connection.transport);
     return await action(client);
   } finally {
-    try { await client.close(); } catch {}
+    await closeClient(client);
   }
 }
 export async function disconnectCanva(env) {
+  if (!env?.AGENCY_KV) throw new Error("Falta el binding AGENCY_KV.");
   const provider = new CanvaOAuthProvider(env, "https://localhost");
   await Promise.all([
     provider.clearTokens(), provider.clearPending(),
