@@ -17,6 +17,7 @@ En Workers & Pages > agency-ai-os > Settings:
    - `OWNER_PASSWORD` como Secret (contraseña larga, aleatoria y única).
    - `CANVA_CLIENT_ID` como Secret o variable no sensible (recomendado Secret por uniformidad).
    - `CANVA_CLIENT_SECRET` como Secret.
+   - `CANVA_TOKEN_ENCRYPTION_KEY` como Secret, con al menos 32 caracteres aleatorios (cifra los tokens OAuth con AES-GCM antes de guardarlos en KV).
 2. Bindings:
    - KV namespace con binding exacto `AGENCY_KV`.
 3. Configurar los valores para Production y Preview solo si se van a probar ambos entornos.
@@ -67,7 +68,7 @@ La cookie de propietaria usa SameSite=Lax para que el navegador la envíe en la 
 
 ## Límites y cautelas
 
-- El callback debe registrarse exactamente y el dominio debe coincidir con el usado al iniciar OAuth.
+- El callback debe registrarse exactamente y el dominio debe coincidir con el usado al iniciar OAuth.\n- Los tokens OAuth se cifran con AES-GCM usando `CANVA_TOKEN_ENCRYPTION_KEY`; si se pierde o rota esta clave, la sesión guardada deja de poder descifrarse y habrá que desconectar y autorizar de nuevo.
 - Los tokens de acceso pueden caducar; el SDK gestiona refresh cuando Canva devuelve refresh tokens.
 - El panel expone un ejecutor genérico basado en el nombre y esquema real de cada herramienta. Todavía no es un agente de lenguaje natural que decida automáticamente qué tool llamar.
 - Las herramientas de Canva pueden crear o modificar contenido dentro de la cuenta autorizada. Revisa cada llamada antes de ejecutarla.
