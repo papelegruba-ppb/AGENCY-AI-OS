@@ -7,12 +7,35 @@ const TOKEN_KEY = PREFIX + "tokens";
 const STATE_KEY = PREFIX + "state";
 const VERIFIER_KEY = PREFIX + "verifier";
 const DISCOVERY_KEY = PREFIX + "discovery";
+const ENCRYPTION_SECRET_KEY = "CANVA_TOKEN_ENCRYPTION_KEY";
 const CALLBACK_PATH = "/api/canva/callback";
 
 function randomId(bytes = 32) {
   return [...crypto.getRandomValues(new Uint8Array(bytes))].map(v => v.toString(16).padStart(2, "0")).join("");
 }
 function parse(raw) { try { return raw ? JSON.parse(raw) : undefined; } catch { return undefined; } }
+function toBase64(bytes) { return btoa(String.fromCharCode(...new Uint8Array(bytes))); }
+function fromBase64(value) { return Uint8Array.from(atob(value), c => c.charCodeAt(0)); }
+async function tokenCryptoKey(env) {
+  const secret = String(env[ENCRYPTION_SECRET_KEY] || "");
+  if (secret.length < 32) throw new Error("CANVA_TOKEN_ENCRYPTION_KEY must be configured as a 32+ character Cloudflare Secret.");
+  const material = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
+  return crypto.subtle.importKey("raw", material, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+async function encryptTokens(env, tokens) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await tokenCryptoKey(env);
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(tokens)));
+  return JSON.stringify({ version: 1, iv: toBase64(iv), ciphertext: toBase64(ciphertext) });
+}
+async function decryptTokens(env, raw) {
+  if (!raw) return undefined;
+  const record = parse(raw);
+  if (!record || record.version !== 1 || !record.iv || !record.ciphertext) throw new Error("Stored Canva token record is invalid.");
+  const key = await tokenCryptoKey(env);
+  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromBase64(record.iv) }, key, fromBase64(record.ciphertext));
+  return parse(new TextDecoder().decode(plaintext));
+}
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
 }
@@ -42,8 +65,8 @@ export class CanvaOAuthProvider {
     };
   }
   async saveClientInformation() { /* Developer Portal credentials remain in Cloudflare Secrets only. */ }
-  async tokens() { return parse(await this.kv.get(TOKEN_KEY)); }
-  async saveTokens(tokens) { await this.kv.put(TOKEN_KEY, JSON.stringify(tokens)); }
+  async tokens() { return decryptTokens(this.env, await this.kv.get(TOKEN_KEY)); }
+  async saveTokens(tokens) { await this.kv.put(TOKEN_KEY, await encryptTokens(this.env, tokens)); }
   async state() {
     const value = randomId();
     await this.kv.put(STATE_KEY, value, { expirationTtl: 900 });
