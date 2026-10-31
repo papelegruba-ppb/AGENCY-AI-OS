@@ -5,6 +5,7 @@ on:
     paths:
       - "functions/**"
       - "tests/canva-mcp.test.mjs"
+      - "tests/pages-functions-imports.test.mjs"
       - "package.json"
       - "creative-engine.html"
       - "scripts/**"
@@ -17,6 +18,7 @@ on:
     paths:
       - "functions/**"
       - "tests/canva-mcp.test.mjs"
+      - "tests/pages-functions-imports.test.mjs"
       - "package.json"
       - "creative-engine.html"
       - ".github/workflows/validate-canva-mcp.yml"
@@ -38,6 +40,8 @@ jobs:
             echo "Checking $file"
             node --input-type=module --check < "$file"
           done
+      - name: Validate relative imports in Pages Functions
+        run: node --test tests/pages-functions-imports.test.mjs
       - name: Run Canva OAuth token and KV tests
         run: node --test tests/canva-mcp.test.mjs
       - name: Test secure VS Code preview server

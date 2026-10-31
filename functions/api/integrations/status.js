@@ -1,5 +1,5 @@
-import { integrationStatus } from "../_lib/integrations.js";
-import { decryptCanvaTokens } from "../_lib/canva-mcp.js";
+import { integrationStatus } from "../../_lib/integrations.js";
+import { decryptCanvaTokens } from "../../_lib/canva-mcp.js";
 
 export async function onRequestGet({ env }) {
   const integrations = integrationStatus(env);
