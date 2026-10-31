@@ -40,8 +40,8 @@ export function aiStatus(env) {
 
 export async function reserveAiCall({ env, request, endpoint }) {
   const status = aiStatus(env);
-  if (env.AI_BILLABLE_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Integración de IA desactivada por la política de coste cero. No se ha contactado con ningún proveedor. Revisa precio y cuotas y autoriza AI_BILLABLE_ENABLED=true en Cloudflare para activarla.", code: "INTEGRATION_DISABLED", integration: "ai" }, 503) };
   if (!status.enabled) return { ok: false, response: json({ ok: false, error: "Las llamadas de IA están desactivadas. Activa AI_ENABLED=true solo después de revisar el proveedor y su facturación.", code: "AI_DISABLED" }, 503) };
+  if (env.AI_BILLABLE_ENABLED !== "true") return { ok: false, response: json({ ok: false, error: "Integración de IA desactivada por la política de coste cero. No se ha contactado con ningún proveedor. Revisa precio y cuotas y autoriza AI_BILLABLE_ENABLED=true en Cloudflare para activarla.", code: "INTEGRATION_DISABLED", integration: "ai" }, 503) };
   if (!status.configured) return { ok: false, response: json({ ok: false, error: "Configuración de IA incompleta. Revisa AI_PROVIDER, la clave y modelo correspondientes y el binding AGENCY_KV.", code: "AI_CONFIGURATION_INCOMPLETE" }, 503) };
 
   const provider = status.provider;
