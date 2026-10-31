@@ -511,6 +511,52 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     notify("Landing HTML exportada. El formulario de demostración requiere conectar un endpoint para recibir leads.");
   }
 
+  const AI_PROVIDER_LABELS = { deepseek: "DeepSeek", openai: "OpenAI", gemini: "Google Gemini", anthropic: "Anthropic", perplexity: "Perplexity" };
+
+  function renderAiRuntimeStatus(data) {
+    const summary = $("#ai-runtime-summary"), providersHost = $("#ai-runtime-providers"), updated = $("#ai-runtime-updated");
+    if (!summary || !providersHost) return;
+    const flags = [
+      ["AI_ENABLED", data.enabled],
+      ["AI_BILLABLE_ENABLED", data.billableEnabled],
+      ["AI_SPEND_AUTHORIZED", data.spendAuthorized]
+    ];
+    summary.innerHTML = '<div class="ai-runtime-flags">' + flags.map(([label, active]) =>
+      '<span class="ai-flag"><strong>' + esc(label) + '</strong><span class="pill ' + (active ? "pill-green" : "pill-muted") + '">' + (active ? "ACTIVADO" : "DESACTIVADO") + '</span></span>'
+    ).join("") + '</div><div class="ai-runtime-state"><span class="pill ' + (data.configured ? "pill-green" : "pill-muted") + '">' + (data.configured ? "Runtime preparado" : "Ejecución bloqueada") + '</span><span class="ai-kv-state">' + (data.usageStoreConfigured ? "AGENCY_KV conectado" : "AGENCY_KV no disponible") + '</span></div>';
+    const providers = Array.isArray(data.providers) ? data.providers : [];
+    providersHost.innerHTML = providers.map(provider => {
+      const name = AI_PROVIDER_LABELS[provider.id] || provider.id;
+      const state = provider.executionAuthorized ? ["Autorizado", "pill-green"] : provider.credentialsReady ? ["Credenciales listas · ejecución bloqueada", "pill-muted"] : ["Configuración incompleta · bloqueado", "pill-muted"];
+      const checks = [
+        ["Clave API", provider.keyConfigured],
+        ["Modelo", provider.modelConfigured],
+        ["Almacenamiento de cuotas", provider.usageStoreConfigured],
+        ["Credenciales completas", provider.credentialsReady]
+      ];
+      return '<article class="ai-provider-row"><div class="ai-provider-title"><strong>' + esc(name) + '</strong><span class="pill ' + state[1] + '">' + state[0] + '</span></div><div class="ai-provider-checks">' + checks.map(([label, ready]) => '<span class="ai-provider-check"><i class="' + (ready ? "is-ready" : "") + '" aria-hidden="true">' + (ready ? "✓" : "—") + '</i>' + label + '</span>').join("") + '</div><small class="ai-provider-model">' + (provider.modelConfigured ? "Modelo: " + esc(provider.model || "configurado") : "Modelo: pendiente de configuración") + '</small></article>';
+    }).join("") || '<p class="ai-runtime-loading">El Worker no ha devuelto proveedores.</p>';
+    if (updated) updated.textContent = "Última consulta: " + new Date().toLocaleString("es-ES") + " · GET /api/ai-status · sin llamadas a modelos.";
+  }
+
+  async function refreshAiRuntimeStatus() {
+    const button = $("#ai-status-refresh"), summary = $("#ai-runtime-summary"), providers = $("#ai-runtime-providers");
+    if (button) { button.disabled = true; button.textContent = "Consultando…"; }
+    try {
+      const response = await fetch("/api/ai-status", { cache: "no-store", headers: { "Accept": "application/json" } });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok !== true) throw new Error(data.error || "El Worker no ha devuelto un estado válido.");
+      renderAiRuntimeStatus(data);
+    } catch (error) {
+      if (summary) summary.innerHTML = '<span class="pill pill-muted">Estado no disponible</span>';
+      if (providers) providers.innerHTML = '<p class="ai-runtime-error">' + esc(error.message || "No se pudo consultar /api/ai-status.") + '</p>';
+      const updated = $("#ai-runtime-updated");
+      if (updated) updated.textContent = "No se ha podido verificar el estado. Las llamadas de IA no se habilitan desde esta interfaz.";
+    } finally {
+      if (button) { button.disabled = false; button.textContent = "Actualizar estado ↻"; }
+    }
+  }
+
   async function loadIntegrationStatus() {
     const grid = $("#view-settings .settings-grid");
     if (!grid) return;
@@ -878,6 +924,8 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     });
   }
 
+  $("#ai-status-refresh")?.addEventListener("click", refreshAiRuntimeStatus);
+  refreshAiRuntimeStatus();
   loadIntegrationStatus();
   renderProjects();
   restoreCloudWorkspaceSession();

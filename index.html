@@ -190,6 +190,16 @@
 
       <section class="view" id="view-settings">
         <div class="page-heading compact-heading"><div><p class="eyebrow">PREFERENCIAS DEL WORKSPACE</p><h1>Configuración<span class="heading-period">.</span></h1><p class="subheading">Conecta proveedores de IA, herramientas creativas y servicios externos desde un único centro.</p></div></div>
+        <section class="panel ai-runtime-panel" aria-labelledby="ai-runtime-title">
+          <div class="ai-runtime-heading">
+            <div><p class="eyebrow">RUNTIME MULTI-PROVEEDOR</p><h2 id="ai-runtime-title">Estado y autorización de IA</h2><p>Diagnóstico de solo lectura del Worker. Consultar este panel no ejecuta modelos ni consume crédito de los proveedores.</p></div>
+            <button type="button" id="ai-status-refresh" class="button button-secondary button-small">Actualizar estado ↻</button>
+          </div>
+          <div id="ai-runtime-summary" class="ai-runtime-summary" role="status" aria-live="polite"><span class="pill pill-muted">Consultando Worker…</span></div>
+          <div id="ai-runtime-providers" class="ai-provider-list"><p class="ai-runtime-loading">Leyendo /api/ai-status…</p></div>
+          <div class="ai-runtime-footer"><strong>Protección activa:</strong> este panel no permite activar proveedores. Las variables AI_ENABLED, AI_BILLABLE_ENABLED y AI_SPEND_AUTHORIZED se mantienen bajo gestión explícita en Cloudflare.</div>
+          <p id="ai-runtime-updated" class="ai-runtime-updated">Sin lectura todavía.</p>
+        </section>
         <div class="settings-grid">
           <article class="panel settings-card"><div class="settings-icon">⌑</div><h2>Privacidad local</h2><p>Los proyectos se almacenan en el almacenamiento local de tu navegador. No existe cuenta, servidor ni sincronización entre dispositivos en esta versión.</p><span class="pill pill-green">Activo</span></article>
           <article class="panel settings-card"><div class="settings-icon">⇩</div><h2>Exportar datos</h2><p>Descarga una copia de todos los briefings guardados en formato JSON para hacer una copia de seguridad.</p><button id="export-all" class="button button-secondary">Exportar workspace JSON</button></article>
