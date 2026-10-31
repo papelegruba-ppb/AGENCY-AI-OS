@@ -7,7 +7,6 @@ const TOKEN_KEY = PREFIX + "tokens";
 const STATE_KEY = PREFIX + "state";
 const VERIFIER_KEY = PREFIX + "verifier";
 const DISCOVERY_KEY = PREFIX + "discovery";
-const CLIENT_KEY = PREFIX + "client";
 const CALLBACK_PATH = "/api/canva/callback";
 
 function randomId(bytes = 32) {
@@ -34,19 +33,15 @@ export class CanvaOAuthProvider {
     };
     this.authorizationUrl = "";
   }
-  async clientInformation() {
-    const stored = parse(await this.kv.get(CLIENT_KEY));
-    if (stored?.client_id && stored?.client_secret) return stored;
-    const info = {
+  clientInformation() {
+    return {
       client_id: this.env.CANVA_CLIENT_ID,
       client_secret: this.env.CANVA_CLIENT_SECRET,
       redirect_uris: [this.redirectUrl],
       token_endpoint_auth_method: "client_secret_basic"
     };
-    await this.kv.put(CLIENT_KEY, JSON.stringify(info));
-    return info;
   }
-  async saveClientInformation(info) { await this.kv.put(CLIENT_KEY, JSON.stringify(info)); }
+  async saveClientInformation() { /* Developer Portal credentials remain in Cloudflare Secrets only. */ }
   async tokens() { return parse(await this.kv.get(TOKEN_KEY)); }
   async saveTokens(tokens) { await this.kv.put(TOKEN_KEY, JSON.stringify(tokens)); }
   async state() {
