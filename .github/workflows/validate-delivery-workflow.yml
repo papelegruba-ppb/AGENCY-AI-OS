@@ -7,6 +7,8 @@ on:
       - "app.js"
       - "styles.css"
       - "tests/delivery-workflow.test.mjs"
+      - "propuesta-comercial.html"
+      - "tests/commercial-proposal-data.test.mjs"
       - ".github/workflows/validate-delivery-workflow.yml"
   push:
     branches: [main]
@@ -27,5 +29,5 @@ jobs:
           node-version: 22
       - name: Check JavaScript syntax
         run: node --check app.js
-      - name: Run delivery workflow checks
-        run: node --test tests/delivery-workflow.test.mjs
+      - name: Run delivery and proposal workflow checks
+        run: node --test tests/delivery-workflow.test.mjs tests/commercial-proposal-data.test.mjs
