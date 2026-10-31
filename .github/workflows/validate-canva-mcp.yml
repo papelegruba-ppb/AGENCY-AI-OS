@@ -5,6 +5,8 @@ on:
     paths:
       - "functions/**"
       - "tests/canva-mcp.test.mjs"
+      - "tests/shared-workspace.test.mjs"
+      - "migrations/**"
       - "tests/pages-functions-imports.test.mjs"
       - "package.json"
       - "creative-engine.html"
@@ -42,6 +44,10 @@ jobs:
           done
       - name: Validate relative imports in Pages Functions
         run: node --test tests/pages-functions-imports.test.mjs
+      - name: Build Cloudflare Pages Functions with Wrangler
+        run: npx --yes wrangler@3.114.17 pages functions build functions --outdir .wrangler/functions-build
+      - name: Test shared Workspace API
+        run: node --test tests/shared-workspace.test.mjs
       - name: Run Canva OAuth token and KV tests
         run: node --test tests/canva-mcp.test.mjs
       - name: Test secure VS Code preview server
