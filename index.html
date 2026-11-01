@@ -186,7 +186,12 @@
         <div class="page-heading compact-heading"><div><p class="eyebrow">ASISTENTE DEL WORKSPACE</p><h1>Chat IA<span class="heading-period">.</span></h1><p class="subheading">Conversa con el modelo conectado y trabaja con el contexto del proyecto activo.</p></div></div>
         <div class="chat-workspace panel">
           <div class="chat-toolbar"><div><strong>Asistente Agency AI OS</strong><small id="chat-provider-status">Consultando proveedores disponibles…</small></div><label>Modelo / proveedor<select id="chat-provider" aria-label="Proveedor de IA"><option value="">Detectando…</option></select></label></div>
-          <div id="chat-project-context" class="chat-context">Sin proyecto activo · El chat responderá con contexto general.</div>\n      <section class="project-workflow-panel" aria-labelledby="pw-title">
+          <div id="chat-project-context" class="chat-context">Sin proyecto activo · El chat responderá con contexto general.</div>\n      
+                    
+                    
+          <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"><div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div></div>
+          <form id="chat-form" class="chat-composer"><textarea id="chat-input" rows="2" maxlength="5000" placeholder="Escribe tu mensaje… (Enter para enviar, Shift + Enter para nueva línea)" aria-label="Mensaje" required></textarea><div class="chat-composer-bottom"><span id="chat-usage-note">Las llamadas requieren un proveedor configurado y autorización de uso.</span><button class="button button-primary" id="chat-send" type="submit">Enviar ↗</button></div></form>
+        <div class="workspace-tool-accordions" aria-label="Herramientas del proyecto"><details class="workspace-tool-accordion"><summary>Planificación y alternativas inteligentes</summary><section class="project-workflow-panel" aria-labelledby="pw-title">
         <div class="pw-head"><div><p class="eyebrow">TRABAJO ORIENTADO AL PROYECTO</p><h2 id="pw-title">Tareas y alternativas inteligentes</h2><p>Prepara una ruta de ejecución y, si una capacidad no está disponible, obtén una aplicación alternativa, el prompt y cómo integrar el resultado.</p></div><span class="pill pill-muted">Por proyecto</span></div>
         <p id="pw-project" class="pw-help">Selecciona un proyecto activo.</p>
         <div class="pw-grid">
@@ -202,14 +207,12 @@
           </div>
         </div>
         <h3>Historial de tareas de este proyecto</h3><div id="pw-history" class="pw-history"></div>
-      </section>
-                    <section class="project-file-vault" aria-labelledby="pf-title">
+      </section></details><details class="workspace-tool-accordion"><summary>Biblioteca documental privada</summary><section class="project-file-vault" aria-labelledby="pf-title">
             <div class="pf-head"><div><h3 id="pf-title">Biblioteca documental del proyecto</h3><p id="pf-project">Selecciona un proyecto para gestionar sus archivos.</p></div><span class="pill pill-muted">Privada</span></div>
             <div class="pf-controls"><input id="pf-file-input" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.csv,.json,.docx,.xlsx,.pptx" disabled><button class="button button-secondary" id="pf-upload" type="button" disabled>Subir archivos</button></div>
             <p id="pf-status" class="pf-status">Admite PDF, imágenes, documentos Office y archivos de texto. Máximo 8 MB por archivo. TXT, MD, CSV y JSON se indexan para búsqueda por palabras clave en el chat. PDF, Office e imágenes quedan pendientes de extracción u OCR.</p>
             <ul id="pf-list" class="pf-list"><li class="pf-empty">Selecciona un proyecto.</li></ul>
-          </section>
-                    <section class="social-studio-panel" aria-labelledby="ss-title">
+          </section></details><details class="workspace-tool-accordion"><summary>Social Media & Content Studio</summary><section class="social-studio-panel" aria-labelledby="ss-title">
             <div class="ss-head"><div><p class="eyebrow">SOCIAL MEDIA · CONTENT STUDIO</p><h3 id="ss-title">Crear campaña y contenidos</h3><p id="ss-project">Selecciona un proyecto para crear contenido.</p></div><span class="pill pill-muted">Bajo demanda</span></div>
             <div class="ss-grid">
               <div class="ss-field"><label for="ss-platform">Plataforma</label><select id="ss-platform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube Shorts</option></select></div>
@@ -220,9 +223,7 @@
             <p id="ss-status" class="ss-status">Utiliza el proveedor de IA autorizado en el chat. No se publicará ni programará contenido automáticamente.</p>
             <pre id="ss-output" class="ss-output">Aquí aparecerá el calendario, los copies, las historias, los guiones y las indicaciones visuales.</pre>
             <h4>Campañas guardadas</h4><ul id="ss-history" class="ss-history"><li class="ss-empty">Todavía no hay campañas guardadas.</li></ul>
-          </section>
-          <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"><div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div></div>
-          <form id="chat-form" class="chat-composer"><textarea id="chat-input" rows="2" maxlength="5000" placeholder="Escribe tu mensaje… (Enter para enviar, Shift + Enter para nueva línea)" aria-label="Mensaje" required></textarea><div class="chat-composer-bottom"><span id="chat-usage-note">Las llamadas requieren un proveedor configurado y autorización de uso.</span><button class="button button-primary" id="chat-send" type="submit">Enviar ↗</button></div></form>
+          </section></details></div>
         </div>
       </section>
 
