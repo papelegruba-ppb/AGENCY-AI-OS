@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="ai-toolbox.css">\n  <link rel="stylesheet" href="project-workflows.css">
   <link rel="stylesheet" href="project-file-vault.css">
   <link rel="stylesheet" href="social-studio.css">
+  <link rel="stylesheet" href="creative-studio.css">
 </head>
 <body>
   <div class="app-shell">
@@ -29,6 +30,7 @@
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
         <button class="nav-item" data-view="chat"><span class="nav-icon">◉</span> Chat IA <span class="nav-count" style="margin-left:auto">AI</span></button>
         <button class="nav-item" data-view="ai-toolbox"><span class="nav-icon">✧</span> AI TOOLBOX <span class="nav-count" style="margin-left:auto">PROMPTS</span></button>
+        <button class="nav-item" data-view="creative-studio"><span class="nav-icon">✺</span> Creative Studio <span class="nav-count" style="margin-left:auto">FREE</span></button>
         
         <div class="nav-divider" style="height:1px; background:var(--line); margin:10px 0; opacity:0.5;"></div>
         
@@ -244,6 +246,27 @@
         <section class="toolbox-panel"><h2>Directorio AI TOOLBOX</h2><p class="toolbox-muted">Filtra por especialidad. Las etiquetas no implican que una herramienta esté conectada.</p><input id="tb-search" class="toolbox-search" type="search" placeholder="Buscar herramienta, uso o modalidad…"><div id="tb-filters" class="toolbox-filterbar"></div><div id="tb-tools" class="toolbox-tools"></div></section>
       </section>
 
+      <section class="view" id="view-creative-studio">
+        <div class="cs-hero"><div><p class="eyebrow">MULTIPURPOSE VISUAL WORKFLOW · MANUAL FIRST</p><h1>Creative Studio<span class="heading-period">.</span></h1><p>Prepara imágenes maestras y vídeos para cualquier sector. Genera prompts especializados, abre herramientas gratuitas y trae después los assets aprobados a tu proyecto.</p></div><span class="pill pill-green">Sin API · 0 €</span></div>
+        <div class="cs-warning"><strong>Importante sobre el uso gratuito:</strong> los créditos, marcas de agua y condiciones cambian. Gratis no significa uso comercial autorizado. Antes de entregar una pieza a un cliente, comprueba la licencia del plan con el que se generó. Este módulo no realiza llamadas a proveedores ni publica contenido.</div>
+        <div class="cs-grid">
+          <section class="cs-panel"><h2>01 · Brief creativo universal</h2><p class="cs-muted">Funciona para producto, moda, alimentación, turismo, deporte, tecnología, educación, eventos, servicios, arquitectura, entretenimiento y más.</p>
+            <div class="cs-field"><label>Sector o tipo de contenido</label><select id="cs-sector"></select></div>
+            <div class="cs-field"><label>¿Qué quieres crear? *</label><textarea id="cs-goal" maxlength="1800" placeholder="Ej.: anuncio visual para lanzar una nueva línea de zapatillas sostenibles…"></textarea></div>
+            <div class="cs-two"><div class="cs-field"><label>Marca / producto</label><input id="cs-brand" maxlength="400" placeholder="Nombre y detalles confirmados"></div><div class="cs-field"><label>Audiencia</label><input id="cs-audience" maxlength="400" placeholder="Público al que va dirigido"></div></div>
+            <div class="cs-field"><label>Formato</label><select id="cs-format"></select></div>
+            <div class="cs-field"><label>Estilo y dirección artística</label><input id="cs-style" maxlength="500" placeholder="Editorial, realista, premium, divertido…"></div>
+            <div class="cs-field"><label>Referencias, detalles y elementos que deben conservarse</label><textarea id="cs-details" maxlength="1400" placeholder="Producto, colores, personaje, escenario, materiales, imágenes de referencia…"></textarea></div>
+            <div class="cs-field"><label>Elementos que deben evitarse</label><textarea id="cs-negative" maxlength="700" placeholder="Cambios de forma, texto inventado, objetos extra, deformaciones…"></textarea></div>
+            <div class="cs-actions"><button class="button button-primary" id="cs-generate">Generar prompts de imagen + vídeo</button><button class="button button-secondary" id="cs-save">Guardar en este proyecto</button><button class="button button-secondary" id="cs-clear">Limpiar campos</button></div><p id="cs-status" class="cs-status" aria-live="polite">Los borradores se guardan localmente y separados por proyecto.</p>
+          </section>
+          <section class="cs-panel"><h2>02 · Imagen maestra</h2><p class="cs-muted">Primero genera una imagen de referencia y revisa identidad, composición, marca y proporciones.</p><textarea id="cs-image-prompt" class="cs-output" placeholder="Aquí aparecerá el prompt de imagen…"></textarea><div class="cs-actions"><button class="button button-secondary" id="cs-copy-image">Copiar prompt de imagen</button><a class="button button-secondary" href="https://www.bing.com/images/create" target="_blank" rel="noopener noreferrer">Abrir Bing Image Creator ↗</a></div>
+            <h2 style="margin-top:22px">03 · Animación image-to-video</h2><p class="cs-muted">Sube la imagen aprobada y usa este prompt para preservar su diseño y animar solo el movimiento.</p><textarea id="cs-video-prompt" class="cs-output" placeholder="Aquí aparecerá el prompt de vídeo…"></textarea><div class="cs-actions"><button class="button button-secondary" id="cs-copy-video">Copiar prompt de vídeo</button></div>
+          </section>
+        </div>
+        <section class="cs-panel"><h2>04 · Plataformas para empezar gratis</h2><p class="cs-muted">Enlaces directos. Los límites y derechos de uso deben comprobarse en cada cuenta antes de producir contenido comercial.</p><div id="cs-providers" class="cs-provider-grid"></div></section>
+      </section>
+
       <section class="view" id="view-settings">
         <div class="page-heading compact-heading"><div><p class="eyebrow">PREFERENCIAS DEL WORKSPACE</p><h1>Configuración<span class="heading-period">.</span></h1><p class="subheading">Conecta proveedores de IA, herramientas creativas y servicios externos desde un único centro.</p></div></div>
         <section class="panel ai-runtime-panel" aria-labelledby="ai-runtime-title">
@@ -291,6 +314,7 @@
   <script src="ai-toolbox.js"></script>\n  <script type="module" src="project-workflows.js"></script>
   <script type="module" src="project-file-vault.js"></script>
   <script type="module" src="social-studio.js"></script>
+  <script src="creative-studio.js"></script>
 </body>
 </html>
 <!-- update -->
