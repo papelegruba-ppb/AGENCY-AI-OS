@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="ai-toolbox.css">
+  <link rel="stylesheet" href="ai-delegation.css">
   <link rel="stylesheet" href="project-workflows.css">
   <link rel="stylesheet" href="project-file-vault.css">
   <link rel="stylesheet" href="social-studio.css">
@@ -31,6 +32,7 @@
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
         <button class="nav-item" data-view="chat"><span class="nav-icon">◉</span> Chat IA <span class="nav-count" style="margin-left:auto">AI</span></button>
         <button class="nav-item" data-view="ai-toolbox"><span class="nav-icon">✧</span> AI TOOLBOX <span class="nav-count" style="margin-left:auto">PROMPTS</span></button>
+        <button class="nav-item" data-view="delegation"><span class="nav-icon">⇄</span> Delegar a otra IA <span class="nav-count" style="margin-left:auto">BETA</span></button>
         <button class="nav-item" data-view="creative-studio"><span class="nav-icon">✺</span> Creative Studio <span class="nav-count" style="margin-left:auto">FREE</span></button>
         
         <div class="nav-divider" style="height:1px; background:var(--line); margin:10px 0; opacity:0.5;"></div>
@@ -231,6 +233,41 @@
         </div>
       </section>
 
+      <section class="view" id="view-delegation">
+        <div class="delegation-hero"><div><p class="delegation-kicker">CROSS-MODEL WORKFLOW · HUMAN IN THE LOOP</p><h1>AI Delegation Engine<span class="heading-period">.</span></h1><p>Prepara encargos completos para Claude, ChatGPT, Gemini, DeepSeek o Perplexity. Recupera la respuesta y revísala antes de aceptar cualquier cambio.</p></div><span class="delegation-status">MANUAL · CONTROLADO</span></div>
+        <div class="delegation-grid">
+          <section class="delegation-panel">
+            <h2>01 · Definir el encargo</h2>
+            <p class="delegation-muted">El contexto se prepara en este navegador. No se envía a ningún proveedor automáticamente.</p>
+            <div class="delegation-field"><label for="de-provider">IA de destino</label><select id="de-provider"><option value="claude">Claude</option><option value="chatgpt">ChatGPT</option><option value="gemini">Gemini</option><option value="deepseek">DeepSeek</option><option value="perplexity">Perplexity</option></select></div>
+            <div class="delegation-field"><label for="de-task">Objetivo y resultado esperado *</label><textarea id="de-task" maxlength="5000" rows="5" placeholder="Describe la tarea concreta que debe resolver la IA…"></textarea></div>
+            <div class="delegation-field"><label for="de-context">Contexto adicional (opcional)</label><textarea id="de-context" maxlength="5000" rows="4" placeholder="Decisiones, requisitos, enlaces o información relevante…"></textarea></div>
+            <div class="delegation-field"><label for="de-files">Archivos y rutas relevantes (opcional)</label><textarea id="de-files" maxlength="2500" rows="2" placeholder="Ej.: functions/api/chat.js, docs/ARCHITECTURE.md…"></textarea></div>
+            <label class="delegation-check"><input id="de-include-project" type="checkbox" checked> Incluir contexto básico del proyecto activo (sin teléfono ni datos de contacto)</label>
+            <div class="delegation-actions"><button class="button button-primary" id="de-generate">Generar encargo</button><button class="button button-secondary" id="de-copy" disabled>Copiar prompt</button><button class="button button-secondary" id="de-download" disabled>Descargar .md</button><a class="button button-secondary" id="de-open" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Abrir IA ↗</a></div>
+            <p id="de-status" class="delegation-muted" role="status" aria-live="polite">Elige una IA y describe el resultado que necesitas.</p>
+          </section>
+          <section class="delegation-panel">
+            <h2>02 · Prompt especializado</h2>
+            <pre id="de-output" class="delegation-output">El encargo aparecerá aquí para que puedas revisarlo antes de copiarlo.</pre>
+            <div class="delegation-note">El prompt solicita instrucciones reproducibles, pruebas y criterios de aceptación. No autoriza a la IA externa a acceder a tu cuenta ni a publicar cambios.</div>
+            <h2 class="delegation-subhead">03 · Validar respuesta externa</h2>
+            <p class="delegation-muted">Pega el resultado recibido. Esta lista te ayuda a revisar su calidad; no ejecuta ni fusiona código.</p>
+            <textarea id="de-result" class="delegation-result" rows="6" maxlength="12000" placeholder="Pega aquí la respuesta, diff, archivos o informe de la IA…"></textarea>
+            <div class="delegation-review" id="de-review">
+              <label><input type="checkbox"> Responde al objetivo y respeta el alcance</label>
+              <label><input type="checkbox"> Identifica archivos y cambios concretos</label>
+              <label><input type="checkbox"> Incluye pruebas ejecutadas y resultados verificables</label>
+              <label><input type="checkbox"> No expone secretos ni introduce costes no autorizados</label>
+              <label><input type="checkbox"> No afirma despliegues o acciones que no se hayan verificado</label>
+            </div>
+            <div class="delegation-actions"><button class="button button-secondary" id="de-save-review" disabled>Guardar revisión local</button><button class="button button-secondary" id="de-export-review" disabled>Exportar informe</button></div>
+            <p id="de-review-status" class="delegation-muted" role="status" aria-live="polite">Aún no hay una respuesta para revisar.</p>
+          </section>
+        </div>
+        <section class="delegation-panel delegation-history"><div class="delegation-history-head"><div><h2>Historial de delegaciones</h2><p class="delegation-muted">Se conserva en este navegador, separado por proyecto.</p></div><button class="button button-secondary" id="de-clear-history">Vaciar historial</button></div><div id="de-history" class="delegation-history-list"><p class="delegation-muted">Todavía no hay encargos guardados.</p></div></section>
+      </section>
+
       <section class="view" id="view-ai-toolbox">
         <div class="toolbox-hero"><div><p class="toolbox-kicker">MULTIMODEL WORKSPACE · API + MANUAL</p><h1>AI TOOLBOX<span class="heading-period">.</span></h1><p>Un catálogo de herramientas IA y un generador de prompts adaptados a cada plataforma. Si no existe integración API, tendrás las instrucciones listas para continuar manualmente.</p></div><span class="pill pill-green">Sin llamadas automáticas</span></div>
         <div class="toolbox-layout">
@@ -314,6 +351,7 @@
   </script>
   <script src="app.js"></script>
   <script src="ai-toolbox.js"></script>
+  <script src="ai-delegation.js"></script>
   <script type="module" src="project-workflows.js"></script>
   <script type="module" src="project-file-vault.js"></script>
   <script type="module" src="social-studio.js"></script>
