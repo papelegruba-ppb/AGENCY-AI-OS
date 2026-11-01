@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/multimodel-ai-toolbox-prompt-engine
+      - feat/multipurpose-creative-studio
   pull_request:
     branches:
       - main
