@@ -15,14 +15,14 @@ function render(){
 }
 async function refresh(){
  const project=activeProject();files=[];if(!project){render();return}
- try{const response=await fetch("/api/project-files?projectId="+encodeURIComponent(project.id),{credentials:"same-origin",cache:"no-store"});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"No se pudo consultar la biblioteca.");files=Array.isArray(data.files)?data.files:[];status("Archivos privados del proyecto. La extracción y búsqueda dentro de su contenido aún no están activadas.");}
+ try{const response=await fetch("/api/project-files?projectId="+encodeURIComponent(project.id),{credentials:"same-origin",cache:"no-store"});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"No se pudo consultar la biblioteca.");files=Array.isArray(data.files)?data.files:[];status("TXT, MD, CSV y JSON permiten búsqueda por palabras clave en este proyecto. PDF, Office e imágenes esperan su procesador documental.");}
  catch(error){status(error.message+" Comprueba la sesión privada, D1 y el binding R2 AGENCY_FILES.");}render();
 }
 async function upload(){
  const project=activeProject(),input=$("#pf-file-input"),selected=[...(input.files||[])];if(!project||!selected.length)return;
  $("#pf-upload").disabled=true;
  try{for(const file of selected){status("Subiendo "+file.name+"…");const response=await fetch("/api/project-files",{method:"POST",credentials:"same-origin",headers:{"Content-Type":file.type||"application/octet-stream","x-project-id":String(project.id),"x-file-name":file.name},body:file});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"No se pudo subir "+file.name);}
- input.value="";status("Carga terminada. Los archivos están almacenados de forma privada; todavía no se han procesado para el chat.");await refresh();}
+ input.value="";status("Carga terminada. Los archivos están almacenados de forma privada. Los formatos de texto compatibles ya se han preparado para búsqueda.");await refresh();}
  catch(error){status(error.message);}finally{$("#pf-upload").disabled=!activeProject();}
 }
 async function removeFile(id){
