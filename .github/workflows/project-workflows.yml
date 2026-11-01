@@ -19,4 +19,7 @@ jobs:
       - run: npm install --ignore-scripts
       - run: npm test
       - name: Check browser module syntax
-        run: node --check project-workflows.js
+        run: |
+          node --check project-workflows.js
+          node --check project-file-vault.js
+          node --check social-studio.js
