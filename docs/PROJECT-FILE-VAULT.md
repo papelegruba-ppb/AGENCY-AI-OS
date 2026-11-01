@@ -22,7 +22,7 @@ No API key or paid third-party service is activated. Cloudflare quotas and plan 
 - Maximum 8 MiB per file; maximum 100 files per project.
 - Files are not publicly served and no public object URL is returned.
 - MIME and extension are checked, but this is not a malware scanner or full file signature validation. Do not upload executable files or highly sensitive data.
-- TXT, MD, CSV and JSON are extracted as UTF-8 and split into 1,200-character chunks (160-character overlap), with a 160,000-character cap and 150-chunk limit.
+- TXT, MD, CSV and JSON are extracted as UTF-8 and split into 1,200-character chunks (160-character overlap), with a 90,000-character cap and 80-chunk limit.
 - The chat performs bounded keyword retrieval from the active project only. It does not use embeddings/vector search yet.
 - PDF, Office documents and images remain stored as pending_parser; no OCR or structured extraction is active.
 - Document contents are untrusted: the chat is instructed not to follow embedded instructions.
