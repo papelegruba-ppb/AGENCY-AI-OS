@@ -163,7 +163,7 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",chat:"Chat IA",settings:"Configuración","creative-engine":"Creative Engine"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",chat:"Chat IA","ai-toolbox":"AI TOOLBOX",settings:"Configuración","creative-engine":"Creative Engine"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
@@ -788,6 +788,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
     if (activeProjectId) localStorage.setItem(ACTIVE_PROJECT_KEY, activeProjectId);
     else localStorage.removeItem(ACTIVE_PROJECT_KEY);
     updateChatProjectContext();
+    window.dispatchEvent(new CustomEvent("agency:active-project-change"));
   });
   $("#chat-form")?.addEventListener("submit", submitChatMessage);
   $("#chat-input")?.addEventListener("keydown", event => {
@@ -849,6 +850,7 @@ const form=document.getElementById("lead-form");if(form){form.addEventListener("
       if(!saveProjects()){projects=projects.filter(x=>x.id!==p.id);return;}
       activeProjectId=p.id;
       localStorage.setItem(ACTIVE_PROJECT_KEY,p.id);
+      window.dispatchEvent(new CustomEvent("agency:active-project-change"));
       latestWebsiteAudit=null;
       renderProjects();
       $("#dialog-title").textContent=p.name;

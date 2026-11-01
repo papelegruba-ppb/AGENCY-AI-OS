@@ -9,6 +9,9 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ai-toolbox.css">\n  <link rel="stylesheet" href="project-workflows.css">
+  <link rel="stylesheet" href="project-file-vault.css">
+  <link rel="stylesheet" href="social-studio.css">
 </head>
 <body>
   <div class="app-shell">
@@ -25,6 +28,7 @@
         <button class="nav-item" data-view="projects"><span class="nav-icon">▤</span> Proyectos <span id="project-count" class="nav-count">0</span></button>
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
         <button class="nav-item" data-view="chat"><span class="nav-icon">◉</span> Chat IA <span class="nav-count" style="margin-left:auto">AI</span></button>
+        <button class="nav-item" data-view="ai-toolbox"><span class="nav-icon">✧</span> AI TOOLBOX <span class="nav-count" style="margin-left:auto">PROMPTS</span></button>
         
         <div class="nav-divider" style="height:1px; background:var(--line); margin:10px 0; opacity:0.5;"></div>
         
@@ -182,10 +186,62 @@
         <div class="page-heading compact-heading"><div><p class="eyebrow">ASISTENTE DEL WORKSPACE</p><h1>Chat IA<span class="heading-period">.</span></h1><p class="subheading">Conversa con el modelo conectado y trabaja con el contexto del proyecto activo.</p></div></div>
         <div class="chat-workspace panel">
           <div class="chat-toolbar"><div><strong>Asistente Agency AI OS</strong><small id="chat-provider-status">Consultando proveedores disponibles…</small></div><label>Modelo / proveedor<select id="chat-provider" aria-label="Proveedor de IA"><option value="">Detectando…</option></select></label></div>
-          <div id="chat-project-context" class="chat-context">Sin proyecto activo · El chat responderá con contexto general.</div>
+          <div id="chat-project-context" class="chat-context">Sin proyecto activo · El chat responderá con contexto general.</div>\n      
+                    
+                    
           <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"><div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div></div>
           <form id="chat-form" class="chat-composer"><textarea id="chat-input" rows="2" maxlength="5000" placeholder="Escribe tu mensaje… (Enter para enviar, Shift + Enter para nueva línea)" aria-label="Mensaje" required></textarea><div class="chat-composer-bottom"><span id="chat-usage-note">Las llamadas requieren un proveedor configurado y autorización de uso.</span><button class="button button-primary" id="chat-send" type="submit">Enviar ↗</button></div></form>
+        <div class="workspace-tool-accordions" aria-label="Herramientas del proyecto"><details class="workspace-tool-accordion"><summary>Planificación y alternativas inteligentes</summary><section class="project-workflow-panel" aria-labelledby="pw-title">
+        <div class="pw-head"><div><p class="eyebrow">TRABAJO ORIENTADO AL PROYECTO</p><h2 id="pw-title">Tareas y alternativas inteligentes</h2><p>Prepara una ruta de ejecución y, si una capacidad no está disponible, obtén una aplicación alternativa, el prompt y cómo integrar el resultado.</p></div><span class="pill pill-muted">Por proyecto</span></div>
+        <p id="pw-project" class="pw-help">Selecciona un proyecto activo.</p>
+        <div class="pw-grid">
+          <div>
+            <div class="pw-field"><label for="pw-task">¿Qué quieres hacer o cambiar?</label><textarea id="pw-task" maxlength="2000" placeholder="Ej. Analiza Instagram y prepara 8 publicaciones y 3 Reels para el próximo mes."></textarea></div>
+            <div class="pw-field"><label for="pw-category">Tipo de trabajo</label><select id="pw-category"><option value="">Detectar según la solicitud</option><option value="web">Web / aplicación</option><option value="social">Redes sociales</option><option value="video">Vídeo / Reel</option><option value="image">Imagen / diseño</option><option value="research">Investigación / análisis</option><option value="automation">Automatización</option></select></div>
+            <div class="pw-actions"><button type="button" class="button button-primary" id="pw-generate">Preparar alternativa ↗</button><button type="button" class="button button-secondary" id="pw-copy" disabled>Copiar prompt</button><button type="button" class="button button-secondary" id="pw-save" disabled>Guardar en proyecto</button></div>
+            <p id="pw-status" class="pw-status" role="status" aria-live="polite">Las recomendaciones son orientativas. Verifica planes, créditos y límites antes de enviar documentación a servicios externos.</p>
+          </div>
+          <div>
+            <div id="pw-recommendation" class="pw-recommendation">Aquí aparecerá la aplicación sugerida, el motivo, el resultado esperado y dónde aplicarlo.</div>
+            <pre id="pw-output" class="pw-output">El prompt específico aparecerá aquí.</pre>
+          </div>
         </div>
+        <h3>Historial de tareas de este proyecto</h3><div id="pw-history" class="pw-history"></div>
+      </section></details><details class="workspace-tool-accordion"><summary>Biblioteca documental privada</summary><section class="project-file-vault" aria-labelledby="pf-title">
+            <div class="pf-head"><div><h3 id="pf-title">Biblioteca documental del proyecto</h3><p id="pf-project">Selecciona un proyecto para gestionar sus archivos.</p></div><span class="pill pill-muted">Privada</span></div>
+            <div class="pf-controls"><input id="pf-file-input" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.csv,.json,.docx,.xlsx,.pptx" disabled><button class="button button-secondary" id="pf-upload" type="button" disabled>Subir archivos</button></div>
+            <p id="pf-status" class="pf-status">Admite PDF, imágenes, documentos Office y archivos de texto. Máximo 8 MB por archivo. TXT, MD, CSV y JSON se indexan para búsqueda por palabras clave en el chat. PDF, Office e imágenes quedan pendientes de extracción u OCR.</p>
+            <ul id="pf-list" class="pf-list"><li class="pf-empty">Selecciona un proyecto.</li></ul>
+          </section></details><details class="workspace-tool-accordion"><summary>Social Media & Content Studio</summary><section class="social-studio-panel" aria-labelledby="ss-title">
+            <div class="ss-head"><div><p class="eyebrow">SOCIAL MEDIA · CONTENT STUDIO</p><h3 id="ss-title">Crear campaña y contenidos</h3><p id="ss-project">Selecciona un proyecto para crear contenido.</p></div><span class="pill pill-muted">Bajo demanda</span></div>
+            <div class="ss-grid">
+              <div class="ss-field"><label for="ss-platform">Plataforma</label><select id="ss-platform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube Shorts</option></select></div>
+              <div class="ss-field"><label for="ss-goal">Objetivo</label><select id="ss-goal"><option>Reconocimiento de marca</option><option>Interacción y comunidad</option><option>Captación de leads</option><option>Ventas y conversiones</option><option>Lanzamiento de producto o servicio</option></select></div>
+            </div>
+            <div class="ss-field"><label for="ss-task">¿Qué contenido necesitas?</label><textarea id="ss-task" maxlength="2500" placeholder="Ej. Campaña de noviembre: 6 posts, 4 stories y 3 Reels para presentar nuestros servicios. Tono experto, cercano y visual premium."></textarea></div>
+            <div class="ss-actions"><button type="button" class="button button-primary" id="ss-generate" disabled>Generar contenido ↗</button><button type="button" class="button button-secondary" id="ss-copy" disabled>Copiar paquete</button><button type="button" class="button button-secondary" id="ss-save" disabled>Guardar en proyecto</button></div>
+            <p id="ss-status" class="ss-status">Utiliza el proveedor de IA autorizado en el chat. No se publicará ni programará contenido automáticamente.</p>
+            <pre id="ss-output" class="ss-output">Aquí aparecerá el calendario, los copies, las historias, los guiones y las indicaciones visuales.</pre>
+            <h4>Campañas guardadas</h4><ul id="ss-history" class="ss-history"><li class="ss-empty">Todavía no hay campañas guardadas.</li></ul>
+          </section></details></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-ai-toolbox">
+        <div class="toolbox-hero"><div><p class="toolbox-kicker">MULTIMODEL WORKSPACE · API + MANUAL</p><h1>AI TOOLBOX<span class="heading-period">.</span></h1><p>Un catálogo de herramientas IA y un generador de prompts adaptados a cada plataforma. Si no existe integración API, tendrás las instrucciones listas para continuar manualmente.</p></div><span class="pill pill-green">Sin llamadas automáticas</span></div>
+        <div class="toolbox-layout">
+          <section class="toolbox-panel"><h2>Prompt Engineer</h2><p class="toolbox-muted">Describe el trabajo una vez y adapta el prompt a la herramienta seleccionada.</p>
+            <div class="toolbox-field"><label>Herramienta de destino</label><select id="tb-tool"></select><small id="tb-mode" class="toolbox-muted"></small></div>
+            <div class="toolbox-field"><label>¿Qué quieres conseguir? *</label><textarea id="tb-task" maxlength="3000" placeholder="Ej.: Crear un anuncio de vídeo de 20 segundos…"></textarea></div>
+            <div class="toolbox-two"><div class="toolbox-field"><label>Marca / cliente</label><input id="tb-brand" maxlength="600" placeholder="Nombre, web, colores…"></div><div class="toolbox-field"><label>Público objetivo</label><input id="tb-audience" maxlength="400" placeholder="A quién nos dirigimos…"></div></div>
+            <div class="toolbox-field"><label>Formato</label><select id="tb-format"><option>La herramienta debe proponer el formato óptimo</option><option>Vídeo vertical 9:16</option><option>Vídeo horizontal 16:9</option><option>Imagen 1:1</option><option>Post 4:5</option><option>Carrusel 5-8 diapositivas</option><option>Landing page responsive</option><option>Aplicación web funcional</option><option>Investigación con fuentes</option><option>Plan estratégico y copy</option></select></div>
+            <div class="toolbox-field"><label>Estilo / dirección creativa</label><input id="tb-style" maxlength="500" placeholder="Premium, editorial, minimalista…"></div>
+            <div class="toolbox-field"><label>Restricciones y requisitos</label><textarea id="tb-rules" maxlength="1200" placeholder="Claims permitidos, duración, assets, requisitos legales…"></textarea></div>
+            <div class="toolbox-actions"><button class="button button-primary" id="tb-generate">Generar prompt</button><button class="button button-secondary" id="tb-copy" disabled>Copiar</button><button class="button button-secondary" id="tb-save" disabled>Descargar .txt</button><a class="button button-secondary" id="tb-open" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Abrir plataforma ↗</a></div><p id="tb-feedback" class="toolbox-muted" aria-live="polite"></p>
+          </section>
+          <section class="toolbox-panel"><h2>Prompt preparado</h2><p class="toolbox-muted">Revisa antes de enviarlo a la plataforma externa.</p><pre id="tb-output" class="toolbox-result">Completa el objetivo para generar un prompt.</pre><div class="toolbox-note">El modo manual prepara instrucciones y enlaces; no inicia sesión ni ejecuta acciones externas. Las API requieren credenciales y autorización independiente.</div><h2 style="margin-top:20px">Historial local</h2><div id="tb-history"></div></section>
+        </div>
+        <section class="toolbox-panel"><h2>Directorio AI TOOLBOX</h2><p class="toolbox-muted">Filtra por especialidad. Las etiquetas no implican que una herramienta esté conectada.</p><input id="tb-search" class="toolbox-search" type="search" placeholder="Buscar herramienta, uso o modalidad…"><div id="tb-filters" class="toolbox-filterbar"></div><div id="tb-tools" class="toolbox-tools"></div></section>
       </section>
 
       <section class="view" id="view-settings">
@@ -232,6 +288,9 @@
     }
   </script>
   <script src="app.js"></script>
+  <script src="ai-toolbox.js"></script>\n  <script type="module" src="project-workflows.js"></script>
+  <script type="module" src="project-file-vault.js"></script>
+  <script type="module" src="social-studio.js"></script>
 </body>
 </html>
 <!-- update -->

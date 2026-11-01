@@ -1,0 +1,25 @@
+name: Validate project workflow planner
+
+on:
+  push:
+    branches:
+      - feat/multimodel-ai-toolbox-prompt-engine
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --ignore-scripts
+      - run: npm test
+      - name: Check browser module syntax
+        run: |
+          node --check project-workflows.js
+          node --check project-file-vault.js
+          node --check social-studio.js
