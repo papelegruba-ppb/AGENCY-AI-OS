@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="ai-toolbox.css">\n  <link rel="stylesheet" href="project-workflows.css">
   <link rel="stylesheet" href="project-file-vault.css">
+  <link rel="stylesheet" href="social-studio.css">
 </head>
 <body>
   <div class="app-shell">
@@ -208,6 +209,18 @@
             <p id="pf-status" class="pf-status">Admite PDF, imágenes, documentos Office y archivos de texto. Máximo 8 MB por archivo. TXT, MD, CSV y JSON se indexan para búsqueda por palabras clave en el chat. PDF, Office e imágenes quedan pendientes de extracción u OCR.</p>
             <ul id="pf-list" class="pf-list"><li class="pf-empty">Selecciona un proyecto.</li></ul>
           </section>
+                    <section class="social-studio-panel" aria-labelledby="ss-title">
+            <div class="ss-head"><div><p class="eyebrow">SOCIAL MEDIA · CONTENT STUDIO</p><h3 id="ss-title">Crear campaña y contenidos</h3><p id="ss-project">Selecciona un proyecto para crear contenido.</p></div><span class="pill pill-muted">Bajo demanda</span></div>
+            <div class="ss-grid">
+              <div class="ss-field"><label for="ss-platform">Plataforma</label><select id="ss-platform"><option>Instagram</option><option>TikTok</option><option>Facebook</option><option>LinkedIn</option><option>YouTube Shorts</option></select></div>
+              <div class="ss-field"><label for="ss-goal">Objetivo</label><select id="ss-goal"><option>Reconocimiento de marca</option><option>Interacción y comunidad</option><option>Captación de leads</option><option>Ventas y conversiones</option><option>Lanzamiento de producto o servicio</option></select></div>
+            </div>
+            <div class="ss-field"><label for="ss-task">¿Qué contenido necesitas?</label><textarea id="ss-task" maxlength="2500" placeholder="Ej. Campaña de noviembre: 6 posts, 4 stories y 3 Reels para presentar nuestros servicios. Tono experto, cercano y visual premium."></textarea></div>
+            <div class="ss-actions"><button type="button" class="button button-primary" id="ss-generate" disabled>Generar contenido ↗</button><button type="button" class="button button-secondary" id="ss-copy" disabled>Copiar paquete</button><button type="button" class="button button-secondary" id="ss-save" disabled>Guardar en proyecto</button></div>
+            <p id="ss-status" class="ss-status">Utiliza el proveedor de IA autorizado en el chat. No se publicará ni programará contenido automáticamente.</p>
+            <pre id="ss-output" class="ss-output">Aquí aparecerá el calendario, los copies, las historias, los guiones y las indicaciones visuales.</pre>
+            <h4>Campañas guardadas</h4><ul id="ss-history" class="ss-history"><li class="ss-empty">Todavía no hay campañas guardadas.</li></ul>
+          </section>
           <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"><div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div></div>
           <form id="chat-form" class="chat-composer"><textarea id="chat-input" rows="2" maxlength="5000" placeholder="Escribe tu mensaje… (Enter para enviar, Shift + Enter para nueva línea)" aria-label="Mensaje" required></textarea><div class="chat-composer-bottom"><span id="chat-usage-note">Las llamadas requieren un proveedor configurado y autorización de uso.</span><button class="button button-primary" id="chat-send" type="submit">Enviar ↗</button></div></form>
         </div>
@@ -276,6 +289,7 @@
   <script src="app.js"></script>
   <script src="ai-toolbox.js"></script>\n  <script type="module" src="project-workflows.js"></script>
   <script type="module" src="project-file-vault.js"></script>
+  <script type="module" src="social-studio.js"></script>
 </body>
 </html>
 <!-- update -->
