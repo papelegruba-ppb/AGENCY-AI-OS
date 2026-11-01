@@ -13,7 +13,7 @@ test("AI Delegation Engine is wired into the workspace without automatic provide
   assert.match(html, /ai-delegation\.js/);
   assert.match(script, /https:\/\/claude\.ai\//);
   assert.match(script, /clipboard\.writeText/);
-  assert.match(script, /No se envía a ningún proveedor automáticamente/);
+  assert.match(html, /No se envía a ningún proveedor automáticamente/);
   assert.match(script, /agency-ai-os\.delegations\.v1/);
   assert.match(script, /No incluyas secretos en frontend/);
   assert.match(css, /\.delegation-grid/);
