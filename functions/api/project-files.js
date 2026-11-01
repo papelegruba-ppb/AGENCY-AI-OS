@@ -62,11 +62,11 @@ export async function onRequestPost(context) {
     if(TEXT_EXTENSIONS.has(suffix)) {
       try {
         let text=new TextDecoder("utf-8").decode(bytes).replace(/\\u0000/g,"").replace(/[\\u0001-\\u0008\\u000b\\u000c\\u000e-\\u001f]/g," ");
-        const truncated=text.length>160000;
-        text=text.slice(0,160000).trim();
+        const truncated=text.length>90000;
+        text=text.slice(0,90000).trim();
         if(!text) throw new Error("No se encontró texto legible.");
         const chunkSize=1200, overlap=160, statements=[];
-        for(let offset=0,index=0;offset<text.length&&index<150;offset+=chunkSize-overlap,index++){
+        for(let offset=0,index=0;offset<text.length&&index<80;offset+=chunkSize-overlap,index++){
           const content=text.slice(offset,offset+chunkSize).trim();
           if(content) statements.push(context.env.AGENCY_DB.prepare("INSERT INTO project_file_chunks (id,file_id,project_id,owner_id,chunk_index,content,created_at) VALUES (?,?,?,?,?,?,?)").bind(crypto.randomUUID(),id,projectId,OWNER_ID,index,content,createdAt));
         }
