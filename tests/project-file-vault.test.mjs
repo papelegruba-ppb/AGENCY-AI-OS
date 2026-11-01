@@ -36,3 +36,10 @@ test("text extraction is bounded and retains source file chunk provenance", asyn
   assert.match(api, /file_id,project_id,owner_id,chunk_index,content/);
   assert.match(api, /indexed_truncated/);
 });
+
+test("chat tokenization supports Unicode letters and bounded term retrieval", async () => {
+  const chat = await readFile(new URL("../functions/api/chat.js", import.meta.url), "utf8");
+  assert.match(chat, /\\\\p\{L\}/);
+  assert.match(chat, /slice\(0, 5\)/);
+  assert.match(chat, /LIMIT 5/);
+});
