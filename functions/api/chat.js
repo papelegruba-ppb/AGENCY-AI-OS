@@ -36,6 +36,7 @@ export async function onRequestPost({ request, env }) {
     content: clean(item?.content, 2500)
   })).filter(item => item.content) : [];
   const project = body?.project && typeof body.project === "object" ? {
+    id: clean(body.project.id, 100),
     name: clean(body.project.name, 90),
     sector: clean(body.project.sector, 120),
     offer: clean(body.project.offer, 600),
