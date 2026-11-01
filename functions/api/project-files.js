@@ -61,7 +61,7 @@ export async function onRequestPost(context) {
     let processingStatus="pending_parser";
     if(TEXT_EXTENSIONS.has(suffix)) {
       try {
-        let text=new TextDecoder("utf-8").decode(bytes).replace(/\\u0000/g,"").replace(/[\\u0001-\\u0008\\u000b\\u000c\\u000e-\\u001f]/g," ");
+        let text=new TextDecoder("utf-8").decode(bytes).replaceAll(String.fromCharCode(0),"").split("").filter(char=>{const code=char.charCodeAt(0);return code===9||code===10||code===13||code>=32;}).join("");
         const truncated=text.length>90000;
         text=text.slice(0,90000).trim();
         if(!text) throw new Error("No se encontró texto legible.");
