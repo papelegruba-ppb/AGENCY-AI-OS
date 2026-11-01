@@ -9,6 +9,7 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ai-toolbox.css">
 </head>
 <body>
   <div class="app-shell">
@@ -25,6 +26,7 @@
         <button class="nav-item" data-view="projects"><span class="nav-icon">▤</span> Proyectos <span id="project-count" class="nav-count">0</span></button>
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
         <button class="nav-item" data-view="chat"><span class="nav-icon">◉</span> Chat IA <span class="nav-count" style="margin-left:auto">AI</span></button>
+        <button class="nav-item" data-view="ai-toolbox"><span class="nav-icon">✧</span> AI TOOLBOX <span class="nav-count" style="margin-left:auto">PROMPTS</span></button>
         
         <div class="nav-divider" style="height:1px; background:var(--line); margin:10px 0; opacity:0.5;"></div>
         
@@ -188,6 +190,23 @@
         </div>
       </section>
 
+      <section class="view" id="view-ai-toolbox">
+        <div class="toolbox-hero"><div><p class="toolbox-kicker">MULTIMODEL WORKSPACE · API + MANUAL</p><h1>AI TOOLBOX<span class="heading-period">.</span></h1><p>Un catálogo de herramientas IA y un generador de prompts adaptados a cada plataforma. Si no existe integración API, tendrás las instrucciones listas para continuar manualmente.</p></div><span class="pill pill-green">Sin llamadas automáticas</span></div>
+        <div class="toolbox-layout">
+          <section class="toolbox-panel"><h2>Prompt Engineer</h2><p class="toolbox-muted">Describe el trabajo una vez y adapta el prompt a la herramienta seleccionada.</p>
+            <div class="toolbox-field"><label>Herramienta de destino</label><select id="tb-tool"></select><small id="tb-mode" class="toolbox-muted"></small></div>
+            <div class="toolbox-field"><label>¿Qué quieres conseguir? *</label><textarea id="tb-task" maxlength="3000" placeholder="Ej.: Crear un anuncio de vídeo de 20 segundos…"></textarea></div>
+            <div class="toolbox-two"><div class="toolbox-field"><label>Marca / cliente</label><input id="tb-brand" maxlength="600" placeholder="Nombre, web, colores…"></div><div class="toolbox-field"><label>Público objetivo</label><input id="tb-audience" maxlength="400" placeholder="A quién nos dirigimos…"></div></div>
+            <div class="toolbox-field"><label>Formato</label><select id="tb-format"><option>La herramienta debe proponer el formato óptimo</option><option>Vídeo vertical 9:16</option><option>Vídeo horizontal 16:9</option><option>Imagen 1:1</option><option>Post 4:5</option><option>Carrusel 5-8 diapositivas</option><option>Landing page responsive</option><option>Aplicación web funcional</option><option>Investigación con fuentes</option><option>Plan estratégico y copy</option></select></div>
+            <div class="toolbox-field"><label>Estilo / dirección creativa</label><input id="tb-style" maxlength="500" placeholder="Premium, editorial, minimalista…"></div>
+            <div class="toolbox-field"><label>Restricciones y requisitos</label><textarea id="tb-rules" maxlength="1200" placeholder="Claims permitidos, duración, assets, requisitos legales…"></textarea></div>
+            <div class="toolbox-actions"><button class="button button-primary" id="tb-generate">Generar prompt</button><button class="button button-secondary" id="tb-copy" disabled>Copiar</button><button class="button button-secondary" id="tb-save" disabled>Descargar .txt</button><a class="button button-secondary" id="tb-open" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Abrir plataforma ↗</a></div><p id="tb-feedback" class="toolbox-muted" aria-live="polite"></p>
+          </section>
+          <section class="toolbox-panel"><h2>Prompt preparado</h2><p class="toolbox-muted">Revisa antes de enviarlo a la plataforma externa.</p><pre id="tb-output" class="toolbox-result">Completa el objetivo para generar un prompt.</pre><div class="toolbox-note">El modo manual prepara instrucciones y enlaces; no inicia sesión ni ejecuta acciones externas. Las API requieren credenciales y autorización independiente.</div><h2 style="margin-top:20px">Historial local</h2><div id="tb-history"></div></section>
+        </div>
+        <section class="toolbox-panel"><h2>Directorio AI TOOLBOX</h2><p class="toolbox-muted">Filtra por especialidad. Las etiquetas no implican que una herramienta esté conectada.</p><input id="tb-search" class="toolbox-search" type="search" placeholder="Buscar herramienta, uso o modalidad…"><div id="tb-filters" class="toolbox-filterbar"></div><div id="tb-tools" class="toolbox-tools"></div></section>
+      </section>
+
       <section class="view" id="view-settings">
         <div class="page-heading compact-heading"><div><p class="eyebrow">PREFERENCIAS DEL WORKSPACE</p><h1>Configuración<span class="heading-period">.</span></h1><p class="subheading">Conecta proveedores de IA, herramientas creativas y servicios externos desde un único centro.</p></div></div>
         <section class="panel ai-runtime-panel" aria-labelledby="ai-runtime-title">
@@ -232,6 +251,7 @@
     }
   </script>
   <script src="app.js"></script>
+  <script src="ai-toolbox.js"></script>
 </body>
 </html>
 <!-- update -->
