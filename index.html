@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="ai-toolbox.css">\n  <link rel="stylesheet" href="project-workflows.css">
+  <link rel="stylesheet" href="project-file-vault.css">
 </head>
 <body>
   <div class="app-shell">
@@ -201,6 +202,12 @@
         </div>
         <h3>Historial de tareas de este proyecto</h3><div id="pw-history" class="pw-history"></div>
       </section>
+                    <section class="project-file-vault" aria-labelledby="pf-title">
+            <div class="pf-head"><div><h3 id="pf-title">Biblioteca documental del proyecto</h3><p id="pf-project">Selecciona un proyecto para gestionar sus archivos.</p></div><span class="pill pill-muted">Privada</span></div>
+            <div class="pf-controls"><input id="pf-file-input" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.md,.csv,.json,.docx,.xlsx,.pptx" disabled><button class="button button-secondary" id="pf-upload" type="button" disabled>Subir archivos</button></div>
+            <p id="pf-status" class="pf-status">Admite PDF, imágenes, documentos Office y archivos de texto. Máximo 8 MB por archivo. El contenido todavía no se incorpora al contexto del chat.</p>
+            <ul id="pf-list" class="pf-list"><li class="pf-empty">Selecciona un proyecto.</li></ul>
+          </section>
           <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"><div class="chat-welcome"><span class="chat-welcome-mark">✳</span><h2>¿En qué trabajamos?</h2><p>Puedo ayudarte con estrategia, propuestas, UX/UI, código, SEO, automatizaciones e integraciones. Selecciona un proyecto para aportar su briefing al contexto.</p></div></div>
           <form id="chat-form" class="chat-composer"><textarea id="chat-input" rows="2" maxlength="5000" placeholder="Escribe tu mensaje… (Enter para enviar, Shift + Enter para nueva línea)" aria-label="Mensaje" required></textarea><div class="chat-composer-bottom"><span id="chat-usage-note">Las llamadas requieren un proveedor configurado y autorización de uso.</span><button class="button button-primary" id="chat-send" type="submit">Enviar ↗</button></div></form>
         </div>
@@ -268,6 +275,7 @@
   </script>
   <script src="app.js"></script>
   <script src="ai-toolbox.js"></script>\n  <script type="module" src="project-workflows.js"></script>
+  <script type="module" src="project-file-vault.js"></script>
 </body>
 </html>
 <!-- update -->
