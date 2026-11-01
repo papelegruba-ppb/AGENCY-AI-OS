@@ -89,3 +89,22 @@ Endpoint: `POST /api/web-build`. Requiere el runtime multi-IA activo y configura
 - Historial local de prompts; sin llamadas automáticas ni nuevas claves API.
 - Herramientas sin API utilizable, como Flow editor, se mantienen en modo manual asistido.
 - Documentación: `docs/AI-TOOLBOX.md`.
+
+
+## Project Workspace, Private File Vault & Social Studio
+
+La rama de trabajo añade:
+- Planificación de tareas y alternativas por proyecto.
+- Biblioteca privada de archivos con almacenamiento R2 y metadatos D1.
+- Indexación por palabras clave de TXT, MD, CSV y JSON, limitada al proyecto activo.
+- Chat con recuperación de fragmentos documentales y referencias de archivo.
+- Social Media Studio para preparar calendarios, posts, stories, guiones de Reels/Shorts, copies y prompts creativos.
+- Ninguna publicación social ni llamada externa se ejecuta sin autorización.
+
+### Requisitos Cloudflare para habilitar la biblioteca documental
+1. Crear un bucket R2 privado y añadir el binding `AGENCY_FILES` al proyecto Pages.
+2. Ejecutar `migrations/0002_project_files.sql` y `migrations/0003_project_file_chunks.sql` en el D1 enlazado como `AGENCY_DB`.
+3. Los archivos PDF, imágenes y Office se almacenan de forma privada, pero quedan pendientes de OCR/parser. No hay todavía indexación semántica ni extracción de esos formatos.
+4. La indexación de texto admite TXT, MD, CSV y JSON, con límites de tamaño y fragmentación.
+
+Documentación técnica: `docs/PROJECT-FILE-VAULT.md` y `docs/PROJECT-CONTEXT-AND-FALLBACK.md`.
