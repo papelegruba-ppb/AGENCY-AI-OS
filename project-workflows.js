@@ -56,5 +56,6 @@ $("#pw-save")?.addEventListener("click", () => {
   $("#pw-status").textContent = "Plan guardado en el historial local de este proyecto.";
 });
 $("#active-project-select")?.addEventListener("change", render);
+window.addEventListener("agency:active-project-change", render);
 window.addEventListener("storage", event => { if ([ACTIVE_KEY, PROJECTS_KEY, WORKFLOWS_KEY].includes(event.key)) render(); });
 render();
