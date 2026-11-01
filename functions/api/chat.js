@@ -5,7 +5,7 @@ import { ownerSession, jsonResponse, sameOrigin } from "../_lib/owner-auth.js";
 const STOPWORDS = new Set(["para","desde","hasta","donde","cuando","como","esta","este","estos","estas","sobre","entre","porque","quiero","puedes","necesito","tengo","hacer","algo","tambien","with","from","that","this","have","what","when","where","your","about"]);
 async function retrieveProjectContext(env, projectId, message) {
   if (!env.AGENCY_DB || !/^[a-zA-Z0-9_-]{1,100}$/.test(projectId || "")) return [];
-  const terms = [...new Set((String(message).toLocaleLowerCase("es").match(/[\\p{L}\\p{N}]{4,}/gu) || []).filter(term => !STOPWORDS.has(term)))].slice(0, 5);
+  const terms = [...new Set((String(message).toLocaleLowerCase("es").match(/[\p{L}\p{N}]{4,}/gu) || []).filter(term => !STOPWORDS.has(term)))].slice(0, 5);
   if (!terms.length) return [];
   try {
     const conditions = terms.map(() => "c.content LIKE ?").join(" OR ");
