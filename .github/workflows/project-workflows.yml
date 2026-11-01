@@ -16,6 +16,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm test
+      - run: npm install --ignore-scripts\n      - run: npm test
       - name: Check browser module syntax
         run: node --check project-workflows.js
