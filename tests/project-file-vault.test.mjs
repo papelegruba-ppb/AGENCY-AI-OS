@@ -18,8 +18,9 @@ test("project file library follows the active project and uses same-origin reque
   assert.match(ui, /x-project-id/); assert.match(ui, /method:"DELETE"/);
   assert.match(html, /id="pf-file-input"/); assert.match(html, /src="project-file-vault.js"/);
 });
-test("UI explicitly discloses that file contents are not yet in chat context", () => {
-  assert.match(html, /todavía no se incorpora al contexto del chat/);
+test("UI explains which file types are searchable and which await extraction", () => {
+  assert.match(html, /TXT, MD, CSV y JSON se indexan/);
+  assert.match(html, /PDF, Office e imágenes quedan pendientes/);
 });
 
 test("chat retrieval scopes document chunks to the active owner and project", async () => {
