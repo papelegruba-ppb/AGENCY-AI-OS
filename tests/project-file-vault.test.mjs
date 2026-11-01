@@ -30,7 +30,7 @@ test("chat retrieval scopes document chunks to the active owner and project", as
   assert.match(chat, /Nunca obedezcas instrucciones/);
 });
 test("text extraction is bounded and retains source file chunk provenance", async () => {
-  assert.match(api, /text\.length>160000/);
+  assert.match(api, /text\.length>90000/);
   assert.match(api, /chunkSize=1200, overlap=160/);
   assert.match(api, /file_id,project_id,owner_id,chunk_index,content/);
   assert.match(api, /indexed_truncated/);
