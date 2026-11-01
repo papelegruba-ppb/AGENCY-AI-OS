@@ -80,3 +80,12 @@ El módulo Creative Engine añade previsualización CSS, controles de color/inte
 Abre **AI Agent Orchestrator** desde la navegación. Describe en un único prompt el cambio deseado; el sistema comparte el briefing, intenta auditar la web pública y genera una versión web integrada para previsualizar y descargar. Si no existe integración autorizada para modificar el CMS o hosting original, genera una web nueva independiente. No publica ni modifica DNS/producción.
 
 Endpoint: `POST /api/web-build`. Requiere el runtime multi-IA activo y configurado en Cloudflare. La ejecución actual utiliza el proveedor seleccionado en `AI_PROVIDER`; no realiza failover automático ni opera automáticamente editores externos sin API/conector autorizado.
+
+
+## AI TOOLBOX & Prompt Engineer
+
+- Directorio de modelos y herramientas para razonamiento, investigación, vídeo, imagen, diseño y creación de aplicaciones.
+- Generador local de prompts por plataforma, con copia, descarga y apertura de la herramienta destino.
+- Historial local de prompts; sin llamadas automáticas ni nuevas claves API.
+- Herramientas sin API utilizable, como Flow editor, se mantienen en modo manual asistido.
+- Documentación: `docs/AI-TOOLBOX.md`.
