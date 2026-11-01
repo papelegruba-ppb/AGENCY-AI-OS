@@ -8,6 +8,7 @@
   },
   "scripts": {
     "preview": "node scripts/preview-server.mjs --port 8000",
+    "test": "node --test tests/*.test.mjs",
     "test:preview": "node --test tests/preview-server.test.mjs"
   }
 }
