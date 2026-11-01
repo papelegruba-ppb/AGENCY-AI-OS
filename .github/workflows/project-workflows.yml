@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/multimodel-ai-toolbox-prompt-engine
+      - feat/creative-studio-mainline
   pull_request:
     branches:
       - main
@@ -23,3 +24,4 @@ jobs:
           node --check project-workflows.js
           node --check project-file-vault.js
           node --check social-studio.js
+          node --check creative-studio.js
