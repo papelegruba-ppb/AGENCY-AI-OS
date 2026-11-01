@@ -1,11 +1,11 @@
 # Project file vault — deployment and limits
 
-Adds a private owner-only upload/list/delete API for project files. Binaries are stored in a private R2 bucket and metadata in D1. It does not yet extract text, run OCR, index documents, or send files to an AI provider.
+Adds a private owner-only upload/list/delete API for project files. Binaries are stored in a private R2 bucket and metadata in D1. It extracts plain text from TXT, MD, CSV and JSON files into bounded chunks in D1 for project-scoped keyword retrieval. PDF, Office documents and images remain stored as pending parser work. It does not run OCR or send files to an AI provider.
 
 ## Cloudflare setup required
 1. Create a private R2 bucket. Do not enable a public r2.dev URL or public custom domain.
 2. Add an R2 binding named AGENCY_FILES to the Pages project/functions environment, pointing to that bucket.
-3. Apply migrations/0002_project_files.sql to the same D1 database already bound as AGENCY_DB.
+3. Apply migrations/0002_project_files.sql and migrations/0003_project_file_chunks.sql to the same D1 database already bound as AGENCY_DB.
 4. Deploy the branch preview and test while authenticated in the private owner workspace.
 
 No API key or paid third-party service is activated. Cloudflare quotas and plan terms still apply.
@@ -22,7 +22,10 @@ No API key or paid third-party service is activated. Cloudflare quotas and plan 
 - Maximum 8 MiB per file; maximum 100 files per project.
 - Files are not publicly served and no public object URL is returned.
 - MIME and extension are checked, but this is not a malware scanner or full file signature validation. Do not upload executable files or highly sensitive data.
-- Uploads are marked pending; no claim of OCR, parsing, embeddings or AI retrieval is made.
+- TXT, MD, CSV and JSON are extracted as UTF-8 and split into 1,200-character chunks (160-character overlap), with a 160,000-character cap and 150-chunk limit.
+- The chat performs bounded keyword retrieval from the active project only. It does not use embeddings/vector search yet.
+- PDF, Office documents and images remain stored as pending_parser; no OCR or structured extraction is active.
+- Document contents are untrusted: the chat is instructed not to follow embedded instructions.
 
 ## Next
-Add content extraction in an isolated processing step, safe PDF/Office parsing, OCR for scanned files/images, chunking with page/sheet/slide provenance, and retrieval constrained by project ID. Treat document contents as untrusted input and ignore embedded prompt instructions.
+Add safe PDF/Office parsing, OCR for scanned files/images, page/sheet/slide provenance, semantic retrieval and malware scanning.
