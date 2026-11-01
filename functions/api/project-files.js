@@ -91,6 +91,7 @@ export async function onRequestDelete(context) {
     const file=await context.env.AGENCY_DB.prepare("SELECT object_key FROM project_files WHERE id=? AND project_id=? AND owner_id=?").bind(fileId,projectId,OWNER_ID).first();
     if(!file) return jsonResponse({ok:false,error:"Archivo no encontrado."},404);
     await context.env.AGENCY_FILES.delete(file.object_key);
+    await context.env.AGENCY_DB.prepare("DELETE FROM project_file_chunks WHERE file_id=? AND project_id=? AND owner_id=?").bind(fileId,projectId,OWNER_ID).run();
     await context.env.AGENCY_DB.prepare("DELETE FROM project_files WHERE id=? AND project_id=? AND owner_id=?").bind(fileId,projectId,OWNER_ID).run();
     return jsonResponse({ok:true,deleted:true});
   } catch { return jsonResponse({ok:false,code:"PROJECT_FILE_DELETE_FAILED",error:"No se pudo eliminar el archivo."},503); }
