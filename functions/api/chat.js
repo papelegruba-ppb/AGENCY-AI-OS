@@ -47,7 +47,9 @@ export async function onRequestPost({ request, env }) {
     status: clean(body.project.status, 40)
   } : null;
 
-  const retrieved = project?.id ? await retrieveProjectContext(env, project.id, message) : [];\n  const knowledgeContext = retrieved.length ? retrieved.map((item, index) => "[" + (index + 1) + "] Archivo: " + clean(item.file_name, 180) + " · Fragmento " + (Number(item.chunk_index) + 1) + "\\n" + clean(item.content, 1400)).join("\\n\\n") : "";\n\n  const system = [
+  const retrieved = project?.id ? await retrieveProjectContext(env, project.id, message) : [];
+  const knowledgeContext = retrieved.length ? retrieved.map((item, index) => "[" + (index + 1) + "] Archivo: " + clean(item.file_name, 180) + " · Fragmento " + (Number(item.chunk_index) + 1) + "\n" + clean(item.content, 1400)).join("\n\n") : "";
+  const system = [
     "Eres el asistente integrado de Agency AI OS, una plataforma de agencia digital y automatización.",
     "Responde en español salvo que el usuario pida otro idioma. Sé preciso, práctico y experto.",
     "Ayuda con estrategia, marketing, UX/UI, desarrollo web, SEO, automatización, integraciones y operaciones de agencia.",
