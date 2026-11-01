@@ -118,7 +118,7 @@
     currentPrompt=item.prompt||""; currentRecordId=item.id; $("#de-output").textContent=currentPrompt||"Sin prompt guardado.";
     $("#de-open").href=PROVIDERS[item.providerId]?.url||PROVIDERS.claude.url;
     $("#de-copy").disabled=!currentPrompt; $("#de-download").disabled=!currentPrompt;
-    $("#de-result").value=item.result||""; currentReview=item.review||null;
+    $("#de-result").value=item.result||""; currentReview=item.review||null;\n    [...$("#de-review").querySelectorAll("input[type=checkbox]")].forEach((input,index)=>{input.checked=Boolean(item.review?.checks?.[index]);});
     $("#de-save-review").disabled=!$("#de-result").value.trim(); $("#de-export-review").disabled=!$("#de-result").value.trim();
     setStatus("Delegación recuperada. Revisa el prompt antes de volver a utilizarlo.");
     setStatus(item.result?"Respuesta recuperada. Revisa las casillas de validación.":"Aún no hay respuesta para revisar.","#de-review-status");
@@ -171,6 +171,6 @@
     localStorage.setItem(HISTORY_KEY,JSON.stringify(rest)); renderHistory();
     setStatus("Historial de este proyecto eliminado. No se han borrado otros proyectos.");
   });
-  window.addEventListener("storage", event => { if(event.key===ACTIVE_KEY||event.key===PROJECTS_KEY) renderHistory(); });
+  window.addEventListener("storage", event => { if(event.key===ACTIVE_KEY||event.key===PROJECTS_KEY) renderHistory(); });\n  $("#active-project-select")?.addEventListener("change", renderHistory);
   renderHistory();
 })();
