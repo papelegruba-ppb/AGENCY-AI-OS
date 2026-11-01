@@ -163,7 +163,7 @@
   function currentView(view) {
     $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + view));
     $$(".nav-item[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === view));
-    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",chat:"Chat IA","ai-toolbox":"AI TOOLBOX",settings:"Configuración","creative-engine":"Creative Engine"};
+    const labels = {dashboard:"Centro de mando",builder:"Nuevo proyecto",projects:"Proyectos",deliverables:"Entregables",chat:"Chat IA","ai-toolbox":"AI TOOLBOX","creative-studio":"Creative Studio",settings:"Configuración","creative-engine":"Creative Engine"};
     $("#breadcrumb-current").textContent = labels[view] || "Workspace";
     $("#sidebar").classList.remove("open");
     if (view === "projects") renderProjects();
