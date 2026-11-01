@@ -17,3 +17,11 @@ test("Social Studio is project-scoped and integrated into the workspace",()=>{
  assert.match(ui,/agency:active-project-change/);assert.match(ui,/\/api\/social-studio/);
  assert.match(html,/id="ss-title"/);assert.match(html,/src="social-studio.js"/);
 });
+
+test("project tools are collapsible and do not displace the chat composer",()=>{
+ const chatPosition=html.indexOf('id="chat-messages"');
+ const composerPosition=html.indexOf('id="chat-form"');
+ const toolsPosition=html.indexOf('workspace-tool-accordions');
+ assert.ok(chatPosition>=0&&composerPosition>chatPosition&&toolsPosition>composerPosition);
+ assert.match(html,/<details class="workspace-tool-accordion">/);
+});
