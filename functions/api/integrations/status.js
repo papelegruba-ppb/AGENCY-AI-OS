@@ -1,7 +1,10 @@
 import { integrationStatus } from "../../_lib/integrations.js";
+import { ownerSession, sameOrigin, jsonResponse } from "../../_lib/owner-auth.js";
 import { decryptCanvaTokens } from "../../_lib/canva-mcp.js";
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
+  if (!sameOrigin(request)) return jsonResponse({ ok: false, error: "Origen de solicitud no válido." }, 403);
+  if (!(await ownerSession(request, env))) return jsonResponse({ ok: false, error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }, 401);
   const integrations = integrationStatus(env);
   const gsc = integrations.find(item => item.id === "searchConsole");
   if (gsc) { gsc.connected = false; gsc.status = gsc.enabled ? "oauth_pending" : "needs_configuration"; if (gsc.enabled) { try { gsc.connected = Boolean(await env.AGENCY_KV.get("gsc_refresh_token")); gsc.status = gsc.connected ? "connected" : "oauth_pending"; } catch { gsc.status = "token_store_unavailable"; } } }
