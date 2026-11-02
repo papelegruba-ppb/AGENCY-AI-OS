@@ -28,5 +28,7 @@ jobs:
             echo "Checking $file"
             node --input-type=module --check < "$file"
           done
+      - name: Install endpoint test dependencies
+        run: npm install --ignore-scripts
       - name: Test fail-closed cost guards
         run: node --experimental-default-type=module --test tests/ai-runtime.test.js tests/private-api-guards.test.mjs
