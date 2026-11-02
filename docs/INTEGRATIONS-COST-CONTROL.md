@@ -6,7 +6,8 @@ Todas las integraciones externas con consumo variable, cuotas o cargos permanece
 
 | Integración | Flag de servidor | Estado por defecto |
 |---|---|---|
-| IA externa (OpenAI, DeepSeek, Gemini, Anthropic, Perplexity) | `AI_BILLABLE_ENABLED=true`, `AI_SPEND_AUTHORIZED=true` y `AI_ENABLED=true` | Desactivada |\n| Agency Mini AI (Cloudflare Workers AI) | Binding `AI`, `AI_ENABLED=true`, `AI_WORKERS_ENABLED=true` y `AGENCY_KV` | Desactivada; cuota diaria predeterminada 5 global / 3 por IP |
+| IA externa (OpenAI, DeepSeek, Gemini, Anthropic, Perplexity) | `AI_BILLABLE_ENABLED=true`, `AI_SPEND_AUTHORIZED=true` y `AI_ENABLED=true` | Desactivada |
+| Agency Mini AI (Cloudflare Workers AI) | Binding `AI`, `AI_ENABLED=true`, `AI_WORKERS_ENABLED=true` y `AGENCY_KV` | Desactivada; cuota diaria predeterminada 5 global / 3 por IP |
 | PageSpeed Insights | `PAGESPEED_API_KEY` presente y sesión privada | Endpoint protegido; cuota y límites de Google aplican |
 | Google Drive | `GOOGLE_DRIVE_ENABLED=true` | Desactivada |
 | WhatsApp Business | `WHATSAPP_ENABLED=true` | Desactivada; integración real pendiente |
