@@ -108,3 +108,8 @@ La rama de trabajo añade:
 4. La indexación de texto admite TXT, MD, CSV y JSON, con límites de tamaño y fragmentación.
 
 Documentación técnica: `docs/PROJECT-FILE-VAULT.md` y `docs/PROJECT-CONTEXT-AND-FALLBACK.md`.
+
+
+## Checklist de producción
+
+La configuración de bindings, migraciones D1, bucket R2, Agency Mini AI y pruebas de arranque está documentada en [`docs/PRODUCTION-CLOUDFLARE-CHECKLIST.md`](docs/PRODUCTION-CLOUDFLARE-CHECKLIST.md). La protección de APIs privadas se describe en [`PRIVATE-ACCESS.md`](PRIVATE-ACCESS.md).
