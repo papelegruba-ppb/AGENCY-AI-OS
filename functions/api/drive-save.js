@@ -1,4 +1,8 @@
+import { ownerSession, sameOrigin, jsonResponse } from "../_lib/owner-auth.js";
+
 export async function onRequestPost({ request, env }) {
+  if (!sameOrigin(request)) return jsonResponse({ ok: false, error: "Origen de solicitud no válido." }, 403);
+  if (!(await ownerSession(request, env))) return jsonResponse({ ok: false, error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }, 401);
   if (env.GOOGLE_DRIVE_ENABLED !== "true") return new Response(JSON.stringify({ ok: false, code: "INTEGRATION_DISABLED", integration: "googleDrive", error: "Google Drive está desactivado por la política de coste cero. No se ha realizado ninguna llamada externa." }), { status: 503, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 
   // 1. Recuperamos el token guardado
