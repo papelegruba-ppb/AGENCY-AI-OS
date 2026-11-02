@@ -75,7 +75,9 @@ function parseRobots(source){
 }
 function allowedPath(path,rules){const found=rules.filter(r=>path.startsWith(r.path)).sort((a,b)=>b.path.length-a.path.length);return!found.length||found[0].type==="allow";}
 
-export async function onRequestPost({request}){
+export async function onRequestPost({request,env}){
+  if(!sameOrigin(request))return jsonResponse({ok:false,error:"Origen de solicitud no válido."},403);
+  if(!(await ownerSession(request,env)))return jsonResponse({ok:false,code:"OWNER_AUTH_REQUIRED",error:"Inicia sesión en el Workspace privado."},401);
   let body;try{body=await request.json();}catch{return json({ok:false,error:"El cuerpo de la petición debe ser JSON válido.",code:"INVALID_JSON"},400);}
   const initial=validPublicUrl(String(body?.url||"").trim());
   if(!initial||initial.href.length>2048)return json({ok:false,error:"Introduce una URL pública HTTP/HTTPS válida. No se admiten direcciones locales ni IP literales.",code:"INVALID_URL"},400);
