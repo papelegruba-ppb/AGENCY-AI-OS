@@ -6,8 +6,8 @@ Todas las integraciones externas con consumo variable, cuotas o cargos permanece
 
 | Integración | Flag de servidor | Estado por defecto |
 |---|---|---|
-| IA (OpenAI, DeepSeek, Gemini, Anthropic, Perplexity) | `AI_BILLABLE_ENABLED=true` y `AI_ENABLED=true` | Desactivada |
-| PageSpeed Insights | `PAGESPEED_API_KEY` presente | Disponible al configurar la clave; consulta sin coste directo dentro de cuota |
+| IA externa (OpenAI, DeepSeek, Gemini, Anthropic, Perplexity) | `AI_BILLABLE_ENABLED=true`, `AI_SPEND_AUTHORIZED=true` y `AI_ENABLED=true` | Desactivada |\n| Agency Mini AI (Cloudflare Workers AI) | Binding `AI`, `AI_ENABLED=true`, `AI_WORKERS_ENABLED=true` y `AGENCY_KV` | Desactivada; cuota diaria predeterminada 5 global / 3 por IP |
+| PageSpeed Insights | `PAGESPEED_API_KEY` presente y sesión privada | Endpoint protegido; cuota y límites de Google aplican |
 | Google Drive | `GOOGLE_DRIVE_ENABLED=true` | Desactivada |
 | WhatsApp Business | `WHATSAPP_ENABLED=true` | Desactivada; integración real pendiente |
 | Google Calendar | `GOOGLE_CALENDAR_ENABLED=true` | Desactivada; integración real pendiente |
@@ -19,14 +19,14 @@ No habilitar flags desde el navegador. Las integraciones que puedan generar carg
 
 ## Estado
 
-Consultar `GET /api/integrations/status`. La respuesta enumera estado, función, aviso de coste y pasos de activación. Los endpoints protegidos responden `503 INTEGRATION_DISABLED` antes de contactar con el proveedor.
+Consultar `GET /api/integrations/status` después de iniciar sesión en el Workspace privado. La respuesta enumera estado, función, aviso de coste y pasos de activación. Los endpoints protegidos responden `401 OWNER_AUTH_REQUIRED` sin sesión y `503 INTEGRATION_DISABLED` antes de contactar con un proveedor desactivado.
 
 ## Límites funcionales honestos
 
 - WhatsApp, Calendar y Sheets se muestran como integraciones preparadas, no conectadas: aún necesitan webhooks/OAuth, persistencia, control de duplicados y pruebas.
 - El crawler actual lee HTML público servido; no ejecuta JavaScript ni captura screenshots.
 - PageSpeed consulta la API oficial cuando existe `PAGESPEED_API_KEY`; no requiere `PAGESPEED_ENABLED`. Sujeto a cuotas y límites de Google.
-- Los proyectos siguen guardándose principalmente en el navegador. Esta política no convierte localStorage en almacenamiento compartido ni sincronización multi-dispositivo.
+- Los proyectos conservan un respaldo local en localStorage. El almacenamiento compartido multi-dispositivo requiere configurar D1 como `AGENCY_DB`, aplicar las migraciones y entrar en el Workspace privado. Sin esos bindings no se debe afirmar que la sincronización está activa.
 - Las llamadas a IA están separadas de los agentes locales; los agentes no ejecutan acciones externas ni código arbitrario.
 - Canva Connect API: la integración de API es gratuita según Canva, pero algunas capacidades están restringidas a planes de pago. El estado de credenciales no equivale a OAuth conectado ni a agentes creativos plenamente integrados. Consultar `/api/canva/status` y validar las herramientas disponibles, scopes, cuotas y licencias de elementos premium.
 
