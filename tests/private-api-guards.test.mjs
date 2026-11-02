@@ -10,6 +10,10 @@ import { onRequestPost as seoAudit } from "../functions/api/seo-audit.js";
 import { onRequestPost as driveSave } from "../functions/api/drive-save.js";
 import { onRequestPost as gscData } from "../functions/api/gsc-data.js";
 import { onRequestGet as integrationsStatus } from "../functions/api/integrations/status.js";
+import { onRequestGet as driveAuth } from "../functions/api/drive-auth.js";
+import { onRequestGet as driveCallback } from "../functions/api/drive-callback.js";
+import { onRequestGet as gscAuth } from "../functions/api/gsc-auth.js";
+import { onRequestGet as gscCallback } from "../functions/api/gsc-callback.js";
 import { onRequestPost as chat } from "../functions/api/chat.js";
 import { onRequestPost as agentOrchestrator } from "../functions/api/agent-orchestrator.js";
 import { onRequestPost as socialStudio } from "../functions/api/social-studio.js";
@@ -24,6 +28,10 @@ const protectedRoutes = [
   ["Google Drive save", driveSave, "POST"],
   ["Search Console data", gscData, "POST"],
   ["integration status", integrationsStatus, "GET"],
+  ["Google Drive OAuth start", driveAuth, "GET"],
+  ["Google Drive OAuth callback", driveCallback, "GET"],
+  ["Search Console OAuth start", gscAuth, "GET"],
+  ["Search Console OAuth callback", gscCallback, "GET"],
   ["chat", chat, "POST"],
   ["agent orchestrator", agentOrchestrator, "POST"],
   ["social studio", socialStudio, "POST"]
