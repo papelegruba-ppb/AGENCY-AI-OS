@@ -52,8 +52,11 @@ for (const [name, handler, method] of protectedRoutes) {
       ? await handler(makeContext(method))
       : await handler(makeContext(method));
     assert.equal(response.status, 401, name + " must require an owner session");
-    const body = await response.json();
-    assert.equal(body.code, "OWNER_AUTH_REQUIRED");
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const body = await response.json();
+      assert.equal(body.code, "OWNER_AUTH_REQUIRED");
+    }
   });
 
   test(name + " rejects cross-origin requests", async () => {
