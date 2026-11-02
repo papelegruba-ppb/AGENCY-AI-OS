@@ -1,3 +1,5 @@
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
+
 const API_BASE = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 
 function json(data, status = 200, incidentId = null) {
@@ -39,6 +41,8 @@ function isPublicWebUrl(value) {
 }
 
 export async function onRequestGet({ request, env }) {
+  if (!sameOrigin(request)) return json({ ok: false, error: "Origen de solicitud no válido.", code: "ORIGIN_NOT_ALLOWED" }, 403);
+  if (!(await ownerSession(request, env))) return json({ ok: false, error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }, 401);
   const incidentId = crypto.randomUUID();
   if (!env.PAGESPEED_API_KEY) return failure(incidentId, { error: "Falta PAGESPEED_API_KEY en el entorno de Cloudflare. PageSpeed no se ha ejecutado.", code: "PAGESPEED_API_KEY_MISSING", integration: "pagespeed" }, 503);
   const incoming = new URL(request.url);
