@@ -1,4 +1,5 @@
 import { runAiText } from "../_lib/ai-runtime.js";
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
@@ -6,6 +7,8 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
 const clean = (v, n = 4000) => String(v ?? "").replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, " ").slice(0, n);
 
 export async function onRequestPost({ request, env }) {
+  if (!sameOrigin(request)) return json({ ok: false, error: "Origen de solicitud no válido." }, 403);
+  if (!(await ownerSession(request, env))) return json({ ok: false, error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }, 401);
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: "La petición debe ser JSON." }, 400); }
   const prompt = clean(body?.prompt, 3000).trim();

@@ -1,7 +1,11 @@
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
 }
 export async function onRequestPost({ request, env }) {
+  if (!sameOrigin(request)) return json({ ok: false, error: "Origen de solicitud no válido.", code: "ORIGIN_NOT_ALLOWED" }, 403);
+  if (!(await ownerSession(request, env))) return json({ ok: false, error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }, 401);
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: "El cuerpo de la petición debe ser JSON válido.", code: "INVALID_JSON" }, 400); }
   const siteUrl = String(body?.siteUrl || "").trim();

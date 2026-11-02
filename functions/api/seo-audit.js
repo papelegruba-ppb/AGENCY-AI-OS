@@ -1,3 +1,5 @@
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
+
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -13,6 +15,8 @@ export async function onRequestPost(context) {
   if (request.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  if (!sameOrigin(request)) return new Response(JSON.stringify({ error: "Origen de solicitud no válido." }), { status: 403, headers: corsHeaders });
+  if (!(await ownerSession(request, env))) return new Response(JSON.stringify({ error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }), { status: 401, headers: corsHeaders });
 
   try {
     const body = await request.json();

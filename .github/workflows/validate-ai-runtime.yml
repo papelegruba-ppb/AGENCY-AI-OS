@@ -24,9 +24,11 @@ jobs:
       - name: Check Cloudflare Pages Function syntax
         run: |
           set -eu
-          for file in functions/_lib/ai-runtime.js functions/api/ai-status.js functions/api/agent-orchestrator.js functions/api/project-assistant.js functions/api/generate-proposal.js; do
+          for file in functions/_lib/ai-runtime.js functions/_lib/owner-auth.js functions/api/ai-status.js functions/api/agent-orchestrator.js functions/api/project-assistant.js functions/api/generate-proposal.js functions/api/web-build.js functions/api/pagespeed.js functions/api/site-audit.js functions/api/seo-audit.js functions/api/drive-save.js functions/api/gsc-data.js functions/api/integrations/status.js functions/api/drive-auth.js functions/api/drive-callback.js functions/api/gsc-auth.js functions/api/gsc-callback.js functions/api/chat.js functions/api/social-studio.js; do
             echo "Checking $file"
             node --input-type=module --check < "$file"
           done
+      - name: Install endpoint test dependencies
+        run: npm install --ignore-scripts
       - name: Test fail-closed cost guards
-        run: node --experimental-default-type=module --test tests/ai-runtime.test.js
+        run: node --experimental-default-type=module --test tests/ai-runtime.test.js tests/private-api-guards.test.mjs
