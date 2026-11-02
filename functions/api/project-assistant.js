@@ -1,4 +1,5 @@
 import { runAiText } from "../_lib/ai-runtime.js";
+import { ownerSession, sameOrigin, jsonResponse } from "../_lib/owner-auth.js";
 
 const MAX_MESSAGE = 3000;
 const MAX_CONTEXT = 14000;
@@ -11,6 +12,8 @@ function json(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
+  if (!sameOrigin(request)) return jsonResponse({ ok: false, error: "Origen de solicitud no válido." }, 403);
+  if (!(await ownerSession(request, env))) return jsonResponse({ ok: false, error: "Inicia sesión en el Workspace privado.", code: "OWNER_AUTH_REQUIRED" }, 401);
   let body;
   try { body = await request.json(); }
   catch { return json({ error: "La petición debe ser JSON." }, 400); }
