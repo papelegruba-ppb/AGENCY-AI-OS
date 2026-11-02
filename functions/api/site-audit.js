@@ -1,3 +1,5 @@
+import { ownerSession, sameOrigin, jsonResponse } from "../_lib/owner-auth.js";
+
 const MAX_HTML_BYTES = 1500000;
 const DEFAULT_MAX_PAGES = 20;
 const USER_AGENT = "Mozilla/5.0 (compatible; AgencyAIOS/1.0; +https://github.com/papelegruba-ppb/AGENCY-AI-OS)";
