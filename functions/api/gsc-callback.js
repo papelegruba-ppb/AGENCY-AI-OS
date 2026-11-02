@@ -1,5 +1,9 @@
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
+
 function redirect(request,status){return Response.redirect(new URL("/seo.html?gsc="+encodeURIComponent(status),request.url).toString(),302);}
 export async function onRequestGet({request,env}){
+ if(!sameOrigin(request))return redirect(request,"error");
+ if(!(await ownerSession(request,env)))return new Response("Inicia sesión en el Workspace privado y vuelve a conectar Search Console.",{status:401,headers:{"cache-control":"no-store"}});
  const u=new URL(request.url);if(u.searchParams.has("error"))return redirect(request,"error");
  const code=u.searchParams.get("code"),state=u.searchParams.get("state");
  if(!code||!state||!env.AGENCY_KV||!env.GOOGLE_CLIENT_ID||!env.GOOGLE_CLIENT_SECRET||!env.GOOGLE_GSC_REDIRECT_URI)return redirect(request,"config-error");
