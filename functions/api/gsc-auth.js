@@ -1,5 +1,9 @@
+import { ownerSession, sameOrigin } from "../_lib/owner-auth.js";
+
 function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } }); }
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
+ if (!sameOrigin(request)) return json({ok:false,error:"Origen de solicitud no válido.",code:"ORIGIN_NOT_ALLOWED"},403);
+ if (!(await ownerSession(request,env))) return json({ok:false,error:"Inicia sesión en el Workspace privado.",code:"OWNER_AUTH_REQUIRED"},401);
  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_GSC_REDIRECT_URI || !env.AGENCY_KV) return json({ok:false,error:"Faltan GOOGLE_CLIENT_ID, GOOGLE_GSC_REDIRECT_URI o AGENCY_KV.",code:"GSC_OAUTH_CONFIG_MISSING"},503);
  const state=crypto.randomUUID()+crypto.randomUUID();
  await env.AGENCY_KV.put("gsc_oauth_state:"+state,"1",{expirationTtl:600});
