@@ -4,12 +4,15 @@ on:
   pull_request:
     paths:
       - "index.html"
+      - "ai-resources.js"
+      - "ai-resources.css"
+      - "tests/ai-resources.test.mjs"
       - "app.js"
       - "styles.css"
       - "tests/delivery-workflow.test.mjs"
       - "propuesta-comercial.html"
       - "tests/commercial-proposal-data.test.mjs"
-      - "tests/proposal-evidence-capture.test.mjs"
+      - "tests/proposal-evidence-capture.test.mjs tests/ai-resources.test.mjs"
       - ".github/workflows/validate-delivery-workflow.yml"
   push:
     branches: [main]
@@ -29,6 +32,6 @@ jobs:
         with:
           node-version: 22
       - name: Check JavaScript syntax
-        run: node --check app.js
+        run: node --check app.js && node --check ai-resources.js
       - name: Run delivery and proposal workflow checks
         run: node --test tests/delivery-workflow.test.mjs tests/commercial-proposal-data.test.mjs tests/proposal-evidence-capture.test.mjs
