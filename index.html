@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="ai-toolbox.css">
+  <link rel="stylesheet" href="ai-resources.css">
   <link rel="stylesheet" href="project-workflows.css">
   <link rel="stylesheet" href="project-file-vault.css">
   <link rel="stylesheet" href="social-studio.css">
@@ -31,6 +32,7 @@
         <button class="nav-item" data-view="deliverables"><span class="nav-icon">⌘</span> Entregables</button>
         <button class="nav-item" data-view="chat"><span class="nav-icon">◉</span> Chat IA <span class="nav-count" style="margin-left:auto">AI</span></button>
         <button class="nav-item" data-view="ai-toolbox"><span class="nav-icon">✧</span> AI TOOLBOX <span class="nav-count" style="margin-left:auto">PROMPTS</span></button>
+        <button class="nav-item" data-view="ai-resources"><span class="nav-icon">⌘</span> AI Resources Hub <span class="nav-count" style="margin-left:auto">NEW</span></button>
         <button class="nav-item" data-view="creative-studio"><span class="nav-icon">✺</span> Creative Studio <span class="nav-count" style="margin-left:auto">FREE</span></button>
         
         <div class="nav-divider" style="height:1px; background:var(--line); margin:10px 0; opacity:0.5;"></div>
@@ -248,6 +250,18 @@
         <section class="toolbox-panel"><h2>Directorio AI TOOLBOX</h2><p class="toolbox-muted">Filtra por especialidad. Las etiquetas no implican que una herramienta esté conectada.</p><input id="tb-search" class="toolbox-search" type="search" placeholder="Buscar herramienta, uso o modalidad…"><div id="tb-filters" class="toolbox-filterbar"></div><div id="tb-tools" class="toolbox-tools"></div></section>
       </section>
 
+      <section class="view" id="view-ai-resources">
+        <div class="ar-hero"><div><p class="ar-kicker">PROMPTS · SKILLS · CONNECTORS · COMPATIBILITY</p><h1>AI Resources Hub<span class="heading-period">.</span></h1><p>Un centro de recursos reutilizables para Claude, Agency Mini AI y otros modelos. Diseñado para funcionar también en planes gratuitos mediante flujos manuales.</p></div><span class="ar-orbit">AI<span>✳</span></span></div>
+        <div class="ar-notice"><strong>Modo seguro y gratuito primero.</strong> Los prompts y skills se copian para usarlos en la plataforma elegida. Un recurso marcado como manual no significa que exista una conexión API ni que Claude Free admita MCP, conectores o subagentes.</div>
+        <div class="ar-tabs" role="tablist" aria-label="Secciones del AI Resources Hub">
+          <button type="button" class="active" data-ar-tab="prompts">Prompt Library</button><button type="button" data-ar-tab="skills">Skills Library</button><button type="button" data-ar-tab="connectors">Connectors Hub</button><button type="button" data-ar-tab="compatibility">Compatibilidad</button>
+        </div>
+        <section class="ar-pane active" data-ar-pane="prompts"><div class="ar-section-head"><div><p class="eyebrow">PROMPTS REUTILIZABLES</p><h2>Paquetes de trabajo para Claude</h2><p>Selecciona una especialidad, copia el prompt y pégalo en Claude Free o en otro modelo compatible.</p></div><input id="ar-search-prompts" type="search" placeholder="Buscar especialidad…" aria-label="Buscar prompts"></div><div id="ar-prompts" class="ar-card-grid"></div></section>
+        <section class="ar-pane" data-ar-pane="skills"><div class="ar-section-head"><div><p class="eyebrow">INSTRUCCIONES MODULARES</p><h2>Skills de la agencia</h2><p>Fichas portables con objetivo, entradas, procedimiento y criterios de aceptación. Se pueden pegar como instrucciones aunque la plataforma no admita Skills nativas.</p></div></div><div id="ar-skills" class="ar-card-grid"></div><div class="ar-resource-links"><a href="https://www.ui-skills.com/skills" target="_blank" rel="noopener noreferrer">UI Skills ↗</a><a href="https://phosphoricons.com/" target="_blank" rel="noopener noreferrer">Phosphor Icons ↗</a></div></section>
+        <section class="ar-pane" data-ar-pane="connectors"><div class="ar-section-head"><div><p class="eyebrow">INTEGRACIONES Y HERRAMIENTAS</p><h2>Connectors Hub</h2><p>Inventario de conexiones reales y flujos manuales. Nunca se muestran como conectados sin una autorización y una prueba.</p></div></div><div id="ar-connectors" class="ar-card-grid"></div><p class="ar-footnote">Para conectar un servicio se necesita su autorización oficial, credenciales guardadas en servidor y una prueba de extremo a extremo. No pegues claves API en prompts ni en el navegador.</p></section>
+        <section class="ar-pane" data-ar-pane="compatibility"><div class="ar-section-head"><div><p class="eyebrow">PORTABILIDAD MULTI-IA</p><h2>Compatibilidad por modalidad</h2><p>Separación entre uso manual, capacidades sujetas al plan y conexiones API que requieren configuración externa.</p></div></div><div class="ar-compat-wrap"><table class="ar-compat"><thead><tr><th>Recurso</th><th>Claude Free</th><th>Claude con funciones habilitadas</th><th>Agency Mini AI / API</th></tr></thead><tbody><tr><td>Prompts de texto</td><td><span class="ar-status yes">Manual</span></td><td><span class="ar-status yes">Manual</span></td><td><span class="ar-status yes">Manual / API</span></td></tr><tr><td>Skills como instrucciones</td><td><span class="ar-status yes">Pegar texto</span></td><td><span class="ar-status yes">Según función</span></td><td><span class="ar-status yes">Adaptable</span></td></tr><tr><td>Skills nativas / subagentes</td><td><span class="ar-status maybe">No asumir</span></td><td><span class="ar-status maybe">Según plan</span></td><td><span class="ar-status maybe">Implementación propia</span></td></tr><tr><td>MCP / conectores externos</td><td><span class="ar-status maybe">No asumir</span></td><td><span class="ar-status maybe">Según disponibilidad</span></td><td><span class="ar-status maybe">Servidor autorizado</span></td></tr><tr><td>API de modelo</td><td><span class="ar-status no">No incluida por defecto</span></td><td><span class="ar-status no">API separada</span></td><td><span class="ar-status maybe">Clave y límites</span></td></tr></tbody></table></div><div class="ar-callout"><strong>Regla operativa:</strong> si una función no está disponible en el plan gratuito, el Hub ofrece una alternativa manual equivalente y conserva el prompt para no bloquear el trabajo.</div></section>
+      </section>
+
       <section class="view" id="view-creative-studio">
         <div class="cs-hero"><div><p class="eyebrow">MULTIPURPOSE VISUAL WORKFLOW · MANUAL FIRST</p><h1>Creative Studio<span class="heading-period">.</span></h1><p>Prepara imágenes maestras y vídeos para cualquier sector. Genera prompts especializados, abre herramientas gratuitas y trae después los assets aprobados a tu proyecto.</p></div><span class="pill pill-green">Sin API · 0 €</span></div>
         <div class="cs-warning"><strong>Importante sobre el uso gratuito:</strong> los créditos, marcas de agua y condiciones cambian. Gratis no significa uso comercial autorizado. Antes de entregar una pieza a un cliente, comprueba la licencia del plan con el que se generó. Este módulo no realiza llamadas a proveedores ni publica contenido.</div>
@@ -314,6 +328,7 @@
   </script>
   <script src="app.js"></script>
   <script src="ai-toolbox.js"></script>
+  <script src="ai-resources.js"></script>
   <script type="module" src="project-workflows.js"></script>
   <script type="module" src="project-file-vault.js"></script>
   <script type="module" src="social-studio.js"></script>
