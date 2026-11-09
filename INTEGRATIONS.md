@@ -87,3 +87,15 @@ Fuentes oficiales:
 ## Panel de diagnóstico IA en Configuración
 
 La vista Configuración consulta `GET /api/ai-status` sin caché y presenta el estado de los tres interruptores de seguridad, el binding AGENCY_KV y la preparación individual de cada proveedor. Es un panel estrictamente informativo: no muestra claves, no permite activar variables ni realiza llamadas a modelos. El botón de actualización solo repite la consulta de estado.
+
+
+## Conectores de datos globales (Ahrefs + Microsoft Clarity)
+
+- Los conectores Ahrefs y Microsoft Clarity son servicios generales de Agency AI OS; no se vinculan a un proyecto del constructor ni rellenan briefings.
+- Consola privada: `integrations.html`, accesible desde la navegación principal y protegida por sesión de propietario.
+- Ahrefs: `GET /api/integrations/ahrefs?metric=domain-rating&target=example.com`; secreto global `AHREFS_API_KEY`; lista permitida de endpoints y caché KV de 6 horas.
+- Clarity: `GET /api/integrations/clarity?numOfDays=1&dimension1=URL`; secreto global `CLARITY_API_TOKEN`; requiere `AGENCY_KV`; caché KV de 4 horas y guardia preventiva local de 8 llamadas/día.
+- Microsoft Clarity emite tokens por proyecto Clarity. El conector es global para Agency AI OS, pero el token determina el proyecto Clarity consultado. No existe un parámetro projectId en este endpoint.
+- Ambos proxies requieren sesión de propietario y validación same-origin. No devuelven secretos al navegador.
+- La guardia basada en KV es de mejor esfuerzo, no atómica. La cuota oficial de Clarity sigue siendo 10 llamadas por proyecto y día; la API devuelve datos de 1–3 días, máximo 3 dimensiones, 1.000 filas y zona horaria UTC.
+- Estado de implementación: código en rama `feat/global-ahrefs-clarity-connectors`; falta configurar secretos/binding en Cloudflare y realizar pruebas de extremo a extremo.
