@@ -18,13 +18,15 @@ export async function onRequestGet({ request, env }) {
   if (dimensions.some(d => !ALLOWED_DIMENSIONS.has(d))) return json({ ok:false, error:"Dimensión no admitida por Clarity." }, 400);
   if (new Set(dimensions).size !== dimensions.length) return json({ ok:false, error:"No repitas dimensiones." }, 400);
 
-  const cacheKey = "global-integration-cache:clarity:" + days + ":" + dimensions.join("|");
+  const tokenDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.CLARITY_API_TOKEN));
+  const tokenScope = [...new Uint8Array(tokenDigest)].slice(0,12).map(v=>v.toString(16).padStart(2,"0")).join("");
+  const cacheKey = "global-integration-cache:clarity:" + tokenScope + ":" + days + ":" + dimensions.join("|");
   try {
     const cached = await env.AGENCY_KV.get(cacheKey);
     if (cached) return new Response(cached, { headers: { "content-type":"application/json; charset=utf-8", "cache-control":"private, max-age=300", "x-data-source":"cache" } });
 
     // Best-effort daily guard. KV is eventually consistent; it is not an atomic hard quota.
-    const dayKey = "global-integration-quota:clarity:" + new Date().toISOString().slice(0,10);
+    const dayKey = "global-integration-quota:clarity:" + tokenScope + ":" + new Date().toISOString().slice(0,10);
     const used = Number(await env.AGENCY_KV.get(dayKey) || 0);
     if (used >= 8) return json({ ok:false, code:"LOCAL_DAILY_GUARD", error:"Límite preventivo diario alcanzado (8 llamadas). Reutiliza la caché o espera al siguiente día UTC." }, 429);
     await env.AGENCY_KV.put(dayKey, String(used + 1), { expirationTtl: 172800 });
