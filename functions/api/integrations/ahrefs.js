@@ -33,8 +33,8 @@ export async function onRequestGet({ request, env }) {
 
   const params = new URLSearchParams();
   params.set("target", normalizedTarget);
-  const select = url.searchParams.get("select");
-  if (select && metric === "ai-responses-count") params.set("select", select);
+  const select = url.searchParams.get("select") || "all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok";
+  if (metric === "ai-responses-count") params.set("select", select);
   const date = url.searchParams.get("date");
   if (date && /^\d{4}-\d{2}-\d{2}$/.test(date) && metric === "domain-rating") params.set("date", date);
   const limit = url.searchParams.get("limit");
