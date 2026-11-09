@@ -45,3 +45,8 @@ Los contadores usan Cloudflare KV, cuyas escrituras pueden ser eventualmente con
 - No cambiar a un proveedor alternativo automáticamente.
 - Las operaciones externas sensibles requieren controles y aprobación humana.
 - El estado de GitHub no demuestra que Cloudflare haya desplegado ese commit. Verificar el último deployment y ejecutar pruebas de extremo a extremo.
+
+
+## Conectores analíticos globales
+
+Ahrefs y Microsoft Clarity viven en la capa de integraciones generales de Agency AI OS, no dentro del modelo de proyectos del workspace. La consola `integrations.html` permite consultas manuales independientes del proyecto activo. Las credenciales se mantienen como secretos de Cloudflare y los endpoints `functions/api/integrations/ahrefs.js` y `clarity.js` exigen sesión de propietario. Ahrefs recibe un dominio como parámetro explícito; Clarity devuelve datos del proyecto al que pertenece el token global configurado (Microsoft emite tokens por proyecto Clarity). `AGENCY_KV` almacena caché y una guardia preventiva de cuota. La guardia KV no es atómica y no sustituye las cuotas de los proveedores.
