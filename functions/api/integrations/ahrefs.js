@@ -4,13 +4,7 @@ import { requireIntegration } from "../../_lib/integrations.js";
 const ENDPOINTS = {
   "domain-rating": "domain-rating",
   "ai-responses-count": "ai-responses-count",
-  "backlinks-stats": "backlinks-stats",
-  "metrics": "metrics",
-  "organic-keywords": "organic-keywords",
-  "organic-competitors": "organic-competitors",
-  "top-pages": "top-pages",
-  "refdomains-history": "refdomains-history",
-  "domain-rating-history": "domain-rating-history"
+  "backlinks-stats": "backlinks-stats"
 };
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" }
@@ -33,6 +27,12 @@ export async function onRequestGet({ request, env }) {
 
   const params = new URLSearchParams();
   params.set("target", normalizedTarget);
+  const mode = url.searchParams.get("mode") || "subdomains";
+  if (!["exact","prefix","domain","subdomains"].includes(mode)) return json({ ok:false, error:"Modo de alcance no válido." }, 400);
+  params.set("mode", mode);
+  const protocol = url.searchParams.get("protocol") || "both";
+  if (!["both","http","https"].includes(protocol)) return json({ ok:false, error:"Protocolo no válido." }, 400);
+  params.set("protocol", protocol);
   const select = url.searchParams.get("select") || "all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok";
   if (metric === "ai-responses-count") params.set("select", select);
   const date = url.searchParams.get("date");
@@ -40,7 +40,9 @@ export async function onRequestGet({ request, env }) {
   const limit = url.searchParams.get("limit");
   if (limit && /^\d{1,3}$/.test(limit)) params.set("limit", String(Math.min(100, Math.max(1, Number(limit)))));
 
-  const cacheKey = "global-integration-cache:ahrefs:" + metric + ":" + params.toString();
+  const keyFingerprint = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.AHREFS_API_KEY));
+  const keyScope = [...new Uint8Array(keyFingerprint)].slice(0,12).map(v=>v.toString(16).padStart(2,"0")).join("");
+  const cacheKey = "global-integration-cache:ahrefs:" + keyScope + ":" + metric + ":" + params.toString();
   try {
     const cached = await env.AGENCY_KV.get(cacheKey);
     if (cached) return new Response(cached, { headers: { "content-type":"application/json; charset=utf-8", "cache-control":"private, max-age=300", "x-data-source":"cache" } });
