@@ -25,7 +25,7 @@ export function integrationEnabled(env, id) {
   if (item.provider) return Boolean(env[item.key] && env[item.model] && env.AGENCY_KV);
   if (id === "canva") return Boolean(env.CANVA_CLIENT_ID && env.CANVA_CLIENT_SECRET && String(env.CANVA_TOKEN_ENCRYPTION_KEY || "").length >= 32 && env.AGENCY_KV);
   if (id === "pagespeed") return Boolean(env.PAGESPEED_API_KEY);
-  if (id === "ahrefs") return Boolean(env.AHREFS_API_KEY);
+  if (id === "ahrefs") return Boolean(env.AHREFS_API_KEY && env.AGENCY_KV);
   if (id === "clarity") return Boolean(env.CLARITY_API_TOKEN && env.AGENCY_KV);
   if (id === "searchConsole") return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_GSC_REDIRECT_URI && env.AGENCY_KV);
   return Boolean(item.env && env[item.env] === "true");
