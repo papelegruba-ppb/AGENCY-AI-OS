@@ -1,3 +1,4 @@
+import { ownerSession, sameOrigin } from "../../_lib/owner-auth.js";
 import { requireIntegration } from "../../_lib/integrations.js";
 
 const ALLOWED_DIMENSIONS = new Set(["Browser","Device","Country/Region","OS","Source","Medium","Campaign","Channel","URL"]);
@@ -6,6 +7,7 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
 });
 
 export async function onRequestGet({ request, env }) {
+  if (!sameOrigin(request) || !(await ownerSession(request, env))) return json({ ok:false, code:"OWNER_AUTH_REQUIRED", error:"Inicia sesión como propietario para consultar integraciones globales." }, 401);
   const blocked = requireIntegration(env, "clarity");
   if (blocked) return blocked;
   if (!env.AGENCY_KV) return json({ ok:false, error:"Microsoft Clarity requiere el binding AGENCY_KV para caché y control de cuota." }, 503);
