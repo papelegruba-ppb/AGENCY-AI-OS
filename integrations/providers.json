@@ -53,6 +53,10 @@
       ]
     }
   ],
+  "externalDataProviders": [
+    { "id": "ahrefs", "label": "Ahrefs API v3", "scope": "global", "mode": "server-proxy", "secret": "AHREFS_API_KEY", "capabilities": ["domain-rating", "ai-responses-count", "backlinks", "organic-keywords", "competitors", "top-pages"] },
+    { "id": "microsoft-clarity", "label": "Microsoft Clarity Data Export API", "scope": "global", "mode": "server-proxy", "secret": "CLARITY_API_TOKEN", "capabilities": ["traffic", "engagement", "scroll-depth", "popular-pages", "dead-clicks", "rage-clicks", "script-errors"], "tokenScope": "clarity-project" }
+  ],
   "creativeTools": [
     {
       "id": "canva",
