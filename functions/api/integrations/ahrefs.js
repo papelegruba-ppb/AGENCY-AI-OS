@@ -27,16 +27,20 @@ export async function onRequestGet({ request, env }) {
 
   const params = new URLSearchParams();
   params.set("target", normalizedTarget);
-  const mode = url.searchParams.get("mode") || "subdomains";
-  if (!["exact","prefix","domain","subdomains"].includes(mode)) return json({ ok:false, error:"Modo de alcance no válido." }, 400);
-  params.set("mode", mode);
-  const protocol = url.searchParams.get("protocol") || "both";
-  if (!["both","http","https"].includes(protocol)) return json({ ok:false, error:"Protocolo no válido." }, 400);
-  params.set("protocol", protocol);
+  if (metric !== "domain-rating") {
+    const mode = url.searchParams.get("mode") || "subdomains";
+    if (!["exact","prefix","domain","subdomains"].includes(mode)) return json({ ok:false, error:"Modo de alcance no válido." }, 400);
+    params.set("mode", mode);
+    const protocol = url.searchParams.get("protocol") || "both";
+    if (!["both","http","https"].includes(protocol)) return json({ ok:false, error:"Protocolo no válido." }, 400);
+    params.set("protocol", protocol);
+  }
   const select = url.searchParams.get("select") || "all_platforms,chatgpt,google_ai_overviews,google_ai_overviews_keywords,google_ai_mode,gemini,perplexity,copilot,grok";
   if (metric === "ai-responses-count") params.set("select", select);
-  const date = url.searchParams.get("date");
-  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date) && metric === "domain-rating") params.set("date", date);
+  const requestedDate = url.searchParams.get("date");
+  const date = requestedDate || new Date().toISOString().slice(0,10);
+  if ((metric === "domain-rating" || metric === "backlinks-stats") && !/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ ok:false, error:"La fecha debe tener formato YYYY-MM-DD." }, 400);
+  if (metric === "domain-rating" || metric === "backlinks-stats" || (metric === "ai-responses-count" && requestedDate)) params.set("date", date);
   const limit = url.searchParams.get("limit");
   if (limit && /^\d{1,3}$/.test(limit)) params.set("limit", String(Math.min(100, Math.max(1, Number(limit)))));
 
