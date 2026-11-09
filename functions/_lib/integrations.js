@@ -5,6 +5,8 @@ const CATALOG = {
   claude: { label: "Anthropic Claude", env: null, provider: "anthropic", key: "ANTHROPIC_API_KEY", model: "ANTHROPIC_MODEL", cost: "Facturación por API y tokens según modelo.", function: "Chat, análisis y razonamiento mediante Claude API.", activation: "Configurar clave y modelo; habilitar AI_ENABLED, AI_BILLABLE_ENABLED y AI_SPEND_AUTHORIZED solo tras aprobar expresamente el presupuesto." },
   deepseek: { label: "DeepSeek", env: null, provider: "deepseek", key: "DEEPSEEK_API_KEY", model: "DEEPSEEK_MODEL", cost: "Facturación por API y tokens según modelo.", function: "Chat y generación de contenido.", activation: "Configurar clave y modelo; habilitar AI_ENABLED, AI_BILLABLE_ENABLED y AI_SPEND_AUTHORIZED solo tras aprobar expresamente el presupuesto." },
   perplexity: { label: "Perplexity", env: null, provider: "perplexity", key: "PERPLEXITY_API_KEY", model: "PERPLEXITY_MODEL", cost: "Facturación por API y uso según modelo.", function: "Respuestas asistidas por búsqueda y modelos Perplexity.", activation: "Configurar clave y modelo; habilitar AI_ENABLED, AI_BILLABLE_ENABLED y AI_SPEND_AUTHORIZED solo tras aprobar expresamente el presupuesto." },
+  ahrefs: { label: "Ahrefs API", env: null, cost: "Consumo sujeto al plan y unidades API de Ahrefs.", function: "Domain Rating, estadísticas de backlinks y respuestas de IA.", activation: "Configurar AHREFS_API_KEY como secreto global de Cloudflare Pages." },
+  clarity: { label: "Microsoft Clarity Data Export", env: null, cost: "La API limita a 10 solicitudes por proyecto y día; datos de los últimos 1–3 días.", function: "Tráfico, engagement, scroll, páginas populares y señales de fricción UX.", activation: "Configurar CLARITY_API_TOKEN como secreto global. El token emitido por Clarity está ligado al proyecto de Clarity que lo generó." },
   pagespeed: { label: "Google PageSpeed Insights", env: null, cost: "API sin coste directo dentro de la cuota gratuita; sujeta a límites de Google.", function: "Lighthouse móvil y escritorio.", activation: "Configurar PAGESPEED_API_KEY; no requiere flag adicional." },
   searchConsole: { label: "Google Search Console", env: null, cost: "API sin coste directo de consulta dentro de cuotas de Google.", function: "Clics, impresiones, consultas y páginas.", activation: "Configurar OAuth, AGENCY_KV y autorizar la propiedad exacta." },
   googleDrive: { label: "Google Drive", env: "GOOGLE_DRIVE_ENABLED", cost: "La API puede ser gratuita dentro de cuotas; almacenamiento y uso dependen de la cuenta.", function: "Copias de seguridad externas.", activation: "Autorizar explícitamente la sincronización externa." },
@@ -23,6 +25,8 @@ export function integrationEnabled(env, id) {
   if (item.provider) return Boolean(env[item.key] && env[item.model] && env.AGENCY_KV);
   if (id === "canva") return Boolean(env.CANVA_CLIENT_ID && env.CANVA_CLIENT_SECRET && String(env.CANVA_TOKEN_ENCRYPTION_KEY || "").length >= 32 && env.AGENCY_KV);
   if (id === "pagespeed") return Boolean(env.PAGESPEED_API_KEY);
+  if (id === "ahrefs") return Boolean(env.AHREFS_API_KEY && env.AGENCY_KV);
+  if (id === "clarity") return Boolean(env.CLARITY_API_TOKEN && env.AGENCY_KV);
   if (id === "searchConsole") return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_GSC_REDIRECT_URI && env.AGENCY_KV);
   return Boolean(item.env && env[item.env] === "true");
 }
