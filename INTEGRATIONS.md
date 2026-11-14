@@ -99,3 +99,40 @@ La vista Configuración consulta `GET /api/ai-status` sin caché y presenta el e
 - Ambos proxies requieren sesión de propietario y validación same-origin. No devuelven secretos al navegador.
 - La guardia basada en KV es de mejor esfuerzo, no atómica. La cuota oficial de Clarity sigue siendo 10 llamadas por proyecto y día; la API devuelve datos de 1–3 días, máximo 3 dimensiones, 1.000 filas y zona horaria UTC.
 - Estado de implementación: código en rama `feat/global-ahrefs-clarity-connectors`; falta configurar secretos/binding en Cloudflare y realizar pruebas de extremo a extremo.
+
+
+## Social Media Studio y conectores sociales (alcance global)
+
+### Estado comprobado en código
+- UI en `social-studio.js` y `social-studio.css`.
+- Endpoint `POST /api/social-studio`, protegido por sesión privada y validación same-origin.
+- Generación de contenido para Instagram, TikTok, Facebook, LinkedIn y YouTube Shorts usando el runtime IA.
+- Historial local por proyecto, copia y guardado de paquetes.
+- El endpoint devuelve `publication: manual-approval-required`: no publica ni programa contenido.
+- No se encontró implementación OAuth de redes, almacenamiento de tokens sociales, sincronización de métricas ni cola de publicaciones.
+
+### Decisión
+Social Media Studio pasa a ser una capacidad global de Agency AI OS. El módulo debe permitir campañas y cuentas conectadas, calendario multicanal, producción adaptada por plataforma, aprobación humana, publicación programada cuando la API oficial lo permita, analítica y reporting. Las cuentas se asignarán explícitamente a proyectos autorizados; nunca se mezclan datos de proyectos.
+
+### Plataformas previstas
+- Meta Graph API: Instagram profesional y Facebook Pages.
+- Threads API.
+- LinkedIn API.
+- TikTok Content Posting API.
+- YouTube Data API.
+- Pinterest API.
+- X API solo tras comprobar plan, coste, cuotas y acceso.
+
+No se utilizarán scraping, endpoints privados ni automatización de navegador para eludir permisos. Cada proveedor requiere validar documentación, scopes, revisión de aplicación, cuotas y formatos actuales antes de activar el adaptador.
+
+### Arquitectura objetivo
+- Adaptadores independientes por plataforma en `functions/_lib/social/`.
+- Endpoints OAuth, callbacks, cuentas, publicaciones y métricas en `functions/api/social/`.
+- D1 para cuentas, campañas, aprobaciones, publicaciones, métricas y auditoría; R2 para assets privados.
+- KV solo para estado temporal/caché; colas o Durable Objects para idempotencia, límites y ejecución programada.
+- Secretos y tokens solo en servidor, cifrados en reposo y revocables.
+- Aprobación humana obligatoria antes de acciones públicas; registro verificable del resultado.
+
+Plan detallado, fases, criterios de aceptación y límites: `docs/SOCIAL-INTEGRATIONS.md`.
+
+Estado: **plan de arquitectura añadido; conectores OAuth/publicación/analítica todavía no implementados**. No activar gasto ni servicios de pago sin autorización.
